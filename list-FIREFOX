@@ -1,0 +1,53 @@
+# Firefox
+# *******
+# This install list presumes postX_Py3 list installed.
+#
+# Updated 07/19/2015
+####################
+alsa_lib-1.0.29
+zip-3.0
+libevent-2.0.22
+libvpx-1.4.0
+nspr-4.10.9
+nss-3.20
+#Opt:
+curl-7.44.0
+dbus-glib-0.104
+#doxygen-1.8.8
+iso_codes-3.59
+libogg-1.3.2
+libvorbis-1.3.5
+libtheora-1.1.1
+gstreamer-1.4.5
+gst-plugins-base-1.4.5
+####################
+# good plugins & deps:
+flac-1.3.1
+libtasn1-4.5
+gnutls-3.4.4.1
+p11_kit-0.23.1
+gsettings-desktop-schemas-3.16.1
+glib-networking-2.44.0
+libxml2-2.9.2
+libsoup-2.50.0
+gst-plugins-good-1.4.5
+####################
+# bad plugins & deps:
+# Many more opt to add
+gst-plugins-bad-1.4.5
+####################
+# ugly plugins & deps:
+# Many more opt to add
+x264-20141208-2245
+gst-plugins-ugly-1.4.5
+####################
+gst-libav-1.4.5
+hunspell-1.3.3
+libnotify-0.7.6
+#icedtea-2.5.2
+#pulseaudio-6.0
+startup-notification-0.12
+wget-1.16.3
+wireless_tools-29
+firefox-40.0.3
+flash_player_11-firefox

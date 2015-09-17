@@ -1,0 +1,105 @@
+# list-XFCE
+# Should only require list-X
+# Prep cpan before running: enter cpan and setup
+#############################
+# Not sure how this will work, but try it
+xml__simple-2.20
+#
+# For glib
+pcre-8.37
+glib-2.44.1
+#
+gobject_introspection-1.44.0
+# For gtk2
+hicolor_icon_theme-0.15
+atk-2.16.0
+yasm-1.3.0
+libjpeg_turbo-1.4.1
+libpng-1.6.18
+tiff-4.0.5
+gdk_pixbuf-2.31.6
+cairo-1.14.2
+pango-1.36.8
+gtk+-2.24.28
+#
+# For gtk3
+dbus-1.10.0
+at_spi2_core-2.16.0
+#atk-2.16.0
+at_spi2_atk-2.16.0
+#yasm-1.3.0
+#libjpeg_turbo-1.4.1
+#libpng-1.6.18
+#tiff-4.0.5
+#gdk_pixbuf-2.31.6
+#cairo-1.14.2
+#pango-1.36.8
+gtk+-3.16.6
+#
+desktop_file_utils-0.22
+shared_mime_info-1.4
+dbus_glib-0.104
+libogg-1.3.2
+libvorbis-1.3.5
+libtheora-1.1.1
+alsa_lib-1.0.29
+gstreamer-1.4.5
+libcanberra-0.30
+libcroco-0.6.8
+libexif-0.6.21
+vala-0.28.1
+librsvg-2.40.10
+iso_codes-3.59
+libxklavier-5.4
+libgudev-230
+libnotify-0.7.6
+pm_utils-1.4.1
+libusb-1.0.19
+nspr-4.10.9
+zip-3.0
+js-17.0.0
+polkit-0.113
+polkit_gnome-0.105
+# For gvfs
+#libgpg_error-1.20
+#libgcrypt-1.6.3
+#libtasn1-4.5
+#p11_kit-0.23.1
+#gcr-3.16.0
+#gnome_keyring-3.16.0
+#libsecret-0.18.3
+#gnutls-3.4.4.1
+#gsettings_desktop_schemas-3.16.1 
+#glib-networking-2.44.0
+#libsoup-2.50.0
+#libatasmart-0.19
+#udisks-2.1.6
+#gvfs-1.24.2
+upower-0.9.23
+uri-1.69
+startup_notification-0.12
+icon_naming_utils-0.8.90
+gnome_icon_theme-3.12.0
+lxde_icon_theme-0.5.1
+libxfce4util-4.12.1
+xfconf-4.12.0
+libxfce4ui-4.12.1
+exo-0.10.6
+garcon-0.5.0
+gtk_xfce_engine-3.2.0
+libwnck-2.30.7
+xfce4_panel-4.12.0
+xfce4_xkb_plugin-0.7.1
+thunar-1.6.10
+thunar_volman-0.8.1
+tumbler-0.1.31
+xfce4_appfinder-4.12.0
+xfce4_power_manager-1.4.4
+xfce4_settings-4.12.0
+xfdesktop-4.12.3
+xfwm4-4.12.3
+xfce4_session-4.12.1 
+#
+#***Add later for runtime, etc?
+#
+#libexif is jpegs with extra tags used by digital cameras

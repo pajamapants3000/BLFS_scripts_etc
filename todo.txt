@@ -1,0 +1,85 @@
+To Do
+******
+BLFS Scripts to create
+^^^^^^^^^^^^^^^^^
+openjdk
+icedtea-web
+icedtea-sound
+xf86-video-intel-2.99.917
+
+Non-BLFS Scripts to create
+^^^^^^^^^^^^^^^^^
+qtcreator
+krdc (KDE)/remmina (GTK)/nomachine_nx (remote desktops)
+
+Functionality to add to scripts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+create additional source files, in addition to lfs/blfs_profile
+In particular, functions!
+
+
+Functionality to add to overall installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dependency automator:
+The goal here is to be able to say I want to install
+package X and a generator will process all dependencies, match against
+installed programs to filter out, and match against existing scripts to
+confirm preparedness. If any are missing, the output tells you what scripts
+are missing/required. This should require recommended and required, but perhaps
+have different levels. Rec and req default, have an option to only do req,
+or req with only rec necessary for main program, or only for deps, and another
+setting for full deps - all optional.
+OH and if one of the missing scripts (in any of the above cases but especially
+trying to install all optional packages) you will be prompted with the option
+to try proceeding without it (unless of course it is a required dependency).
+The comparisons should look for package name only (before the '-'), and then
+compare versions by accepting any greater-than or equal to the expected
+version.
+An option to prompt for optional dependencies
+Missing optional dependencies as part of the output.
+Potential for passing arguments to the script based on what optional
+dependencies are being installed.
+Of course a setting to run the deps without proceeding with the install, for
+preparations.
+
+Also, a reverse dependency run that tells you what programs depend on a
+particular package. That way, any programs that have said package as an
+optional dependency can be reinstalled with the additional functionality.
+
+There is a hint, I believe, (maybe more than one even) on the BLFS site that
+does this kind of work. I would like to write this myself but it could be
+useful to check it out as a guide.
+
+Fixes
+^^^^^
+
+feh-2.13.1: make test fails! Even after installing Test::Command
+May want to create a script for Test::Command to run before feh, but
+if I can't get the tests to succeed anyway then there is no point yet.
+For now I have disabled the tests (not a big deal anyway, though I would
+like to get it working!).
+
+gst_plugins_base-1.4.5:
+one test fails - libs/rtspconnection
+Cannot find anything on this, but there is a new version: 1.5.2
+This would require updating gstreamer, and optionally (if I plan to install
+them) all of the additional gst_plugins. Until then I am skipping the tests.
+
+akonadi: tests fail; see script. Try to attain successful tests or
+confirm unpassable (understand why).
+
+libsoup: one test fails
+
+kde_runtime:tests hanged near beginning, or just take a long time?
+Try skipping tests from here, precede commented out  "good" tests with ###
+
+Fix the paths and environment files (again).
+
+wget - 50-some tests fail on first run (no gnutls). Try again; wget site says
+testing is not perfect, will fail at least 2, but let's try to get a little
+closer to that.
+
+Add source /etc/profile to listrunner before (after?) each script run.
+
+In creating a gtk-free system, postX can probably do without ATK and
+gdk_pixbuf, which are gtk+-2 deps.

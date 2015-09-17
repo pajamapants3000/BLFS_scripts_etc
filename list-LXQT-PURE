@@ -1,0 +1,142 @@
+#
+# list-LXQT
+####################
+#
+# Presumes X
+###################
+#
+# Dependencies
+dbus-1.10.0
+sqlite-3.8.11.1
+python-3.4.3
+yasm-1.3.0
+libjpeg_turbo-1.4.1
+tiff-4.0.5
+pcre-8.37
+glib-2.44.1
+dbus_glib-0.104
+gobject_introspection-1.44.0
+cairo-1.14.2
+pango-1.36.8
+vala-0.28.1
+libcroco-0.6.8
+jasper-1.900.1
+gdk_pixbuf-2.31.6
+librsvg-2.40.10
+alsa_lib-1.0.29
+nspr-4.10.9
+zip-3.0
+js-17.0.0
+polkit-0.113
+libusb-1.0.19
+libgudev-230
+pm_utils-1.4.1
+libsndfile-1.0.25
+json_c-0.12
+lm_sensors-3.4.0
+libstatgrab-0.91
+curl-7.44.0
+libarchive-3.1.2
+cmake-3.3.1
+ruby-2.2.3
+icu-55.1
+iso_codes-3.59
+little_cms-2.7
+libmng-2.0.3
+libogg-1.3.2
+libvorbis-1.3.5
+libtheora-1.1.1
+flac-1.3.1
+speex-1.2rc2
+pulseaudio-6.0
+gstreamer-1.4.5
+gst_plugins_base-1.4.5
+libwebp-0.4.3
+mtdev-1.1.5
+qt-5.5.0
+extra_cmake_modules-5.12.0
+libfm_extra-1.2.3
+menu_cache-1.0.0
+lxmenu_data-0.1.4
+libexif-0.6.21
+libfm-1.2.3
+oxygen_icons-15.04.3
+hicolor_icon_theme-0.15
+docbook_xml-4.5
+docbook_xsl-1.78.1
+libxslt-1.1.28
+xmlto-0.0.26
+upower-0.9.23
+gvfs-1.24.2
+xdg_utils-1.1.0-rc3
+shared_mime_info-1.4
+desktop_file_utils-0.22
+consolekit-0.4.6
+polkit_qt_1-0.112.0-qt5
+openbox-3.6.1
+sddm-0.11.0
+# LXQT Preparation
+#lxqt_prep_usr
+# or
+lxqt_prep_opt
+breaker
+kguiaddons-5.12.0-lxqt
+kwindowsystem-5.12.0-lxqt
+solid-5.12.0-lxqt
+libconfig-1.5
+itstool-2.0.2
+gtk_doc-1.24
+# For /usr version, need git!
+#git-2.5.0
+###########################
+#
+# From here, either run the scripts derived from BLFS - probably
+#+best for a /opt/lxqt installation; or run the lxqt.sh which is
+#+derived from https://github.com/lxde/lxqt/wiki/Building-From-Source
+#+with modifications derived from BLFS.
+#
+###########################
+#
+breaker
+#
+libqtxdg-1.2.0
+liblxqt-0.9.0
+lxqt_globalkeys-0.9.0
+libsysstat-0.3.0
+liblxqt_mount-0.9.0
+lxqt_panel-0.9.0
+pcmanfm_qt-0.9.0
+lxqt_qtplugin-0.9.0
+lxqt_policykit-0.9.0
+lxqt_powermanagement-0.9.0
+lxqt_config-0.9.0
+lxqt_about-0.9.0
+lxqt_common-0.9.1
+lxqt_notificationd-0.9.0
+lxqt_runner-0.9.0
+lxqt_session-0.9.0
+#
+############################
+#
+# Finally, install some apps for either approach; still optional
+#
+############################
+#
+# Apps
+#
+chrpath-0.16
+lximage_qt-0.4.0
+obconf_qt-0.9.0.8.g1ce85f1
+qtermwidget-0.6.0
+qterminal-0.6.0
+qscintilla_gpl-2.9
+juffed-0.10.r71.gc3c1a3f
+qupzilla-1.8.6
+#
+###########################
+#
+# Wrap it up! Set xinitrc, login scripts, ..., whatever.
+#
+###########################
+# or for /usr, skip.
+lxqt_close_opt

@@ -1,0 +1,85 @@
+##
+##***
+#
+BLFS and custom Linux -- Guide
+
+After LFS process has been completed and successfully rebooted...
+
+Make sure the root drive is backed up!
+    This is especially useful so that the system can be experimented
+    with and reset to a fresh start without having to rebuild the basic
+    system from scratch again.
+
+Run lists to add various functionalities to the system. See the instructions
+included in the comments of each list for any specific info. This will consist
+of the following:
+
+list-START
+    About: This sets up very basic necessities - a user account, wget, sudo, ssl,
+    mouse support in the console, a simple text-based web-browser, and various
+    other basic configurations and necessities.
+    Vital Prep: Disable tests for wget! Reenable them and reinstall after
+    installing gnutls later on, IF gnutls is installed. Not sure if this
+    second run will be any better.... remains to be seen.
+    Notes: in bashfiles it may be desired to change or add user accounts.
+        Files are copied from files/etc and files/home to their respective
+        places; these may be modified as desired either before or after
+        bashfiles has been run.
+        After running sudo, su to root and modify the visudo file so that
+        sudo can be used. Without this step, as_root as well as sudo, used in
+        many subsequent scripts will fail!
+        copy_agent is a non-blfs installation and may need to be modifed if
+        the host changes the links or other details of the package.
+        Aside from the post-sudo manual steps, this list should proceed from
+        start to finish automatically, without difficulty.
+    In progress: I recently modified bashfiles to copy the config files already
+        made, rather than creating them inline (here-docs). Confirm these
+        changes by removing this note after successful run.
+
+Security:
+list-SECSERV
+list-SECHIGH
+list-SECMED
+list-SECLOW
+    About: These are varied levels of security (obviously). Each has everything
+        included in the lower levels plus additional packages. SECLOW is ideal for
+        basic security where the rest of the system is either not known or the
+        packages and dependencies are well worked out in other lists. SECMED is a
+        nice balance between good security, coverage of common dependencies, and
+        yet not overly large. SECHIGH has all security packages covered in BLFS,
+        plus many more common dependencies. Finally, SECSERV has everything in
+        SECHIGH, plus openldap and krb5.
+    Attention: shadow (all lists) requires a quick su, enter password, exit. su
+        is executed at the end of the first script, so you will have to enter
+        the password and exit, then proceed to the config script and onward.
+        postfix has a couple of commands to run manually afterward to test it.
+    In progress: stunnel has a line that supposedly tells stunnel to take
+        the default (localhost) server IP. I think this works...?
+
+preX:
+    Just a few more useful packages that satisfy dependencies for Xorg
+Xorg
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+_________________________________________________________
+postX(-FLAVS): just postX for now.
+QT4
+KDE4
+KDE4APPS
+QT5
+KF5
+...
+
+_________________________________________________________
+XFCE
+
+
+_________________________________________________________
+post-X
+i3/AWESOME/QTILE
+
+
+_______________________________________________________
+///////////////////////////////////////////////////////
+UTILITIES, LIBRE, LINKS, CALIBRE, ...
+

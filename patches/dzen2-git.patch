@@ -1,0 +1,46 @@
+diff -rup robm-dzen-488ab66.orig/config.mk robm-dzen-488ab66/config.mk
+--- robm-dzen-488ab66.orig/config.mk	2015-09-08 12:54:49.130849557 -0700
++++ robm-dzen-488ab66/config.mk	2015-09-08 12:57:05.777575050 -0700
+@@ -4,7 +4,7 @@ VERSION = 0.9.5-svn
+ # Customize below to fit your system
+ 
+ # paths
+-PREFIX = /usr/local
++PREFIX = /usr
+ MANPREFIX = ${PREFIX}/share/man
+ 
+ X11INC = /usr/X11R6/include
+@@ -39,8 +39,8 @@ INCS = -I. -I/usr/include -I${X11INC}
+ 
+ 
+ ## Option 5: With XFT
+-LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 `pkg-config --libs xft`
+-CFLAGS = -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XFT `pkg-config --cflags xft`
++#LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 `pkg-config --libs xft`
++#CFLAGS = -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XFT `pkg-config --cflags xft`
+ 
+ 
+ ## Option 6: With XPM and XFT
+@@ -54,8 +54,8 @@ CFLAGS = -Wall -Os ${INCS} -DVERSION=\"$
+ 
+ 
+ ## Option 8: With Xinerama and XPM and XFT
+-#LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 -lXinerama -lXpm `pkg-config --libs xft`
+-#CFLAGS = -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XINERAMA -DDZEN_XPM -DDZEN_XFT `pkg-config --cflags xft`
++LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 -lXinerama -lXpm `pkg-config --libs xft`
++CFLAGS = -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XINERAMA -DDZEN_XPM -DDZEN_XFT `pkg-config --cflags xft`
+ 
+ 
+ 
+diff -rup robm-dzen-488ab66.orig/gadgets/config.mk robm-dzen-488ab66/gadgets/config.mk
+--- robm-dzen-488ab66.orig/gadgets/config.mk	2015-09-08 12:54:49.131849563 -0700
++++ robm-dzen-488ab66/gadgets/config.mk	2015-09-08 12:58:12.048927525 -0700
+@@ -1,7 +1,7 @@
+ # Customize below to fit your system
+ 
+ # paths
+-PREFIX = /usr/local
++PREFIX = /usr
+ MANPREFIX = ${PREFIX}/share/man
+ 
+ X11INC = /usr/X11R6/include

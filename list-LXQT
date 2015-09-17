@@ -1,0 +1,64 @@
+#
+# list-LXQT
+####################
+#
+# Presumes postX, QT5;
+# source setqt5!
+###################
+# Start by running:
+#lxqt_prep_opt
+# Then source /etc/profile AND /etc/profile.d/lxqt.sh
+#
+libusb-1.0.19
+libgudev-230
+pm_utils-1.4.1
+lm_sensors-3.4.0
+libstatgrab-0.91
+extra_cmake_modules-5.12.0
+libfm_extra-1.2.3
+menu_cache-1.0.0
+lxmenu_data-0.1.4
+kguiaddons-5.12.0
+kwindowsystem-5.12.0
+oxygen_icons-15.04.3
+upower-0.9.23
+docbook_xml-4.5
+docbook_xsl-1.78.1
+libxslt-1.1.28
+xmlto-0.0.26
+xdg_utils-1.1.0-rc3
+nspr-4.10.9
+js-17.0.0 
+polkit-0.113 
+polkit_qt-0.112.0-qt5
+consolekit-0.4.6
+# This or another WM; i3? Try this as recommended by BLFS to start
+openbox-3.6.1
+# This or LXDM recommended by BLFS
+sddm-0.11.0
+# udisks - experimental but better than gvfs which req. gtk.
+libatasmart-0.19
+LVM2-2.02.126
+parted-3.2
+sg3_utils-1.41
+udisks-1.0.5
+#
+libfm-1.2.3
+#
+libqtxdg-1.2.0
+liblxqt-0.9.0
+lxqt_globalkeys-0.9.0
+libsysstat-0.3.0
+liblxqt_mount-0.9.0
+lxqt_panel-0.9.0
+pcmanfm_qt-0.9.0
+lxqt_qtplugin-0.9.0
+lxqt_policykit-0.9.0
+lxqt_powermanagement-0.9.0
+lxqt_config-0.9.0
+lxqt_about-0.9.0
+lxqt_common-0.9.1
+lxqt_notificationd-0.9.0
+lxqt_runner-0.9.0
+lxqt_session-0.9.0 
+lxqt_close_opt

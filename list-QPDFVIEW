@@ -1,0 +1,31 @@
+#
+# list-QPDFVIEW
+######################################
+#
+# Presumes QT4 or QT5
+#
+#####################################
+# Covered in preX
+#freetype-2.6
+#libpng-1.6.18
+#
+# Covered in postX
+#libjpeg_turbo-1.4.1
+#tiff-4.0.5
+#little_cms-2.7
+#librsvg-2.40.10
+#
+# cups - add dependencies;
+# without, add CONFIG+="without_cups" to qmake args.
+#cups-2.0.4
+#
+ghostscript-9.16
+libspectre-0.2.7
+openjpeg-1.5.2
+poppler-0.35.0
+djvulibre-3.5.27
+qpdfview-0.4.15
+# Not pdf, but to add a chm and epub viewer:
+chmlib-0.40
+libzip-1.0.1
+kchmviewer-7.3

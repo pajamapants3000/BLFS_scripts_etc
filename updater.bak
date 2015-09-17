@@ -1,0 +1,11 @@
+#!/bin/bash
+PROG=$1
+OLD=$2
+NEW=$3
+for path in scripts scripts/attention scripts/non-blfs; do
+    sed -i "s/${PROG}-${OLD}/${PROG}-${NEW}/" $path/*.sh
+    [ -f ${path}/${PROG}-${OLD}.sh ] && mv -v \
+            ${path}/${PROG}-${OLD}.sh ${path}/${PROG}-${NEW}.sh 
+done
+#
+sed -i "s/${PROG}-${OLD}/${PROG}-${NEW}/" ./list-*

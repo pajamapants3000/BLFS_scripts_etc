@@ -1,0 +1,11 @@
+Additional packages
+*******************
+
+vifm
+^^^^^
+This can be installed with non-blfs script, but here are some additional
+links, as well as where to find the package if desired.
+https://github.com/vifm/vifm
+https://github.com/vifm/vifm-colors
+https://github.com/vifm/vifm.vim
+

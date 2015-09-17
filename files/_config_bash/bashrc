@@ -1,0 +1,67 @@
+#
+# Begin ~/.bashrc
+# User dependent .bashrc file; executed by bash(1) for interactive shells.
+
+# Guard
+if ! [ $HOME_BASHRC ]; then
+export HOME_BASHRC=1
+
+# If not running interactively, don't do anything
+[[ "$-" != *i* ]] && return
+
+# Make sure system settings are sourced
+[ -r /etc/bashrc ] && source /etc/bashrc
+
+# source the user's bash_alias if it exists
+if [ -f "${HOME}/.config/bash/bash_alias" ] ; then
+  source "${HOME}/.config/bash/bash_alias"
+  echo "sourced ${HOME}/.config/bash/bash_alias"
+fi
+
+# source the user's bash_hist if it exists
+# WARNING: do NOT source .bash_history!!!
+if [ -f "${HOME}/.config/bash/bash_hist" ] ; then
+  source "${HOME}/.config/bash/bash_hist"
+  echo "sourced ${HOME}/.config/bash/bash_hist"
+fi
+
+# Shell Options
+#
+# See man bash for more options...
+#
+# Don't wait for job termination notification
+# set -o notify
+#
+# Don't use ^D to exit
+# set -o ignoreeof
+#
+# Use case-insensitive filename globbing
+# shopt -s nocaseglob
+#
+# Make bash append rather than overwrite the history on disk
+# shopt -s histappend
+#
+# When changing directory small typos can be ignored by bash
+# for example, cd /vr/lgo/apaache would find /var/log/apache
+# shopt -s cdspell
+
+# Uncomment to turn on programmable completion enhancements.
+# Any completions you add in ~/.bash_completion are sourced last.
+[[ -f /etc/bash_completion ]] && . /etc/bash_completion
+
+# source the user's bash_alias if it exists
+if [ -f "${HOME}/.config/bash/bash_completion" ] ; then
+  source "${HOME}/.config/bash/bash_completion"
+  echo "sourced ${HOME}/.config/bash_completion"
+fi
+
+# Umask
+#
+# /etc/profile sets 022, removing write perms to group + others.
+# Set a more restrictive umask: i.e. no exec perms for others:
+# umask 027
+# Paranoid: neither group nor others have any perms:
+# umask 077
+
+fi # End guard
+# End ~/.bashrc

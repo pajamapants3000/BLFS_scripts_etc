@@ -1,0 +1,9 @@
+# Begin /etc/pam.d/kde
+
+auth     include        system-auth
+account  include        system-account
+password include        system-password
+session  include        system-session
+
+# End /etc/pam.d/kde
+

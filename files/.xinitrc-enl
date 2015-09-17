@@ -1,0 +1,10 @@
+#
+# Begin .xinitrc-enl
+# A simple .xinitrc for e.g. testing a new installation of
+#+the Enlightenment window manager.
+#
+# Not quite sure how this should look yet...
+exec enlightenment
+#exec startenl
+#
+##

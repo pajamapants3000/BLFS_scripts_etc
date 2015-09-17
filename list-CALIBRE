@@ -1,0 +1,16 @@
+# Calibre
+# Updated 07/19/2015
+#########################
+#
+# Presumes X (?)
+#########################
+unzip-6.0
+libxml2-2.9.2
+docbook_xml-4.5
+docbook_xml-4.5-config
+docbook_xsl-1.78.1
+docbook_xsl-1.78.1-config
+libxslt-1.1.28
+xmlto-0.0.26
+xdg_utils-1.1.0-rc3
+calibre_latest_git_binary

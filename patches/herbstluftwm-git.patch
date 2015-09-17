@@ -1,0 +1,12 @@
+diff -rup herbstluftwm.orig/config.mk herbstluftwm/config.mk
+--- herbstluftwm.orig/config.mk	2015-09-16 05:06:28.685907307 -0700
++++ herbstluftwm/config.mk	2015-09-16 05:07:56.057325006 -0700
+@@ -33,7 +33,7 @@ CPPFLAGS += $(INCS) -D _XOPEN_SOURCE=600
+ CPPFLAGS += -D HERBSTLUFT_GLOBAL_AUTOSTART=\"$(CONFIGDIR)/autostart\"
+ LDFLAGS ?= -g
+ DESTDIR =
+-PREFIX = /usr/local
++PREFIX = /usr
+ BINDIR = $(PREFIX)/bin
+ DATADIR = $(PREFIX)/share
+ MANDIR = $(DATADIR)/man

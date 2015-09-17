@@ -1,0 +1,955 @@
+SEE list for important notes!
+
+export.... in x00 doesn't work! BTW these are defined in xorg.sh...?
+    Solution, copy xorg.sh as instructed. Source /etc/profile MANUALLY!
+    (Sourcing within script will only last for duration of script!)
+    Alternative: Can a script end without leaving its shell? Probably, if
+    run as bash -ev ./script instead of executing.
+on find:
+    as_root should NOT go before find, but following the '-exec' flag, 
+    before the action to be executed.
+    No! This works with:
+        find docs \( -name "Makefile*" -o -name "*.1" -o -name "*.3" \) -exec as_root rm {} \; &&
+    But another only works as:
+        as_root find /usr/share/doc/git-2.1.0 -type d -exec chmod 755 {} \;     &&
+        as_root find /usr/share/doc/git-2.1.0 -type f -exec chmod 644 {} \;
+    WHY!?
+
+
+NOTES; PRE-PREP; BACKGROUND ***************************************************
+*01_bashfiles: Worked, fast!
+
+*02_lsb_release-1.4
+Had to source /etc/bashrc manually(..?) See above.
+Customize logon with /etc/issue (this is something I can do manually
+    every time!)
+
+*05_Sudo-1.8.10p3
+$visudo
+    Uncomment line to allow %wheel full, NOPASSWD access.
+
+as_root does NOT extend to multiple commands, even if they are connected
+    by &&. This is a huge bug in many scripts!
+
+###############################################################################
+PREPARATION *******************************************************************
+Double/triple check that system is backed up!
+
+As root user:
+Add as_root to /etc/bashrc
+- See asroot.sh, copy contents over -
+
+Create non-root user (tommy):
+useradd -m -U -G wheel,video,usb -s /bin/bash tommy
+
+Modify /etc/sudoers:
+$visudo
+Uncomment line to allow %wheel full, no password access (don't make any other
+changes, e.g. adding sudo group and uncommenting this line will overwrite
+the no password setting.)
+
+Copy all files to /xc (already set up in dropbox folder, just copy as is) E.g.:
+$mount -t ext4 /dev/sda1 /mnt
+$cp -rv /mnt/home/tommy/Dropbox/dropoff/BLFS7.6/xc /
+$umount /dev/sda1
+
+Logout, log back in as tommy. Change directory to /xc.
+
+Using as_root, change ownership of files in /xc to tommy
+$as_root chown -R tommy:tommy *
+
+Change ownership of xorg.sh back to root, copy to /etc/profile.d/, change mod:
+$as_root chown -v root:root xorg.sh
+$as_root cp -v xorg.sh /etc/profile.d/
+$as_root chmod -v 644 /etc/profile.d/xorg.sh
+
+Run:
+wget -i wget-list
+md5sum -c md5sums
+Start running through list one-by-one
+Take notes on problems, etc.
+A list of 39 scripts, some of which install dozens of packages. Don't complicate
+it any further with more packages. For additional wants/needs, start a new list!
+
+By the way, using sed I modified all scripts so that the header is:
+#!/bin/bash -ev
+This makes it possible to run the scripts directly, with verbose option
+automatically set, and also set so that any errors will cause an immediate exit.
+This is nice because I don't want a script proceeding if there is an error.
+Have to make sure all scripts have execute permission.
+
+IMPORTANT!!! Make sure to get rid of all calls to bash within the script.
+Also, added 
+
+$cd ..
+$rm -rf <dir>
+
+To the multi-package scripts.
+
+Be sure to replace Dropbox scripts with ones modified on LFS, otherwise will
+have to remodify them.
+
+BEGIN! ************************************************************************
+Ran 01 manually, due to considerable modifications. In the future, should be
+fine if follow above instructions, then run 01.
+
+02: Forgot "as_root" prefix to make install... D'OH! Went ahead and checked the
+rest and it seems this was the only such instance. Using sed, fixed the mistake,
+reran with full success!!
+Comment: Got warnings for unrecognized option: --disable-static in the configure
+options (from the XORG_CONFIG setting). Just a warning though, doesn't hurt it
+seems.
+
+03: Learned calling bash within script is bad. Adding -e to header is fine.
+(I'm pretty sure it is!)
+Made the changes, running again....
+HELL YEAH!!! Perfect finish!
+
+04: 
+...
+17_MesaLib: trying without elfutils and LLVM on Gorgak.
+    DON'T FORGET TO MODIFY SWITCH!! -see comments in script.
+    Seems like it worked!
+
+
+Got through to the end! Learned some important things:
+
+To use here-document as root to CREATE OR REPLACE a file:
+
+as_root tee filename << "EOF"
+lines...
+EOF
+
+To APPEND:
+
+as_root tee -a filename << "EOF" etc.
+
+Execute scripts rather than oassing them as arguments to a new bash instance.
+Add -ev flags to she-bang header. Script will exit on error, amking it easy to
+troubleshoot and continue. Verbose helps with this as well, and also really
+cool it shows my comments so I can get help from them!
+
+REALLY IMPORTANT:
+as_root does not apply to multiple commands if using && (or any other way I
+know of). MUST call as_root before each command to be executed as root!
+
+Follow shows DRI installed with R600 driver. Should be R700 I think but
+I think that'll still work.
+
+###############################################################################
+FOLLOW-UP; CONFIGURATION ******************************************************
+Check  /var/log/Xorg.0.log for statements such as:
+(II) intel(0): direct rendering: DRI2 Enabled
+or
+(II) NOUVEAU(0): Loaded DRI module
+ Although all users can use software acceleration, any hardware acceleration (DRI2) is only available to root and members of the video group.
+If your driver is supported, add any users that might use X to that group:
+usermod -a -G video <username>
+
+Makes sure this is working.
+
+*** Add video group to user defaults
+
+Install fonts:
+http://dejavu.sourceforge.net/
+Run as root from unpacked source directory:
+install -v -d -m755 /usr/share/fonts/dejavu &&
+install -v -m644 *.ttf /usr/share/fonts/dejavu &&
+fc-cache -v /usr/share/fonts/dejavu
+
+Also might want:
+http://download.savannah.nongnu.org/releases/freefont/
+
+
+
+******************************************************************************
+#############################INSTALL-NOTES-2##################################
+******************************************************************************
+Following the installation of window managers, I have learned a few more things:
+
+First of all, I got the order on a few things wrong. These have been accounted
+for in my notes.
+
+Second, I can do without openbox, at least for now. With a bare-minimum setup,
+it looks very similar to xfce, which I like but is not what I'm going for
+with this system.
+I think for now I will stick with qtile and dwm, and I can play with some of
+the others on arch.
+
+Speaking of - dwm: SUPER easy to install, almost NO dependencies! Just x
+headers. qtile: despite all my efforts to install all dependencies, a. I found
+that the most recent version has ALL NEW dependencies (!! :( ) But this did
+teach me about branches in git. Installing latest stable branch with the
+dependencies I had worked out. But I later discovered that ALL of qtile's
+dependencies are on pip, which by the way comes standard with a python install.
+(BLFS disiables this and setuptools in it's default configuration, so this
+needs to be edited out.) Also, the latest SHOULD work with python 3, which
+stable doesn't.
+UPDATE: See list-postX_Py3 for list of deps for dev qtile. super easy.
+
+So, in the future all of the window manager dependencies can be left out. If I
+have python, and xorg, I have all I need to install qtile AND dwm.
+awesome just needs cmake and lua. i3 is pretty straightforward too.
+unagi was successful with a few extras, all accounted for in install script
+as well as list.
+
+
+Third: Any graphic web browser, even suckless' surf, requires MAJOR
+dependencies. I have mapped out WebKitGTK, minus what's already installed
+(though if I end up backtracking this may need quite a few additions) which
+is the main dependency for surf, midori, and probably others. 
+Seamonkey seems too good to be true, like it includes everything. Though then
+again so does kubuntu! What are we doing here?
+firefox wasn't too bad and worked great.
+Can go pretty far with the WAY simpler text browsers, plus links which has
+optional graphics support. Even better now that I 'get' gpm.
+
+The next main goal is configuration. I may install WebKitGTK as another project,
+and also to give me more freedom with new programs.
+Tried it, not sure it's worth it. But will be considerably more worth it when
+scripts/automation down.
+
+01/17/2015
+SECHIGH test
+builtin shadow test worked great!
+openssh break failed but I think it's because I forgot
+to preceed the script with a ./
+time:
+real 37m06.278s
+user 24m13.662s
+sys   6m33.850s
+postfix: learned commenting out lines in the middle of a command
+can mess things up!
+finish:
+real 72m05.989s
+user 44m14.757s
+sys  16m28.243s
+total time of about 2 hours to complete.
+
+Old paste from xorg:
+TEST! Gorgak 2-end (made it 32) starting at 0838. See how it goes!
+Used the following command:
+$for NUM in $(seq -f "%02g" 2 32); do
+>   (($?)) && break ||
+>   ./scripts/Xorg/xNUM"_"*".sh"; done
+
+LLVM took almost the whole freakin' day.
+I had to add libpng to preX cuz apparently x-apps requires it and I didn't
+have it!
+
+still going (x-server currently) as of 1525, which means I gotta go and I'll
+have to check on it in the morning. Which is sad especially since it'll
+probably be done within the 1/2 hour.
+
+Running Xorg install from 2 to 31, expect if all goes well it should go through
+to completion. Added system-dependent variables with blfs_profile; we'll see
+if these changes work.
+
+postX_FULL:
+up to the end of alsa-utils without stopping!
+real 130m51.279s
+user 099m13.353s
+sys  022m13.016s
+
+Fixing the error that stopped it (darn PATH\sbin!)
+Also, yes "no" kills the NUM remembering. Not a huge deal since even if the
+leftover code doesn't indicate where it left off, can check the master list.
+
+Another fail at xdg-base-utils. This seems to be related to the docbook\xml
+stuff. I discovered that the configs didn't run because the install scripts
+hadn't been updated. BUT... using yes "no" would cause it to fail anyway
+(I'm pretty sure) since the prompt for password would simply get "no"
+UNLESS I COULD change the password to "no", OR put the password in for
+yes since the prompt for reinstall only proceeds with a "y" or "yes" and skips
+with any other input.
+
+Aside from the various fixes needed, it took about another ten minutes to
+complete the set!
+Next I wanna try firefox and webkit.
+
+FIREFOX:
+gst-plugins-bad tests failed (5 of them!) This was at the console. I will try
+again from x-window session. Still expect one fail probably, for lack
+of a camera.
+Still 2 FAILs: elements/camerabin (expected) and elements/audiomixer (not
+so expected). Gonna try running with code similar to what I used in LFS
+for scripts with unavoidable fails.
+
+Also creating vim installer: I should really start using patches more!
+From suckless:
+Patches
+diff generation
+For git users:
+cd dwm-directory
+git diff > dwm-X.Y-yourpatchname.diff
+For tarballs:
+cd modified-dwm-directory/..
+diff -up original-dwm-directory modified-dwm-directory > dwm-X.Y-yourpatchname.diff
+where X.Y is a dwm tag name or version number.
+patch application
+For git users:
+cd dwm-directory
+git apply path/to/patch.diff
+For tarballs:
+cd dwm-directory
+patch -p1 < path/to/patch.diff
+
+FIREFOX:
+just the firefox install on Bobby:
+real 136m54.297s
+user 214m39.612s
+sys  025m27.758s
+
+QT5 time (....wait for it!...)
+real 424m40.039s
+user 371m36.940s
+sys   53m53.804s
+DANG!
+
+Try awesome - installing in /usr. Already made changes to script.
+Also, make a list of programs to install in local and make appropriate
+changes to their scripts.
+OR.... do away with local altogether? With just me using the system, not sure
+if it is even necessary and could be more trouble than it's worth.
+
+******************************************************************************
+#####################################NOTES##################################
+******************************************************************************
+New updates - Tyrone
+Started x02 at 11:30AM. See how it goes...
+Had a small sidetrack at x08, bad md5sum, had to redownload a single
+file! (5-10min)
+FINISHED! around 6-6:30PM. So, roughly 7 hours to do Xorg on Tyrone!
+Now, let's do some config and back it all up!
+
+
+
+
+
+BLFS Notes
+**********
+After rebooting to the new system for the first time...
+
+Look for any errors on startup, hunt them down and correct them!
+
+Reboot in to host system, make a copy of the finished LFS system. E.g.:
+[Set CHRISTENED, SURNAME, LFS, LFSDEV of the system being copied or just replace them]
+$mount $LFSDEV $LFS
+$cd /mnt
+$tar -czf ~/$CHRISTENED"-"$SURNAME"-$(date +%m%d%Y)" ${LFS:5}
+
+Copy BLFS7.6 repo over to new LFS system /Bsources (or whatever)
+
+Boot into LFS system.
+$cd /Bsources
+$cp -v sources/* ./
+
+Set up generator.sh with correct paths. May create scripts for this later.
+
+Start running through series, e.g.:
+Start
+SEC (HIGHSEC, MEDSEC, or LOWSEC)
+preX
+X
+
+How is this done? First create a list of programs to install if one does not
+already exist. Comments are ok, but put each program to install on its own line,
+and in order. Be sure their names match teh script names that go with them.
+Give the list a NAME(caps make it stand out which is good) and title the
+list "list-$NAME". Then set the generator:
+(/Bsources)$./setlist $NAME
+Generate the script install list by simply running:
+(/Bsources)$./generator.sh
+Then run the install scripts one at a time through the series with $NAME as the
+prefix. They will be numbered in order!
+
+START is special, as is the first security set. These will be best done
+one-by-one, due to all of the configuration involved. I will gradually
+automate more and more, but this is a good start!
+
+Keep guide/notes for each list in list comments.
+
+...
+
+GPGME-1.5.1: tests failed: invalid crypto engine
+I'm trying to install libgcrypt first to see if that helps,
+though LFS says nothing about it.
+AHH Optional dep: GnuPG used during testsuite. Perhaps that's it.
+In any case, I installed libgcrypt early, just before GPGME in the list.
+Nothing before GnuPG seems to depend on GPGME, so move GPGME to AFTER GnuPG in
+list. This will also put it after libgcrypt, but I'm not sure that matters.
+
+Also added stunnel-5.03-config, and moved pcre to before Postfix since it is
+and optional dependence and doesn't appear to affect anything else.
+
+TODO:
+1. Configure Postfix: /etc/postfix/main.cf (another domain name/hostname 
+situation. I really need to nail that down!)
+2. Nail that down! (domain name and hostname)
+3. Don't forget to install GPGME after GnuPG, since in the currently generated
+install-list it is still in it's old place that I had to skip over.
+
+More learned while doing security installs:
+Some of these are only for servers hosting a network with a domain.
+Such as MIT Kerberos 5. OpenLDAP is a linux version of Active Directory.
+stunnel-5.03?
+Install ConsoleKit-0.4.6 and ssh-askpass-6.6p1 after installing X.
+Learn OpenLDAP and create a domain. Then install MIT Kerberos 5.
+More immediate: learn sendmail/Postfix.
+
+NOTE/TODO: Move as_root function to /etc/profile (from /etc/bashrc) in Bobby.
+Already done for Gorgak and repo.
+
+Everything seemed to install find on Bobby, but for some reason on Gorgak,
+OpenSSH woulnd't let me execute the modifications on the config files
+at the end of the script unless I was doing it AS ROOT
+(NOT as_root or sudo or su -c). Seems sudo actually makes you in the
+group root rather than user root....?
+
+TODO! Great!... though time consuming. Create a package installer that calls
+itself recursively on dependencies. Run installer for package or list of
+packages, then while processing the package, basically running one of my
+existing scripts, the script has its dependencies listed as a package
+list that can be passed as arguments to the installer. This way you just
+tell the installer what packages you want, and it installs everything needed!
+Can even add optional deps, prompting user for each, probably lots of other
+cool stuff!
+
+REFRESH FROM TAR: I deleted the entire LFS system from within my host, arch
+linux, and extracted the tar backup to replace it. I had a few issues as a
+result:
+su didn't work! Fix: chmod +s /bin/su
+wget wouldn't install, permission denied while trying to create directory in
+/tmp during configure. Fix: chmod 1777 /tmp
+Seems I should try the -p flag when I backup a system with a tar archive.
+
+On Gorgak:
+Once again after installing Xorg on Gorgak I have an xterm that won't show
+anything! And what's worse, I solved this issue before and yet I don't seem
+to have any notes that cover it!
+Well, I think I recall it being a modification to the video card lines in
+one of the config files or init scripts. I'm sure I can figure it out again.
+And when I do I am putting the solution here!
+Solution: change line in /etc/X11/xorg.conf from "AccelMethod" "glamor", replace
+"glamor" with "sna". Also a viable option is "uxa" according to
+https://wiki.archlinux.org/index.php/Intel_graphics
+Solved!
+Changed in driver install script so shouldn't be a problem again.
+
+Keeping ImageMagick in postX because it comes with utilities used by other
+packages. Such as feh and awesome. Awesome won't even install without
+convert! Convert is also what feh uses, can we get convert without IM?
+Can't find it anywhere, so looks like ImageMagick is a must have!
+
+******************************************************************************
+#####################################LIST##################################
+******************************************************************************
+The following is a list of programs installed on this system,
+beyond those installed by following LFS 7.6. Any program with a
+* in front of it was NOT installed from BLFS, and a # means I should
+come back to it later to recompile once certain dependencies
+are in place. Each package is also followed by a list of unmet
+dependencies, with a * in front of each one I want compiled in
+when possible. A number prefix indicates a recompile, and the
+number of times done.
+
+
+gpm-1.20.7
+lynx-2.8.8rel.2 : #opt.
+wget-1.15 : #OpenSSL or GnuTLS. #opt others
+#openssl-1.0.1i: #(opt)MIT Kerberos
+2wget-1.15 : OpenSSL : #GnuTLS, others opt.
+certdata (CA Certificates)
+iptables-1.4.21 : FIREWALL!
+nettle-2.7.1
+gnutls-3.3.7 : many opt deps, incl newer libtasn1-4.1
+sudo-1.8.10p3 : got a single failed test "uid=0 should be
+    owned by root". Pretty sure it is.
+dhcpcd-6.4.3 : May require or benefit from additional config.
+libffi-3.1
+python-2.7.8
+libpng-1.6.13
+which-2.20
+freetype-2.5.3
+libxml2-2.9.1
+unzip-6.0
+fontconfig-2.11.1
+x-env-asroot
+x-util-macros
+x-protocol-headers
+x-libxau
+x-libxdmcp
+x-xcb-proto
+x-libxcb
+x-libs
+x-xcb-util
+x-xcb-util-image
+x-xcb-util-keysyms
+x-xcb-util-renderutil
+x-xcb-util-wm
+libdrm-2.4.56
+elfutils-0.160
+LLVM-3.5.0
+x-Mesalib
+x-xbitmaps
+x-apps
+x-xcursor-themes
+x-fonts
+x-xkeyboardconfig
+pixman-0.32.6
+libepoxy-1.2
+x - server
+mtdev-1.1.5
+x - drivers
+x - twm
+x - xterm
+x - xclock
+x - xinit
+dejavu-fonts-ttf-2.34
+valgrind
+cairo
+py2cairo
+startup-notification-0.12
+curl
+git
+*xpyb-ng - git
+mercurial-3.1.1
+REINSTALLED READLINE FROM LFS7.6-6.35
+PCRE
+glib-2.40.0
+desktop-fileutils
+cairo
+icu
+harfbuzz
+freetype
+Pango-1.36.7
+ATK-2.12.0
+pygobject
+pygtk
+*qtile
+openbox
+d-bus
+NASM
+libjpeg-turbo-1.3.1
+glu
+freeglut
+tiff
+libcroco
+gdk-pixbuf
+at-spi2-core-2.12.0
+at-spi2-atk-2.12.1
+GTK+-3.12.2
+librsvg
+imlib
+pyxdg
+openbox
+ImageMagick
+*numlockx
+*setuptools - not needed i think. Included in python installation!
+REMOVED xpyb-ng
+xpyb
+*REINSTALLED py2cairo, over previous
+Tcl-8.6.2
+Tk-8.6.2
+SQLite-3.8.6
+Berkeley DB-6.1.19
+Python-3.4.1
+PyCairo-1.10.0
+gobject-introspection-1.40.0 - Reinstall gdk-pixbuf, pango, atk, GTK3
+PyGObject-3.12.2
+PyXDG-0.25 - python3 installation
+Ruby-2.1.2
+libarchive
+Cmake
+dmenu
+dwm
+
+
+I'm starting to think this list isn't worth it! Too complicated and not really
+worth it. I can always search my system if I want to see if something is
+installed.
+
+hicolor-icon-theme-0.13
+GTK+-2.24.24
+Poppler-0.26.4
+ePDFView-0.1.8
+
+PyGObject-2.28.6
+libglade-2.6.4
+PyGTK-2.24.0
+dropbox
+
+gtksourceview-3.12.3 (failed to install this->py...->dreampie...
+    pygtksourceview works for gtk...2.x only, and 2.x won't install!)
+    2.10.5 installed on Gorgak! Then pygtksourceview, then dreampie worked
+    fine! Try 2.10.5 when you get home!)
+    
+S-Lang-2.2.4
+MC-4.8.13
+screen
+st
+tabbed
+
+Lua-5.2.3 (ALTER LUA SCRIPT! Edit Makefile - or was it configure? - instead
+of passing options at command line make install. Should use sed. Same expected
+mods work, but passing as is fails)
+
+gvim-7.4.
+vifm-0.7.8
+
+libxdg-basedir-1.2.0
+xkbcommon
+confuse-2.7
+libev-4.19
+unagi
+
+pciutils-3.2.1
+libusb-1.0.19
+libusb-compat-0.1.5
+usbutils-007
+
+*luarocks-2.2.0
+*lgi - $as_root luarocks install lgi
+awesome-3.5.5 (SUPER easy btw, only beat by dwm! Lua, luarocks->lgi. Cmake. CAKE!)
+
+yajl-v?
+docbook-xsl-1.78.1 (necessary?...)
+docbook-xml-4.5
+libxslt-1.1.28
+xmlto-0.0.26
+asciidoc (necessary?)
+i3 - Not working so great. - Needs i3status, all good!
+
+alsa-lib-1.0.28
+libevent
+iso codes
+libogg
+libvorbis
+libtheora
+gstreamer
+gplugins-base
+yasm
+libvpx-1.3.0
+NSPR-4.10.7
+NSS-3.17
+zip
+dbus-glib
+Firefox-32.0.1 (SUCCESS!!!)
+
+gtksourceview-2.10.5 (SUCCESS!!!)
+pygtksourceview 
+dreampie - git/python2 WORKS!
+
+insync-portable - no install required (or possible!), but it works)
+
+******************************************************************************
+#####################################START_v2#################################
+******************************************************************************
+
+START v.2
+Back up system!
+
+Work from /sources, with main subfolders: files/, scripts/,
+    scripts/non-blfs/, xv/, xv/scripts/
+
+Also in sources, blfs-bootscripts-20140919.tar.bz2, wget-1.15.tar.xz,
+    lsb-release-1.4.tar.gz, openssl-1.0.1i.tar.gz,
+    and openssl-1.0.1i-fix_parallel_build-1.patch
+
+(Covered!)Add the following lines to /etc/group:
+    wheel:x:20:
+    sudo:x:21:
+    (change earlier instructions to include this!-Done)
+
+*START01_bashfiles - RUN AS ROOT! 
+
+Set: 
+    $passwd tommy
+
+Log out of root, LOG IN AS NON-ROOT USER. Verify as_root:
+    $as_root ls
+
+START02_lsb_release-1.4
+START03_OpenSSL-1.0.1i
+START04_Wget-1.15 
+START05_Sudo-1.8.10p3
+
+$visudo
+    Uncomment line to allow %wheel full, NOPASSWD access.
+
+START06_Certificate Authority Certificates (certdata)
+# GPM needs variable set
+START07_GPM-1.20.7
+START08_iptables
+START09_dhcpcd
+Optional: Non-graphics alternative to graphical links (elinks?)
+STARTweb101_Lynx-2.8.8rel.2
+
+Try elinks?
+Links with graphic support:
+STARTweb201_yasm-1.3.0
+STARTweb202_libpng
+STARTweb203_libjpeg-turbo-1.3.1
+STARTweb204_LibTIFF-4.0.3
+STARTweb205_links
+
+w3m:
+STARTweb301_libatomic_ops-7.4.2
+STARTweb302_GC-7.4.2
+STARTweb303_W3m-0.5.3
+
+
+High Security:
+SECHIGH01_CrackLib-2.9.1
+SECHIGH02_Linux-PAM-1.1.8
+SECHIGH03_Shadow-4.2.1
+SECHIGH04_libcap-2.24 with PAM
+SECHIGH05_Berkeley_DB-6.1.19
+SECHIGH06_ntp-4.2.6p5
+SECHIGH07_MIT_Kerberos_V5-1.12.2
+SECHIGH08_MIT_Kerberos_V5-config
+SECHIGH09_Cyrus_SASL-2.1.26
+#  OpenLDAP is complicated and I probably won't need it for my own
+#+ computer. As a system admin however, may be worth learning at
+#+ some point. Just not at 10PM!
+SECHIGH10_OpenLDAP-2.4.39
+SECHIGH11_Nettle-2.7.1
+SECHIGH12_libtasn1-4.1
+SECHIGH13_GnuTLS-3.3.7
+SECHIGH14_libgpg-error-1.13
+SECHIGH15_libassuan-2.1.2
+SECHIGH16_GPGME-1.5.1
+SECHIGH17_Haveged-1.9.1
+SECHIGH18_libffi-3.1
+SECHIGH19_p11-kit-0.20.6 
+SECHIGH20_NSPR-4.10.7
+SECHIGH21_UnZip-6.0
+SECHIGH22_SQLite-3.8.6
+SECHIGH23_NSS-3.17
+SECHIGH24_OpenSSH-6.6p1
+SECHIGH25_libffi-3.1
+SECHIGH26_p11-kit-0.20.6
+SECHIGH27_stunnel-5.03
+SECHIGH28_Postfix-2.11.1
+SECHIGH29_Tripwire-2.4.2.2
+SECHIGH30_Tripwire-2.4.2.2-config
+SECHIGH31_Libksba-1.3.0
+SECHIGH32_libgcrypt-1.6.2
+SECHIGH33_Pth-2.0.7
+SECHIGH34_PIN-Entry-0.8.3
+SECHIGH35_GnuPG-2.0.26
+SECHIGH36_PCRE-8.35
+SECHIGH37_Python-2.7.8
+SECHIGH38_GLib-2.40.0
+SECHIGH39_Zip-3.0
+SECHIGH40_JS-17.0.0
+SECHIGH41_Polkit-0.112 - Reinstall after gobject-introspection
+
+Med. Security:
+SECMED01_CrackLib-2.9.1
+SECMED02_Linux-PAM-1.1.8
+SECMED03_Shadow-4.2.1
+SECMED04_libcap-2.24_with_PAM
+SECMED05_ntp-4.2.6p5
+SECMED06_MIT_Kerberos_V5-1.12.2
+SECMED07_MIT_Kerberos_V5-config
+SECMED08_Nettle-2.7.1
+SECMED09_Berkeley_DB-6.1.19
+SECMED10_Cyrus_SASL-2.1.26
+SECMED11_OpenSSH-6.6p1
+SECMED12_libtasn1-4.1
+SECMED13_GnuTLS-3.3.7
+SECMED14_stunnel-5.03
+SECMED15_Postfix-2.11.1
+SECMED16_Tripwire-2.4.2.2
+SECMED17_Tripwire-2.4.2.2-config
+SECMED18_Haveged-1.9.1
+
+Basic Security
+SECLOW01_CrackLib-2.9.1
+SECLOW02_Linux-PAM-1.1.8
+SECLOW03_Shadow-4.2.1
+SECLOW04_libcap-2.24_with_PAM
+SECLOW05_Nettle-2.7.1
+SECLOW06_Haveged-1.9.1
+
+
+ssh-askpass-6.6p1 added after GTK+-3 for all security configs.
+    change to GTK+-2? Couldn't find in
+    current lists.
+______________________
+Pre-X:
+
+12_libffi
+13_python2
+14_which-2.20
+15_freetype-2.5.3
+16_libxml2-2.9.1
+17_unzip-6.0
+18_fontconfig-2.11.1
+
+______________________
+
+Go to: list-xorg
+
+******************************************************************************
+#####################################X-CONFIG#################################
+******************************************************************************
+
+After editing ~/.xinitrc properly, it's time to run X. To run X as a non-root user, issue:
+$ startx
+or
+$ xinit -- :1 -nolisten tcp vt$XDG_VTNR
+Note:
+    xinit doesn't read the system-wide /etc/X11/xinit/xserverrc file, so you either have to copy it into your home directory as name .xserverrc, or specify vt$XDG_VTNR as command line option in order to preserve session permissions.
+    xinit doesn't handle multiple sessions if you are already logged-in into some other virtual terminal. For that you have to specify session by appending -- :session_no. If you are already running X then you should start with :1 or more.
+
+Add xinitrc, xprofile to skel, tommy
+
+xinit/startx: xinitrc and xprofile
+startx uses xserverrc!
+display manager: xsession and xresources
+
+Put window-manipulating keybindings in window manager config
+Put system keybindings, like ctrl-alt-backspace to exit, in xinitrc
+xinitrc closes - x closes - ALL x-clients close!
+
+~/.xinitrc
+    Main configuration.
+
+    # Here Xfce is kept as default
+    session=${1:-xfce}
+
+    case $session in
+        awesome           ) exec awesome;;
+        bspwm             ) exec bspwm;;
+     # No known session, try to run it as command
+        *) exec $1;;
+    esac
+
+    Then...
+    $ xinit
+    $ xinit kde
+    $ xinit wmaker
+    or
+    $ startx
+    $ startx ~/.xinitrc kde
+    $ startx ~/.xinitrc wmaker
+
+    set background, numlock, details below.
+
+~/.xprofile
+    This is where you configure your X session, telling it which programs to run
+    on startup. Must be sourced from within .xinitrc:
+    # Make sure this is before the 'exec' command or it won't be sourced.
+    [ -f /etc/xprofile ] && source /etc/xprofile
+    [ -f ~/.xprofile ] && source ~/.xprofile
+    Example .xprofile:
+    tint2 &
+    nm-applet &
+
+
+~/.xsession:
+    Very similar to .xinitrc! Set environment, start applications. Start window
+    manager.
+    AHA! .xinitrc and .xsession do the same thing! .xsession is used by a window
+    manager like XDM, xinitrc is used by xinit/startx.
+
+    Differences/things to consider:
+    .xsession file is usually a shell script, but can be ANY executable, e.g.
+    session manager or desktop manager. However, xinitrc MUST be a shell script.
+    .xsession MUST be executable, .xinitrc does not.
+    .xsession does NOT inherit user's login shell environment, whereas xinitrc does.
+
+
+/etc/X11/Sessions/
+various x-session setups, e.g. different window managers.
+value of XSESSION in /etc/env.d/90xsession is default for all users.
+(still true for init?)
+
+
+
+
+~/.Xresources:
+settings for particular applications/clients.
+
+
+If you want to set a background image to your desktop you can use display and launch it from ~/.xinitrc just before openbox: (need ImageMagick)
+cat > ~/.xinitrc << "EOF"
+display -backdrop -window root /path/to/beautiful/picture.jpeg
+exec openbox
+EOF
+
+Or if you like a bit of variety, put a selection of images in a folder (in this example, the directory ~/.config/backgrounds) and choose one at random each time you xinit:
+cat > ~/.xinitrc << "EOF"
+# make an array which lists the pictures:
+picture_list=(~/.config/backgrounds/*)
+# create a random integer between 0 and the number of pictures:
+random_number=$(( ${RANDOM} % ${#picture_list[@]} ))
+# display the chosen picture:
+display -backdrop -window root "${picture_list[${random_number}]}"
+exec openbox
+EOF
+
+If you like to have the numlock key set whan you start Xorg, install Numlockx and add that to your xinitrc. Another useful application is D-Bus-1.8.8:
+cat > ~/.xinitrc << "EOF"
+. /etc/profile
+picture_list=(~/.config/backgrounds/*)
+random_number=$(( ${RANDOM} % ${#picture_list[*]} ))
+display -backdrop -window root "${picture_list[${random_number}]}"
+numlockx
+eval $(dbus-launch --auto-syntax --exit-with-session)
+lxpanel &
+exec openbox
+EOF
+
+________________________________________________
+See D-bus instructions on BLFS:
+Add dbus-launch to the line in the ~/.xinitrc file that starts your graphical desktop environment. 
+
+Install dropbox and add daemon to xprofile
+
+________________________________________________
+From xwinman.org:
+ X programs can be customized by using resources. These resources can be specified in many different places. In order of increasing priority these include:
+
+    Fallback resources programming into the application.
+    Library resource files controlled with XFILESEARCHPATH variable.
+    User resource files controlled with XUSERFILESEARCHPATH, and XAPPLRESDIR variables.
+    X resource database, loaded with xrdb.
+    X resource default files, $HOME/.Xdefaults or $HOME/.Xresources.
+    Standard command line options.
+    Hardcoded resources, set within the program.
+
+For personal customization of X programs, the best method to use is a single $HOME/.Xresources file
+Any line beginning with a ! is ignored, so can be used for comments.
+
+Each resource specification appears on a separate line and is often of the form Client*resource: value.
+The client name is specified by the program, but unless stated otherwise, this is usually the name of the program with the first letter capitalized, e.g. netscape becomes Netscape, unless the first letter is an X, in which case the first two letters are capitalized, e.g. xterm becones XTerm. The resource name is usually a single string, such as scrollBar. After the colon, and any whitespace, comes the value you wish to set the resource to. This is always a string, which gets converted into the correct type. So an example of a complete specification is XTerm*scrollBar: True. This would cause all xterms to have a scrollbar. 
+
+Your .Xresources file may be processed when your start your X session. If not, add xrdb -merge ~/.Xresources to an X login script such as ~/.xinitrc. If you edit the resource file and you want the changes to take effect during the current X session, you can parse it by executing: xrdb -merge ~/.Xdefaults.
+
+User resource files
+
+You can also have a directory of resource files, with one file per program. To do this, create the directory, say $HOME/appres, and then set the environment variable XAPPLRESDIR to point to it. So you would have something like setenv XAPPLRESDIR $HOME/appres/ in your .cshrc file,if your shell is csh or tcsh.
+
+Now, when you start an X program, this directory will be searched for a file with the same name as the resource name of the program. This is the client name used in .Xdefaults files. This file can contain identical specifications, but the client name is optional. For example, a file called XTerm could contain the line *background: deepskyblue.
+Standard Options
+
+Applications should document any specific resources that can be used with the program, but there are many standard options which can be used with virtually all X programs. These include:
+
+    display - the X server to use
+    geometry - the size and location
+    background, or bg - background colour
+    bordercolor, or bd - colour to use for borders
+    foreground, or fg - foreground colour
+    font, or fn - the font to use for displaying text
+    iconic - the program should be initially iconified
+    name - the name under which resources should be found
+    title - the title for the program window
+    xrm - specifies a resource name and value
+
+For more details, see the man page for X. 
+
+The order of resource specifications in a file does not matter, as long as they do not conflict. If they do, a warning is usually given, and the one that appears last in the file is used. However the same resource can be specified twice if the generality of the specifications is different. For example Maker*background: gray70 would change the background colour of all widgets (unless overridden later) to be gray70. However, Maker*vertSB.background: gray65 could be used to change the background colour of all vertical scrollbars. Thus, the more specific resource is overriding the more general one. 
+

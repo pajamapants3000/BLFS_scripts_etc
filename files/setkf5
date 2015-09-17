@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# setkf5
+#
+# Activate KF5 environment settings and deactivate others
+if [ -f /etc/profile.d/kf5.sh ]; then
+  as_root ln -sfv /etc/profile.d/kf5.sh /etc/profile.d/active/70-WM.sh
+fi
+[ $LXQT_PREFIX ] && pathremove $LXQT_PREFIX/bin
+[ $KDE_PREFIX ] && pathremove $KDE_PREFIX/bin
+[ $ENL_PREFIX ] && pathremove $ENL_PREFIX/bin
+[ $KF5_PREFIX ] && pathappend $KF5_PREFIX/bin
+echo $PATH
+export PATH

@@ -1,0 +1,18 @@
+# KF5...
+wayland-1.8.1
+oxygen_icons-15.04.3
+fontforge-20150824
+oxygen_fonts-5.3.2
+kde_cli_tools-5.3.2
+plasma-5.3.2
+sddm-0.11.0
+# Do I want this?
+#bluedevil-5.3.2
+# Not included in BLFS insttructions
+#sddm_kcm-5.3.2
+#ksshaskpass-5.3.2
+#muon-5.3.2
+#plasma_sdk-5.3.2
+#plasma_mediacenter-5.3.2
+#bluez_qt-5.3.2
+#kde_gtk_config-5.3.2

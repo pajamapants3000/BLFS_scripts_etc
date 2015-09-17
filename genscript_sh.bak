@@ -1,0 +1,156 @@
+#!/bin/bash
+#
+# Installer-script generator
+
+PROG=
+VERSION=
+TEST=
+TEST_OPTS=
+ARCHIVE="tar.gz"
+MD5=
+DL_URL=
+DL_ALT=
+# This only applies for existing patches in the patch/ folder. Downloaded
+#+patches should be applied from PRECFCMDS.
+PATCH=
+BOOTSCRIPT=
+PROGGROUP=
+PROGUSER=
+USRCMNT=
+PREFICKS=/usr
+SYSCONFDER=/etc
+LOCALST8DER=/var
+CONFIG_OPTS=
+CONFIGURE="./configure"
+MAKE_OPTS=
+INSTALL_OPTS=
+declare -a VARS=(PROG VERSION TEST TEST_FLAGS ARCHIVE MD5 DL_URL DL_ALT PATCH \
+    BOOTSCRIPT PROGGROUP PROGUSER USRCMNT PREFICKS SYSCONFDER LOCALST8DER \
+    CONFIG_OPTS CONFIGURE MAKE_OPTS INSTALL_OPTS DL_URL DL_ALT)
+# Arrays
+
+declare -a DL_ADD=()
+declare -a required=()
+declare -a recommended=()
+declare -a optional=()
+declare -a optdoc=()
+declare -a runreqrd=()
+declare -a runrec=()
+declare -a runopt=()
+declare -a kernel=()
+declare -a PRECFCMDS=()
+declare -a PREINSTCMDS=
+declare -a POSTINSTCMDS=
+#
+declare -a ARRAYS=(required recommended optional optdoc runreqrd runrec    \
+    runopt kernel confplus_required confplus_recommended confplus_optional \
+    confplus_optdoc confplus_runreqrd confplus_runrec confplus_runopt      \
+    confminus_required confminus_recommended confminus_optional            \
+    confminus_optdoc confminus_runreqrd confminus_runrec confminus_runopt  \
+    DL_ADD)
+#
+# Variables set
+for var in ${VARS[@]}; do
+    echo "Enter value for ${var}"
+    echo -n "[$(eval echo \${${var}})]: "
+    read input
+    if [ ${input} ]; then
+        eval "${var}=${input}"
+    fi
+done
+# Arrays set
+for deparray in required recommended optional optdoc \
+            runreqrd runrec runopt kernel; do
+    echo "Enter values for ${deparray}:"
+    while read input; do
+        if [ x${input} == "x" ]; then break;
+        else eval "${deparray}=($(eval echo \${${deparray}[@]}) ${input})"
+        fi; done
+    unset input
+    for index in $(seq 0 $(($(eval echo \${'#'${deparray}})-1))); do
+        echo "Enter configure argument to enable support for \
+            $(eval echo \${${deparray}[${index}]})"
+        echo -n "[NULL]: "
+        read input
+        if [ ${input} ]; then
+            eval "confplus_${deparray}=\
+                ($(eval echo \${confplus_${deparray}[@]}) ${input})"
+        else
+            eval "confplus_${deparray}=\
+                ($(eval echo \${confplus_${deparray}[@]}) NULL)"
+        fi
+        echo "Enter configure argument to disable support for \
+            $(eval echo \${${deparray}[${index}]})"
+        echo -n "[NULL]: "
+        read input
+        if [ $input ]; then
+            eval "confminus_${deparray}=\
+                ($(eval echo \${confminus_${deparray}[@]}) ${input})"
+        else
+            eval "confminus_${deparray}=\
+                ($(eval echo \${confminus_${deparray}[@]}) NULL)"
+        fi
+    done
+done
+#
+# Additional/Optional downloads
+increment=1
+echo "Please enter brief descriptions of any additional downloads"
+while read input; do
+    if [ "x${input}" == "x" ]; then break;
+    else
+        eval "DL_ADD_${increment}[description]='${input}'"
+        DL_ADD=(${DL_ADD} DL_ADD_${increment}) 
+        ((increment++))
+    fi
+done
+if [ ${increment} -gt 1 ]; then
+    for inc2 in $(seq 1 $((${increment}-1))); do
+        echo "Additions for $(eval echo \${DL_ADD_${inc2}})"
+        for attr in DL_ADD_URL PRECFCMDS PREINSTCMDS POSTINSTCMDS; do
+            inc3=1
+            while read input; do
+                if [ "x${input}" == "x" ]; then break;
+                else
+                    echo "Enter value for ${attr}"
+                    eval "DL_ADD_${inc2}[${attr}-${inc3}]='${input}'"
+                    ((inc3++))
+                fi
+            done
+        done
+        echo "Switch $(eval echo \${DL_ADD_${inc2}}) on (1) or off (0)"
+        echo -n "[1]: " && read input
+        if ! [ ${input} ]; then input=1; fi
+        eval "DL_ADD_${inc2}[switch]='${input}'"
+    done
+fi
+# Substitute parameters
+for url in DL_URL DL_ALT; do
+    if [ $(eval echo \${${url}}) ]; then
+        for subst in PROG VERSION ARCHIVE MD5; do
+            match="$(eval echo \${${subst}})"
+            repl=${subst}
+            eval "${url}=$(eval echo \${${url}//${match}/__${repl}})"
+        done
+        eval "${url}=$(eval echo \${${url}//__/\'\\\'\'$\'})"
+    fi
+done
+#
+# Create script
+[ -r scripts/${PROG}-${VERSION}.sh ] || \
+    cp -v installer.skel scripts/${PROG}-${VERSION}.sh
+for var in ${VARS[@]}; do
+    echo $var
+    sed -i "s+^${var}=.*$+${var}=$(eval echo \${${var}})+" \
+        scripts/${PROG}-${VERSION}.sh
+done
+for arr in ${ARRAYS[@]}; do
+    echo $arr
+    sed -i "s+^${arr}=.*$+${arr}=($(eval echo \${${arr}[@]}))+" \
+        scripts/${PROG}-${VERSION}.sh
+done
+#
+# DL_ADD WIP; changing angles now though. Save just in case.
+for extravar in ${DL_ADD[@]}; do
+sed -i "s+^DL_ADD=.*$+&\n${extravar}=+" \
+    scripts/${PROG}-${VERSION}.sh

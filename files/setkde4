@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# setkde4
+#
+# Activate KDE4 environment settings and deactivate others
+if [ -f /etc/profile.d/kde.sh ]; then
+  as_root ln -sfv /etc/profile.d/kde.sh /etc/profile.d/active/70-WM.sh
+fi
+[ $LXQT_PREFIX ] && pathremove $LXQT_PREFIX/bin
+[ $KF5_PREFIX ] && pathremove $KF5_PREFIX/bin
+[ $ENL_PREFIX ] && pathremove $ENL_PREFIX/bin
+[ $KDE_PREFIX ] && pathappend $KDE_PREFIX/bin
+echo $PATH
+export PATH

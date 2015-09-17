@@ -1,0 +1,12 @@
+#
+# list-UTILITIES
+# Can be run any time! No Deps.
+#
+pciutils-3.3.1
+libusb-1.0.19
+libusb_compat-0.1.5
+usbutils-008
+wireless_tools-29
+alsa_lib-1.0.29
+alsa_utils-1.0.29
+dos2unix-7.2.3

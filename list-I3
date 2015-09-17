@@ -1,0 +1,10 @@
+# Run after postX and UTILITIES - Success!
+# Todo: alter i3 config setup within script using sed
+yajl-2.1.0
+xcb_util_cursor-0.1.1
+libev-4.20
+confuse-2.7
+libxkbcommon-0.5.0
+wireless_tools-29
+i3-4.10.2
+i3status-2.8

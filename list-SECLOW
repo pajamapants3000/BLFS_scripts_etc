@@ -1,0 +1,10 @@
+# Basic (low) security
+# Updated 07/19/2015
+cracklib-2.9.5
+linux_pam-1.2.1
+shadow-4.2.1
+# su test - trying builtin - works! Have to enter password & exit
+shadow-4.2.1-config
+libcap-2.24
+nettle-3.1.1
+haveged-1.9.1

@@ -1,0 +1,33 @@
+#
+# profiles
+# Planned numbers/order to associate with various scripts in /etc/profile.d
+
+0-10
+bash
+11-30
+system
+31-49
+additional/standard environment
+50
+xorg.sh
+51-59
+base xorg
+60
+qt.sh
+61-69
+qt-version specific scripts (e.g. pyqt)
+70
+window manager (kde.sh, lxqt.sh, ...)
+71-79
+additional WM-specific scripts
+80-99
+programming/coding environment settings
+80-83: C-type languages reserved
+84-87: python reserved
+88-90: java reserved
+88: openjdk.sh
+
+...?
+a0+
+application settings
+

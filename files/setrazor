@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# setrazor
+#
+# Activate razorqt environment settings and deactivate others
+if [ -f /etc/profile.d/razorqt.sh ]; then
+  as_root ln -sfv /etc/profile.d/razorqt.sh /etc/profile.d/active/70-WM.sh
+fi
+source /usr/bin/setqt4
+source /etc/profile
+echo $PATH
+export PATH
+

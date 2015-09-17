@@ -1,0 +1,36 @@
+Dependency Resolver
+
+Process-deps:
+Check for next package
+    If exists, run Check-installed
+    If not, remove from depth-list and go up one level to process deps
+
+Check-installed:
+Check depth-list for package
+    if found, add full depth-list to circular-deps list
+    if not, continue
+Check installed programs for package
+    if found, checks version is >=
+        if so, go back to process-deps
+        if not, continue
+    if not found, continue
+Check current install list for package
+    if found, check if version is >=
+        if so, go back to process-deps
+        if not, go to Script-find
+    if not found, go to Script-find
+
+Script-find:
+Check scripts for
+package
+    if found, check if version is ==
+        if so, add to install list, go to deps-list
+        if not, checks if version is >=
+            if at least one exists, take the highest, add to install list, go to deps-list
+            if not, continue
+    if not found, add to missing-deps list; Go back to Process-deps (break/return)
+
+Deps-list:
+Checks deps-lists for package-version
+    if so, add name to depth-list, goto process-deps of said deps-list
+    if not, add to missing-deps-list list, go back to Process-deps (break/return)

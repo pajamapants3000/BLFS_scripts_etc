@@ -1,0 +1,14 @@
+#
+# .openbox.xinitrc
+#
+. /etc/profile
+picture_list=(~/.config/backgrounds/*)
+random_number=$(( ${RANDOM} % ${#picture_list[*]} ))
+display -backdrop -window root "${picture_list[${random_number}]}"
+numlockx
+eval $(dbus-launch --auto-syntax --exit-with-session)
+lxpanel &
+exec openbox
+#
+##
+#

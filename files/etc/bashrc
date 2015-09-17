@@ -1,0 +1,35 @@
+#
+# Begin /etc/bashrc
+# System-wide bashrc file; executed by bash(1) for interactive shells.
+#
+
+if [ ${ETC_BASHRC} ]; then exit 0;
+else export ETC_BASHRC=1
+
+# If not running interactively, don't do anything
+[[ "$-" != *i* ]] && return
+
+# Provides prompt for non-login shells, specifically shells started
+# in the X environment. [Review the LFS archive thread titled
+# PS1 Environment Variable for a great case study behind this script
+# addendum.]
+
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]] ; then
+  PS1="$RED\u [ $NORMAL\w$RED ]# $NORMAL"
+else
+  PS1="$GREEN\u [ $NORMAL\w$GREEN ]\$ $NORMAL"
+fi
+
+unset RED GREEN NORMAL
+
+# Terminal colors!
+# (Create a separate terminal source?)
+[ -e /usr/share/terminfo/x/xterm-256color ] && \
+export TERM=xterm-256color || export TERM=xterm-color
+
+fi # End source-guard
+
+# End /etc/bashrc

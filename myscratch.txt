@@ -1,0 +1,33 @@
+Setting up postX_qt
+Avoid gtk and all that depend on it!
+
+llvm-3.6.2
+icu-55.1
+libpng-1.6.17
+libjpeg_turbo-1.4.1
+cairo-1.14.2
+freeType-2.6
+harfbuzz-1.0.1-gtk_doc-1.24,graphite2-1.2.4
+freeType-2.6
+libxml2-2.9.2
+fontconfig-2.11.1-docbook_utils-0.6.14,texlive-20140525
+libffi-3.2.1
+glib-2.44.1
+
+----libpng-1.6.17
+----which-2.21
+
+--cairo-1.14.2-libpng
+---pixman-0.32.6 
+---fontconfig-2.11.1
+---glib-2.44.1
+--openjpeg-1.5.2
+-djvulibre (non-blfs)
+--tiff
+--libjpeg_turbo
+-libspectre (non-blfs)
+--ghostscript
+qt-5.5.0
+#?qt-4.8.7
+poppler-qt (non-blfs or blfs mod)
+qpdfviewer (non-blfs)

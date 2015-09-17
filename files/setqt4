@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# setqt4
+#
+# Activate Qt4 environment settings and deactivate those for Qt5
+if [ -f /etc/profile.d/qt4.sh ]; then
+  as_root ln -sfv /etc/profile.d/qt4.sh /etc/profile.d/active/60-qt.sh
+fi
+# Activate PyQt5 and deactivate PyQt4
+if [ -f /etc/profile.d/pyqt4.sh ]; then
+  as_root ln -sfv /etc/profile.d/pyqt4.sh /etc/profile.d/active/65-pyqt.sh
+fi
+[ $QT5DIR ] && pathremove $QT5DIR/bin
+[ $QT4DIR ] && pathappend $QT4DIR/bin
+echo $PATH
+export PATH

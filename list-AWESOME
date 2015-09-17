@@ -1,0 +1,12 @@
+# Awesome Window Manager
+# Updated 07/19/2015
+#postX
+lua-5.3.1
+luarocks-2.2.2
+#breaker
+# Use luarocks to install lgi:
+# Gonna try doing this in awesome!
+#$as_root luarocks install lgi
+libxdg_basedir-1.2.0
+xcb_util_cursor-0.1.1
+awesome-3.5.6

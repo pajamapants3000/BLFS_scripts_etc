@@ -1,0 +1,40 @@
+# Install list: START
+# *******************
+# Versions up to date as of 07/19/2015
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Prerequisites:
+# cd to BLFS folder
+#   copy sources to current folder (e.g. cp -v sources/* ./)
+# Modify scripts/non-blfs/copy_agent.sh with desired sync location etc.
+#***********************
+# Run as root:
+#bashfiles
+#***********************
+# Set password, CHANGE OWNERSHIP of /Bsources and /list-$CHRISTENED-$SURNAME,
+#   switch user, verify as_root function:
+#$passwd tommy
+#[Enter password]
+#$su tommy
+#$as_root ls (just to confirm as_root works)
+lsb_release-1.4
+openssl-1.0.2d
+wget-1.16.3
+sudo-1.8.14p3
+breaker
+# Configure sudo
+#$exit (back to root)
+#$visudo
+# Uncomment line to allow %wheel full, NOPASSWD access.
+#$su tommy
+#$export LIST=START
+certdata
+gpm-1.20.7
+#  For now, edit /etc/sysconfig/mouse. Details in tail comments of script.
+#+ I think I took care of this with blfs_profile. verify.
+iptables-1.4.21
+dhcpcd-6.9.2
+# Simplest web browser, no deps:
+lynx-2.8.8rel.2
+copy_agent
+# Run copy setup, simply:
+#$CopyConsole -username=<email> -root=/home/<user>/Copy

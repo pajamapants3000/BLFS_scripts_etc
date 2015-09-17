@@ -1,0 +1,14 @@
+diff -rup surf-0.6-orig/config.mk surf-0.6/config.mk
+--- surf-0.6-orig/config.mk	2015-02-01 05:35:11.202047196 -0800
++++ surf-0.6/config.mk	2015-02-01 05:55:46.074015131 -0800
+@@ -7,8 +7,8 @@ VERSION = 0.6
+ PREFIX = /usr/local
+ MANPREFIX = ${PREFIX}/share/man
+ 
+-X11INC = /usr/X11R6/include
+-X11LIB = /usr/X11R6/lib
++X11INC = /usr/include/xorg
++X11LIB = /usr/lib/xorg
+ 
+ GTKINC = `pkg-config --cflags gtk+-2.0 webkit-1.0`
+ GTKLIB = `pkg-config --libs gtk+-2.0 webkit-1.0`

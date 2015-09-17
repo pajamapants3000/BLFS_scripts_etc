@@ -1,0 +1,65 @@
+#
+# list-SECHIGH
+##############################
+#
+# High security
+# Presumes START
+# Updated 07/19/2015
+# Run-through 07/26/2015 (SECSERV)
+##############################
+tcl-8.6.4
+db-6.1.26
+cracklib-2.9.5
+linux_pam-1.2.1
+sudo-1.8.14p3
+shadow-4.2.1
+# ends with su: enter password then exit and continue
+shadow-4.2.1-config
+libcap-2.24
+ntp-4.2.8p3
+cyrus_sasl-2.1.26
+nettle-3.1.1
+libtasn1-4.5
+libffi-3.2.1
+p11_kit-0.23.1
+gnutls-3.4.4.1
+wget-1.16.3
+libgpg_error-1.20
+libassuan-2.3.0
+haveged-1.9.1
+nspr-4.10.9
+unzip-6.0
+sqlite-3.8.11.1
+nss-3.20
+openssh-7.1p1
+# stunnel script will prompt for some info following install
+stunnel-5.22
+pcre-8.37
+postfix-3.0.2
+tripwire-2.4.2.2
+libksba-1.3.3
+libgcrypt-1.6.3
+pth-2.0.7
+pinentry-0.9.5
+npth-1.2
+gnupg-2.1.7
+gpgme-1.6.0
+python-2.7.10
+glib-2.44.1
+zip-3.0
+js-17.0.0
+polkit-0.113
+#####################################################################
+#
+# After Completion
+# ^^^^^^^^^^^^^^^^
+#  postfix:
+#  Check that config and permissions work properly, check and start server:
+#as_root /usr/sbin/postfix check
+#as_root /usr/sbin/postfix start
+#
+#  tripwire:
+#  Policy file should be adjusted and reapplied per the instructions
+#+ at the end of the config script.
+#
+#####################################################################

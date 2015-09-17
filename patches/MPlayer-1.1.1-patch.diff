@@ -1,0 +1,12 @@
+diff -rup MPlayer-1.1.1-orig/path.c MPlayer-1.1.1/path.c
+--- MPlayer-1.1.1-orig/path.c	2015-01-31 11:13:40.802328833 -0800
++++ MPlayer-1.1.1/path.c	2015-01-31 11:14:24.419687556 -0800
+@@ -52,7 +52,7 @@ char *get_path(const char *filename){
+ #ifdef __MINGW32__
+ 	const char *config_dir = "/mplayer";
+ #else
+-	const char *config_dir = "/.mplayer";
++	const char *config_dir = "/.config/mplayer";
+ #endif
+ 	int len;
+ #ifdef CONFIG_MACOSX_BUNDLE

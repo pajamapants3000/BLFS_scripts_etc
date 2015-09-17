@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Activate Qt4 environment settings and deactivate those for Qt5
+# Applies for this session only; still gotta source it!
+#
+[ $QT5DIR ] && pathremove $QT5DIR/bin
+[ $QT4DIR ] && pathappend $QT4DIR/bin
+echo $PATH
+export PATH

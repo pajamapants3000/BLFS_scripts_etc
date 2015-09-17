@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# setenl
+#
+# Activate Enlightenment environment settings and deactivate others
+if [ -f /etc/profile.d/enlightenment.sh ]; then
+  as_root ln -sfv /etc/profile.d/enlightenment.sh /etc/profile.d/active/70-WM.sh
+fi
+[ $LXQT_PREFIX ] && pathremove $LXQT_PREFIX/bin
+[ $KF5_PREFIX ] && pathremove $KF5_PREFIX/bin
+[ $KDE_PREFIX ] && pathremove $KDE_PREFIX/bin
+[ $ENL_PREFIX ] && pathappend $ENL_PREFIX/bin
+echo $PATH
+export PATH
+

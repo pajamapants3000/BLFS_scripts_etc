@@ -1,0 +1,27 @@
+#
+# list-preX
+#########################
+#
+# Packages to install after initial START/Security, before Xorg
+# Versions up to date as of 07/19/2015; Not system-specific.
+# Successful run on 07/26/2015
+#########################
+wget-1.16.3
+sudo-1.8.14p3
+openssl-1.0.2d
+libpng-1.6.18
+libffi-3.2.1
+python-2.7.10
+which-2.21
+pcre-8.37
+glib-2.44.1 
+freetype-2.6
+harfbuzz-1.0.2
+freetype-2.6
+libxml2-2.9.2
+unzip-6.0
+fontconfig-2.11.1
+#######################
+# NOTE: when starting Xorg installation (list-X), run copy_xorg
+#+and then you MUST source /etc/profile.d/xorg.shi before proceeding!!!
+######################

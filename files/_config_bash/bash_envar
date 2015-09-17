@@ -1,0 +1,21 @@
+#
+# Begin ~/.bash_envar
+# User defined environment variables
+#
+# Extra paths
+SYNCPATH=${HOME}
+COPYPATH=${HOME}/Copy
+CODEPATH=${COPYPATH}/Code
+CPATH=${CODEPATH}/C
+CXXPATH=${CODEPATH}/C++
+PYPATH=${CODEPATH}/Python
+JPATH=${CODEPATH}/Java
+BASHPATH=${CODEPATH}/Bash
+LUAPATH=${CODEPATH}/Lua
+TCLTKPATH=${CODEPATH}/TclTk
+#
+
+export SYNCPATH COPYPATH CODEPATH CPATH CXXPATH JPATH
+export PYPATH LUAPATH TCLTKPATH
+
+# End ~/.bash_envar

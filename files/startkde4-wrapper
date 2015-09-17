@@ -1,0 +1,12 @@
+#!/bin/sh -e
+#
+# startkde-wrapper
+# A wrapper for the startkde script, which launches kde/plasma
+
+source setkde4
+source /etc/profile
+# This is now unnecessary
+#source /etc/profile.d/kde.sh
+
+exec $KDE_PREFIX/bin/startkde "$@"
+

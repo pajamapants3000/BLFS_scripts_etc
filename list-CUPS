@@ -1,0 +1,33 @@
+#
+# list-CUPS
+#######################
+#
+# Presumes postX, SECLOW
+######################
+libtasn1-4.5
+p11_kit-0.23.1
+gnutls-3.4.4.1
+libusb-1.0.19
+libgusb-0.2.6
+libgudev-230
+polkit-0.113
+colord-1.2.12
+cups-2.0.4
+ijs-0.35
+openjpeg-1.5.2
+poppler-0.35.0
+qpdf-5.1.3
+cups_filters-1.0.74
+ghostscript-9.16
+# gutenprint - runtime optional (gtk req! If gimp decided on, might as well.)
+## recommended: gimp
+#babl-0.1.12
+#gegl-0.2.0
+#gtk+-2.24.28
+#pygtk-2.24.0
+#gimp-2.8.14
+###
+#gutenprint-5.2.10
+#
+# For HP printers:
+#http://hplipopensource.com/hplip-web/index.html

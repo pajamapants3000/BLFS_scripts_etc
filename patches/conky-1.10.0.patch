@@ -1,0 +1,33 @@
+diff -rup conky-1.10.0.orig/cmake/ConkyPlatformChecks.cmake conky-1.10.0/cmake/ConkyPlatformChecks.cmake
+--- conky-1.10.0.orig/cmake/ConkyPlatformChecks.cmake	2015-09-14 17:08:25.267449307 -0700
++++ conky-1.10.0/cmake/ConkyPlatformChecks.cmake	2015-09-14 17:08:51.667639647 -0700
+@@ -87,7 +87,7 @@ if(BUILD_MATH)
+ endif(BUILD_MATH)
+ 
+ if(BUILD_ICAL)
+-	check_include_files(libical/ical.h ICAL_H_)
++	check_include_files(ical.h ICAL_H_)
+ 	if(NOT ICAL_H_)
+ 		message(FATAL_ERROR "Unable to find libical")
+ 	endif(NOT ICAL_H_)
+@@ -95,7 +95,7 @@ if(BUILD_ICAL)
+ endif(BUILD_ICAL)
+ 
+ if(BUILD_IRC)
+-	check_include_files(libircclient/libircclient.h IRC_H_)
++	check_include_files(libircclient.h IRC_H_)
+ 	if(NOT IRC_H_)
+ 		message(FATAL_ERROR "Unable to find libircclient")
+ 	endif(NOT IRC_H_)
+diff -rup conky-1.10.0.orig/src/irc.cc conky-1.10.0/src/irc.cc
+--- conky-1.10.0.orig/src/irc.cc	2015-09-14 17:08:25.270449327 -0700
++++ conky-1.10.0/src/irc.cc	2015-09-14 17:09:05.009749578 -0700
+@@ -29,7 +29,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include "text_object.h"
+-#include <libircclient/libircclient.h>
++#include <libircclient.h>
+ 
+ struct ll_text {
+ 	char *text;

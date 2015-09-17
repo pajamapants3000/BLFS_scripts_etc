@@ -1,0 +1,13 @@
+#
+# list-KDEV4
+#########################
+#
+# Presumes KDE4, QT4
+#########################
+kdevplatform-1.7.1
+kdevelop-4.7.1
+kdev_python-1.7.1-py3
+#?kdev_python-1.7.1-py2
+kdevelop-pg-qt-1.0.0
+kdevelop_php-1.7.1
+

@@ -1,0 +1,7 @@
+#
+# .lxqt.xinitrc
+#
+ck-launch-session startlxqt
+#
+##
+#

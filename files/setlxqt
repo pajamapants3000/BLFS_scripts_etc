@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# setlxqt
+#
+# Activate LXQT environment settings and deactivate others
+if [ -f /etc/profile.d/lxqt.sh ]; then
+  as_root ln -sfv /etc/profile.d/lxqt.sh /etc/profile.d/active/70-WM.sh
+fi
+source /usr/bin/setqt5
+source /etc/profile
+echo $PATH
+export PATH

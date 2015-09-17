@@ -1,0 +1,11 @@
+diff -rup lxqt-session-0.9.0.orig/lxqt-session/CMakeLists.txt lxqt-session-0.9.0/lxqt-session/CMakeLists.txt
+--- lxqt-session-0.9.0.orig/lxqt-session/CMakeLists.txt	2015-08-05 06:15:54.718548030 -0700
++++ lxqt-session-0.9.0/lxqt-session/CMakeLists.txt	2015-08-05 06:16:14.165669623 -0700
+@@ -12,6 +12,7 @@ include_directories(
+     ${CMAKE_CURRENT_SOURCE_DIR}
+     ${XCB_INCLUDE_DIRS}
+     ${X11_INCLUDE_DIR}
++    ${KF5_INCLUDE_DIR}
+     src
+ )
+ 

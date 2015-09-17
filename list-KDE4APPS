@@ -1,0 +1,120 @@
+# KDE4 Applications
+# Created 07/19/2015
+# Assume list-KDE4 complete
+####################
+#
+#* Install/Reinstall with KF5APPS
+#
+yasm-1.3.0
+libjpeg_turbo-1.4.1
+tiff-4.0.5
+libxml2-2.9.2
+konsole-4.14.3
+kate-4.14.3
+little_cms-2.7
+libarchive-3.1.2
+ark-15.04.3
+kmix-14.12.2
+neon-0.30.1
+libmusicbrainz-5.1.0
+libkcddb-15.04.3
+kdepim_runtime-4.14.10
+grantlee-0.5.1
+libassuan-2.3.0
+kdepim-4.14.10
+exiv2-0.25
+libkexiv2-15.04.3
+kdeplasma_addons-4.14.3
+qimageblitz-0.0.6
+openjpeg-1.5.2
+openjpeg-2.1.0
+cairo-1.14.2
+poppler-0.35.0
+#?activeapp
+ghostscript-9.16
+libspectre-0.2.7
+chmlib-0.40
+djvulibre-3.5.27
+libzip-1.0.1
+okular-15.04.3
+jasper-1.900.1
+libraw-0.17.0
+libkdcraw-15.04.3
+gwenview-4.14.3
+libevent-2.0.22
+transmission-2.84
+qtcreator-dev
+####################
+#
+# More!
+# Note that there are multiple version lines for most programs; the newer
+# ports to KF5 and QT5 are ideal, even for KDE4, so long as the required KF5 is
+# installed. Just pass -DCMAKE_PREFIX_PATH=/opt/kf5 to cmake on build; may
+# also need to pathappend /opt/kf5/share XDG_DATA_DIRS (do this permanently?).
+#
+#http://download.kde.org/stable/kdevelop/4.7.1/src/
+#
+#http://download.kde.org/stable/applications/15.04.3/src/
+#
+freerdp-git
+krdc-4.14.3
+# See deps for calligra; marble is actually part of KDE:
+eigen-3.2.5
+libgit2-dev
+gsl-1.9
+marble-15.04.3
+Vc-0.7.4
+cyrille-cauchy-814aa99d9341
+spacenavd-0.6
+calligra-2.9.6
+# Update to 3.0? dev?
+#
+# Requires KF5
+konversation-1.6
+#
+#?kscreen - management and configuration of screens (NOT like screen)
+#?kscreengenie - screenshotter
+#?skrooge - money manager
+#?simon - voice recognition
+#?solid - hardware detection/management
+#?telepathy - im and voip suite
+#?kamoso - webcam recorder
+#*homerun - fullscreen application launcher; looks nice!
+#** KEXTRAGREAR **#
+#*kcoloredit - create color palettes - nice! (kextragear)
+# kgraphviewer - gui for graphviz, graph viewer (kextragear)
+#*kphotoalbum (kextragear)
+# kipi - image plugin interface; I think it came with calligra?
+# digikam - for digital cameras
+#*showimg - feature-rich image viewer
+# amarok - music media player
+#*k3b - cd/dvd burner
+# kaffeine - full-featured MM and DVB player
+#*kmplayer - frontend for mplayer/xine/ffmpeg/ffserver
+#*kplayer - MM player based on MPlayer; instead of kmplayer?
+#?KFTPGrabber - gui ftp client
+#?ktorrent - replace transmission?
+# tellico - collection manager
+# kile - user friendly TeX/LaTeX editor
+# kst - plotting and data viewing program
+#?KDE partition manager
+#?kiosktool - users/groups?
+##?krecipes
+#*kronometer - stopwatch
+#*krusader - twin-panel file manager
+#*yakuake - dropdown temrinal - one of my favs
+#?kdiff3
+# kgrab
+# kfax
+# konq_plugins
+# kiconedit
+# kuickshow
+# skanlite
+##****##
+# sflphone - doesn't work!
+################################
+# To get and setup/try:
+# homerun
+# simon
+# yakuake
+# kplayer/kmplayer

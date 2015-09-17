@@ -1,0 +1,560 @@
+#!/bin/bash -e
+#
+# Beyond Linux From Scratch
+# File: blfs_profile
+# BLFS ENVAR Source File/Script
+#####################################################################
+#  Can be sourced by a script to obtain system-specific values.
+#  Should first be run with system-name as argument to configure.
+#  This is also a great reference for the various system specific values.
+#
+#  Currently configured system names:
+#+ Kate
+#+ Bobby
+#+ Gorgak
+#+ Tyrone
+#+ Lilu
+#+ Artemis
+#+ Eos
+#+ Nyx
+#+ Selene
+#
+#####################################################################
+NAMES="Bobby, Gorgak, Tyrone, Kate, Lilu, Artemis, Eos, Nyx, Selene"
+DIR=$(dirname $0)
+# As script, configure for current system:
+if [ -n $0 ] && [[ $0 == *blfs_profile ]] && [ -n $1 ]; then
+([ $1 = 'Bobby' -o $1 = "Bobby" ] && sed -i '100,$s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '100,149/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0)||
+([ $1 = 'Gorgak' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '150,199/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Tyrone' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '200,249/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Kate' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '250,299/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Lilu' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '300,349/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Artemis' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '350,399/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Eos' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '400,449/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0)||
+([ $1 = 'Nyx' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '450,499/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Selene' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '500,549/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = '-n' -o $1 = '--names' ] && echo $NAMES && exit 0) ||
+echo "Usage: $0 <system-name>" && exit 1
+fi
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#####################################################################
+# As source
+##^^^^^^^^^
+##**Bobby**##-48-77-##
+##system
+#export ARCH="x86_64"
+#export KVER="4.1.6"
+#export LFSVER="20150901"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE="enp0s10"
+#gpm-1.20.7
+#export MOUSE_PROTOCOL="logim"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="r300,r600,radeonsi,svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Bobby
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=BOBBY
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+###################################################################
+##**Gorgak**##-78-107-##
+##system
+#export ARCH="x86_64"
+#export KVER="4.1.6"
+#export LFSVER="20150901"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE="enp2s0"
+##gpm-1.20.7
+#export MOUSE_PROTOCOL="ps2"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="nouveau,svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Gorgak
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=GORGAK
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+###################################################################
+##**Tyrone**##-108-137-##
+##system
+#export ARCH="x86_64"
+#export KVER="4.1.6"
+#export LFSVER="20150901"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE="enp2s0"
+##gpm-1.20.7
+#export MOUSE_PROTOCOL="msc"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="nouveau,svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Tyrone
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=TYRONE
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#####################################################################
+##**Kate**##-138-167-##
+##system
+#export ARCH="x86_64"
+#export KVER="4.1.6"
+#export LFSVER="20150901"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE="enp0s10"
+##gpm-1.20.7
+#export MOUSE_PROTOCOL="logim"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="nouveau,r300,r600,radeonsi,svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Kate
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=KATE
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#####################################################################
+##**Lilu**##-168-197-##
+##system
+#export ARCH="x86_64"
+#export KVER="4.1.6"
+#export LFSVER="20150901"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE=(enp10s0)
+##gpm-1.20.7
+#export MOUSE_PROTOCOL="logim"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Lilu
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=LILU
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#####################################################################
+##**Artemis**##-198-227-##
+##system
+#export ARCH="x86_64"
+#export KVER="4.1.6"
+#export LFSVER="20150901"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE="enp10s0"
+##gpm-1.20.7
+#export MOUSE_PROTOCOL="msc"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="i915,svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Artemis
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=ARTEMIS
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#####################################################################
+##**Eos**##-228-257-##
+##system
+#export ARCH="ARM"
+#export KVER="4.1.6"
+#export LFSVER="20150901"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE="enp0s10"
+##gpm-1.20.7
+#export MOUSE_PROTOCOL="logim"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Eos
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=EOS
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#####################################################################
+##**Nyx**##-258-287-##
+##system
+export ARCH="x86"
+export KVER="4.1.6"
+export LFSVER="20150901"
+export BLFSVER="20150901"
+export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+export BLFS_BOOTSCRIPTS_VER=20150823
+export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+export PATCHDIR=${BLFSDIR}/patches
+export SCRIPTDIR=${BLFSDIR}/scripts
+export INSTALLERDIR=${BLFSDIR}/package_installer
+export IFACE="enp0s10"
+##gpm-1.20.7
+export MOUSE_PROTOCOL="logim"
+##cyrus-sasl
+export AUTHMECH="pam"
+##Mesalib
+export GALLIUM_DRIVERS="i915,svga,swrast"
+##krb5-1.13.1
+export DOMAIN=Nyx
+export HOSTNAME=tommylincoln.net
+export DOMAINCAPS=NYX
+export LOGINNAME=tommy
+##openssh-6.7p1
+REMOTE_USERNAME=
+REMOTE_HOSTNAME=
+##qpdfview
+## (e.g. "without_cups")
+export QPDF_CONFIG=
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################################################
+##**Selene**##-288-317-##
+##system
+#export ARCH="x86_64"
+#export KVER="4.2.0"
+#export LFSVER="20150915"
+#export BLFSVER="20150901"
+#export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
+#export BLFS_BOOTSCRIPTS_VER=20150823
+#export BLFSDIR=/BLFS-${BLFSVER}
+#export PATCHDIR=${BLFSDIR}/patches
+#export SCRIPTDIR=${BLFSDIR}/scripts
+#export INSTALLERDIR=${BLFSDIR}/package_installer
+#export IFACE="enp0s25"
+##gpm-1.20.7
+#export MOUSE_PROTOCOL="msc"
+##cyrus-sasl
+#export AUTHMECH="pam"
+##Mesalib
+#export GALLIUM_DRIVERS="i915,svga,swrast"
+##krb5-1.13.1
+#export DOMAIN=Selene
+#export HOSTNAME=tommylincoln.net
+#export DOMAINCAPS=SELENE
+#export LOGINNAME=tommy
+##openssh-6.7p1
+#REMOTE_USERNAME=
+#REMOTE_HOSTNAME=
+##qpdfview
+## (e.g. "without_cups")
+#export QPDF_CONFIG=
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#####################################################################
+##
+##Universal (non-system-specific) Variables
+##******************************************
+## Error Codes
+##^^^^^^^^^^^^
+export E_MISSINGDEP=131
+########################
+

@@ -1,0 +1,77 @@
+diff -rup vim.orig/src/Makefile vim/src/Makefile
+--- vim.orig/src/Makefile	2015-08-19 07:57:09.651279790 -0700
++++ vim/src/Makefile	2015-08-19 07:59:48.465282001 -0700
+@@ -316,6 +316,7 @@ CClink = $(CC)
+ #CONF_ARGS = --with-global-runtime=/etc/vim
+ #CONF_ARGS = --with-local-dir=/usr/share
+ #CONF_ARGS = --without-local-dir
++CONF_ARGS = --prefix=/usr
+ 
+ # Use this one if you distribute a modified version of Vim.
+ #CONF_ARGS = --with-modified-by="John Doe"
+@@ -376,7 +377,7 @@ CClink = $(CC)
+ # Uncomment the next line to fail if one of the requested language interfaces
+ # cannot be configured.  Without this Vim will be build anyway, without
+ # the failing interfaces.
+-#CONF_OPT_FAIL = --enable-fail-if-missing
++CONF_OPT_FAIL = --enable-fail-if-missing
+ 
+ # LUA
+ # Uncomment one of these when you want to include the Lua interface.
+@@ -386,7 +387,7 @@ CClink = $(CC)
+ #CONF_OPT_LUA = --enable-luainterp
+ #CONF_OPT_LUA = --enable-luainterp=dynamic
+ #CONF_OPT_LUA = --enable-luainterp --with-luajit
+-#CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
++CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
+ # Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
+ #CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
+ 
+@@ -410,7 +411,7 @@ CClink = $(CC)
+ # one: "touch perl.exp".
+ # This requires at least "small" features, "tiny" doesn't work.
+ #CONF_OPT_PERL = --enable-perlinterp
+-#CONF_OPT_PERL = --enable-perlinterp=dynamic
++CONF_OPT_PERL = --enable-perlinterp=dynamic
+ 
+ # PYTHON
+ # Uncomment this when you want to include the Python interface.
+@@ -425,21 +426,21 @@ CClink = $(CC)
+ # However, this may still cause problems, such as "import termios" failing.
+ # Build two separate versions of Vim in that case.
+ #CONF_OPT_PYTHON = --enable-pythoninterp
+-#CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
++CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
+ #CONF_OPT_PYTHON3 = --enable-python3interp
+-#CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
++CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
+ 
+ # RUBY
+ # Uncomment this when you want to include the Ruby interface.
+ # First one for static linking, second one for loading when used.
+ # Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
+ #CONF_OPT_RUBY = --enable-rubyinterp
+-#CONF_OPT_RUBY = --enable-rubyinterp=dynamic
++CONF_OPT_RUBY = --enable-rubyinterp=dynamic
+ #CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
+ 
+ # TCL
+ # Uncomment this when you want to include the Tcl interface.
+-#CONF_OPT_TCL = --enable-tclinterp
++CONF_OPT_TCL = --enable-tclinterp
+ #CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
+ 
+ # CSCOPE
+@@ -503,10 +504,10 @@ CClink = $(CC)
+ #CONF_OPT_FEAT = --with-features=small
+ #CONF_OPT_FEAT = --with-features=normal
+ #CONF_OPT_FEAT = --with-features=big
+-#CONF_OPT_FEAT = --with-features=huge
++CONF_OPT_FEAT = --with-features=huge
+ 
+ # COMPILED BY - For including a specific e-mail address for ":version".
+-#CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
++CONF_OPT_COMPBY = "--with-compiledby=Tommy Lincoln <pajamapants3000@gmail.com>"
+ 
+ # X WINDOWS DISABLE - For creating a plain Vim without any X11 related fancies
+ # (otherwise Vim configure will try to include xterm titlebar access)

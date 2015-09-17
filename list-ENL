@@ -1,0 +1,73 @@
+#
+# list-ENL
+#############################
+#
+# Enlightenment
+# Presumes Xorg
+#############################
+#? With Xorg?
+#?libxp - http://www.linuxfromscratch.org/blfs/view/7.4/x/libXp.html
+#printproto-1.0.5
+#bullet - https://github.com/bulletphysics/bullet3
+#
+libcap-2.24
+freetype-2.6
+libpng-1.6.18
+libjpeg_turbo-1.4.1
+dbus-1.10.0
+luajit-2.0.4
+pulseaudio-6.0
+libsndfile-1.0.25
+gstreamer-1.4.5
+tiff-4.0.5
+giflib-5.1.1
+curl-7.44.0
+openssl-1.0.2d
+libspectre-0.2.7
+poppler-0.35.0
+librsvg-2.40.10
+libraw-0.17.0
+# The list-VLC comes with a large assortment of codecs and libs
+#+this greatly simplifies things!
+#vlc-2.2.1
+ffmpeg-2.7.2
+xine_lib-1.2.6
+#
+# The Libraries
+efl-1.15.0
+emotion_generic_players-1.15.0
+evas_generic_loaders-1.15.0
+elementary-1.15.0
+python_efl-1.15.0
+# The Applications
+enlightenment-0.19.8
+terminology-0.8.0
+rage-0.1.4
+econnman-1.1
+# epour deps
+libtorrent_rasterbar-1.0.6
+python_distutils_extra-2.38
+epour-0.6.0
+#
+enventor-0.6.0
+# Additional Applications
+# empc deps
+libmpdclient-2.9
+re2c-0.14.3
+efx-git
+maelstrom-git
+empc-0.99.0.639
+#
+#### From git... who knows how solid? State idle time
+# 7 weeks
+ephoto-git
+# 6 weeks
+equate-git
+# 8 months
+eterm-git
+# 3 days
+express-git
+#
+# Modules
+# 6 months
+#alarm-git

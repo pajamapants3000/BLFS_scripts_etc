@@ -1,0 +1,46 @@
+diff -rup toluapp.orig/config_linux.py toluapp/config_linux.py
+--- toluapp.orig/config_linux.py	2015-09-13 18:20:24.160817811 -0700
++++ toluapp/config_linux.py	2015-09-14 05:26:25.606497416 -0700
+@@ -4,7 +4,8 @@
+ 
+ # Compiler flags (based on Debian's installation of lua)
+ #LINKFLAGS = ['-g']
+-CCFLAGS = ['-I/usr/include/lua50', '-O2', '-ansi', '-Wall']
++CCFLAGS = ['-I/usr/include/lua5.1', '-O2', '-ansi', '-Wall',
++           '-std=gnu99', '-fPIC']
+ #CCFLAGS = ['-I/usr/include/lua50', '-g']
+ 
+ # this is the default directory for installation. Files will be installed on
+@@ -15,8 +16,8 @@ CCFLAGS = ['-I/usr/include/lua50', '-O2'
+ #
+ # You can see more 'generic' options for POSIX systems on config_posix.py
+ 
+-prefix = '/usr/local'
++prefix = '/usr'
+ 
+ # libraries (based on Debian's installation of lua)
+-LIBS = ['lua50', 'lualib50', 'dl', 'm']
++LIBS = ['lua5.1', 'dl', 'm']
+ 
+diff -rup toluapp.orig/SConstruct toluapp/SConstruct
+--- toluapp.orig/SConstruct	2015-09-13 18:20:24.160817811 -0700
++++ toluapp/SConstruct	2015-09-14 05:26:03.185920249 -0700
+@@ -16,7 +16,7 @@ elif 'msvc' in env['TOOLS']:
+ else:
+ 	options_file = "posix"
+ 
+-opts = Options(["config_"+options_file+".py", "custom.py", "custom_"+options_file+".py"], ARGUMENTS)
++opts = Variables(["config_"+options_file+".py", "custom.py", "custom_"+options_file+".py"], ARGUMENTS)
+ opts.Add('CC', 'The C compiler.')
+ opts.Add('CXX', 'The C++ compiler (for the tests)')
+ opts.Add('CCFLAGS', 'Flags for the compiler.', ['-O2', '-Wall'])
+diff -rup toluapp.orig/src/tests/SCsub toluapp/src/tests/SCsub
+--- toluapp.orig/src/tests/SCsub	2015-09-13 18:20:24.168818018 -0700
++++ toluapp/src/tests/SCsub	2015-09-14 05:26:03.185920249 -0700
+@@ -1,5 +1,5 @@
+ Import('env')
+-env_tests = env.Copy()
++env_tests = env.Clone()
+ 
+ env_tests.LuaBinding('tclassbind.cpp', 'tclass.pkg', 'tclass', use_own=1, use_typeid=1)
+ 

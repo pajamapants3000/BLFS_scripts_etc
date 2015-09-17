@@ -1,0 +1,32 @@
+#
+# Begin /etc/profile
+
+
+if [ ${ETC_PROFILE} ]; then exit 0;
+else export ETC_PROFILE=1
+
+export LANG=en_US.UTF-8
+
+# Source additional scripts
+for script in /etc/profile.d/active/*.sh ; do
+  if [ -r $script ] ; then
+    source $script
+  fi
+done
+
+# By default, the umask should be set.
+if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
+  umask 002
+else
+  umask 022
+fi
+
+[ -e /usr/share/terminfo/x/xterm-256color ] &&
+export TERM=xterm-256color || export TERM=xterm-color
+
+export CHRISTENED="Lilu"
+export SURNAME="lfs-20150723"
+
+fi # End source-guard
+
+# End /etc/profile

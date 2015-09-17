@@ -1,0 +1,17 @@
+#
+# list-LXQTAPPS
+######################
+#
+# Presumes LXQT
+#####################
+lximage-qt-0.4.0
+obconf-qt-0.9.0.8.g1ce85f1
+qtermwidget-0.6.0
+qterminal-0.6.0
+chrpath-0.16
+QScintilla-gpl-2.9
+juffed-0.10.r71.gc3c1a3f
+# qupzilla-1.8.6 fails to build for qt5, gcc-5.2.0; git works!
+#qupzilla-1.8.6
+qupzilla-git
+

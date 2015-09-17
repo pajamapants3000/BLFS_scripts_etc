@@ -1,0 +1,15 @@
+#
+# list-GIR
+############################
+#
+# The objective here is to make sure that
+#+gobject_introspection is installed before
+#+all of the packages it manages; Any already
+#+installed should be reinstalled after GIR.
+###########################
+
+ libffi-3.2.1 and Python-2.7.10 or Python-3.4.3 
+PCRE-8.37
+GLib-2.44.1
+gobject-introspection-1.44.0
+polkit

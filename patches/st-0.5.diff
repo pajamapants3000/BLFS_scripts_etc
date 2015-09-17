@@ -1,0 +1,24 @@
+diff -rup st-0.5-orig/config.def.h st-0.5/config.def.h
+--- st-0.5-orig/config.def.h	2015-02-15 12:26:07.389767723 -0800
++++ st-0.5/config.def.h	2015-02-15 12:27:26.493453319 -0800
+@@ -5,7 +5,7 @@
+  *
+  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
+  */
+-static char font[] = "Liberation Mono:pixelsize=12:antialias=false:autohint=false";
++static char font[] = "Source Code Pro:style=Regular:pixelsize=16:antialias=false:autohint=false";
+ static int borderpx = 2;
+ static char shell[] = "/bin/sh";
+ 
+diff -rup st-0.5-orig/config.mk st-0.5/config.mk
+--- st-0.5-orig/config.mk	2015-02-15 12:26:07.389767723 -0800
++++ st-0.5/config.mk	2015-02-15 12:29:38.324072109 -0800
+@@ -4,7 +4,7 @@ VERSION = 0.5
+ # Customize below to fit your system
+ 
+ # paths
+-PREFIX = /usr/local
++PREFIX = /usr
+ MANPREFIX = ${PREFIX}/share/man
+ 
+ X11INC = /usr/X11R6/include

@@ -1,0 +1,12 @@
+#!/bin/sh -e
+#
+# startrazor-wrapper
+# A wrapper for the startrazor script, which sets the correct environment
+#+and then launches the razorqt desktop environment.
+
+source setrazorqt
+source /etc/profile
+
+exec $RAZORQT_PREFIX/bin/startrazor "$@"
+
+
