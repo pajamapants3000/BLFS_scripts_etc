@@ -42,7 +42,7 @@ sed -i 's/LITLEN          240 /LITLEN          8092/' \
             --enable-default-search-path=/usr/share/sgml
 make pkgdatadir=/usr/share/sgml/OpenSP-1.5.2
 # Test (as many as nine tests may fail):
-make check
+#make check
 #
 as_root make pkgdatadir=/usr/share/sgml/OpenSP-1.5.2 \
      docdir=/usr/share/doc/OpenSP-1.5.2      \

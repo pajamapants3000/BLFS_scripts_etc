@@ -1,0 +1,24 @@
+#
+# list-TEXTIES
+#
+# A set of cool terminal-based programs
+# Requires X
+# I'm sure there are some important deps missing here...
+###########################################################
+alsa_lib-1.0.29
+asciidoc-8.6.9
+dzen2-rel
+herbstluftwm-git
+lua-5.1.5
+tolua++-git
+conky-1.10.0
+calcurse-4.0.0
+libid3tag-0.15.1b
+libmad-0.15.1b
+mpd-0.19.10
+libmpdclient-2.9
+mpc-0.27
+ncmpcpp-0.6.7
+weechat-1.3
+libpurple-2.10.11
+centerim5-5.0.0beta2

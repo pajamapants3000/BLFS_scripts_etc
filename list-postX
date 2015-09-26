@@ -1,6 +1,7 @@
 #
 # postX - A starting point for most setups
 #+covers many common dependencies; no gtk or qt yet.
+# CALL GENERATOR WITH -a!!! Otherwise it will skip python3
 ###########################################
 #
 # Presumes X
@@ -87,5 +88,7 @@ ruby-2.2.3
 source-code-pro
 vifm-0.7.8
 # vim-qt works PERFECTLY with Qt4, but for now...
+lua-5.3.1
+luajit-2.0.4
 vim-git
 # Now install some other lists, starting with a WM!

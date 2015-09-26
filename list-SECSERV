@@ -35,7 +35,7 @@ sqlite-3.8.11.1
 nss-3.20
 openssh-7.1p1
 # stunnel script will prompt for some info following install
-stunnel-5.22
+stunnel-5.23
 pcre-8.37
 postfix-3.0.2
 tripwire-2.4.2.2

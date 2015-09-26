@@ -65,7 +65,7 @@ cd ..
 if ! (cat /etc/group | grep YYY > /dev/null); then
     pathappend /usr/sbin
     as_root groupadd -g 18 YYY
-    as_root useradd -c "X_X_Y_Y" -d /var/run/dbus \
+    as_root useradd -c "X_X_Y_Y" -d /var/run/${PROGUSER} \
             -u 18 -g YYY -s /bin/false XXYY
     pathremove /usr/sbin
 fi

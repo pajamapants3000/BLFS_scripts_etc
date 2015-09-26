@@ -20,7 +20,7 @@
 #libmetalink
 #libssh2
 #spnego
-#stunnel-5.22
+#stunnel-5.23
 #valgrind-3.10.1 
 # End Optional
 # Begin Kernel

@@ -24,24 +24,24 @@ NAMES="Bobby, Gorgak, Tyrone, Kate, Lilu, Artemis, Eos, Nyx, Selene"
 DIR=$(dirname $0)
 # As script, configure for current system:
 if [ -n $0 ] && [[ $0 == *blfs_profile ]] && [ -n $1 ]; then
-([ $1 = 'Bobby' -o $1 = "Bobby" ] && sed -i '100,$s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '100,149/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0)||
-([ $1 = 'Gorgak' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '150,199/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
-([ $1 = 'Tyrone' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '200,249/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
-([ $1 = 'Kate' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '250,299/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
-([ $1 = 'Lilu' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '300,349/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
-([ $1 = 'Artemis' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '350,399/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
-([ $1 = 'Eos' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '400,449/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0)||
-([ $1 = 'Nyx' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '450,499/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
-([ $1 = 'Selene' ] && sed -i '100,549/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
-    sed -i '500,549/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Bobby' -o $1 = "Bobby" ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '100,149s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0)||
+([ $1 = 'Gorgak' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '150,199s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Tyrone' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '200,249s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Kate' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '250,299s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Lilu' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '300,349s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Artemis' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '350,399s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Eos' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '400,449s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0)||
+([ $1 = 'Nyx' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '450,499s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
+([ $1 = 'Selene' ] && sed -i '100,549s/^\([^#]\)/#\1/' ${DIR}/blfs_profile &&
+    sed -i '500,549s/^#\([^#]\)/\1/' ${DIR}/blfs_profile && exit 0) ||
 ([ $1 = '-n' -o $1 = '--names' ] && echo $NAMES && exit 0) ||
 echo "Usage: $0 <system-name>" && exit 1
 fi

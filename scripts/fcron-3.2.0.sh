@@ -13,33 +13,13 @@ fi
 #
 # Dependencies
 #*************
-# Required
-# Recommended
 # Optional
-#aspell-0.60.6.1
-#cyrus-sasl-2.1.26
-#gdb-7.10
-#gnupg-2.1.7
-#gpgme-1.6.0
-#libgssapi
-#libidn-1.32
-#krb5-1.13.2
-#mixmaster
-#mta (that provides a sendmail command)
-#s_lang-2.2.4
-#openssl-1.0.2d or gnutls-3.4.4.1
-#db-6.1.26 or qdbm or tokyo cabinet
-# Optional - To regenerate HTML Documentation
-#libxslt-1.1.28
-#lynx-2.8.8rel.2
-#w3m-0.5.3
-#elinks
-# Optional - To generate PDF manual
-#docbook_dsssl-1.79
-#openjade-1.3.2
-#texlive-20150521 (or install-tl-unx)
+#mta
+#linux_pam-1.2.1
+#docbook-utils-0.6.14
 #
 # Options
+#********
 #
 # Preparation
 #*************
@@ -49,23 +29,24 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=mutt
-VERSION=1.5.24
+PROG=fcron
+VERSION=3.2.0
 ARCHIVE=tar.gz
-MD5=7f25d27f3c7c82285ac07aac35f5f0f2
+MD5=4b031c2fba32a98fa814d1557158b0e9
+SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=ftp://ftp.mutt.org/pub
+DL_URL=http://fcron.free.fr/archives
 DL_ALT=
 REPO=
 # VCS=[git,hg,svn,...]
 VCS=
 BRANCH=master
-# Prepare sources
-PATCHDIR=${WORKING_DIR}/patches
+# Prepare sources - PATCHDIR default is in blfs_profile
+#PATCHDIR=${WORKING_DIR}/patches
 #PATCH=${PROG}-${VERSION}.patch
 # Configure; prepare build
 PREFICKS=/usr
@@ -82,9 +63,11 @@ CONFIGURE="./configure"
 # Default for cmake is to build in build subdirectory, but some programs
 #+demand building in a directory that is paralleli to (a sibling of) source.
 #CMAKE_PARALLEL=1
-CONFIG_FLAGS="--with-docdir=${DOCDER} --enable-pop --enable-imap"
-CONFIG_FLAGS="--enable-hcache --without-qdbm --with-gdbm ${CONFIG_FLAGS}"
-CONFIG_FLAGS="--without-bdb --without-tokyocabinet ${CONFIG_FLAGS}"
+# Another common cmake parameter is the build type; defaults to Release or
+#+uncomment below
+#CBUILDTYPE=RelWithDebInfo
+#
+CONFIG_FLAGS="--without-sendmail --with-boot-install=no --with-systemdsystemunitdir=no"
 MAKE="make"
 MAKE_FLAGS=""
 TEST=
@@ -93,11 +76,12 @@ INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
-BOOTSCRIPT=
-PROGGROUP=mail
-PROGGROUPNUM=34
-PROGUSER=
-USRCMNT=
+BOOTSCRIPT=install-fcron
+PROGGROUP=fcron
+PROGGROUPNUM=22
+PROGUSER=fcron
+PROGUSERNUM=${PROGGROUPNUM}
+USRCMNT="Fcron_User"
 #
 #****************************************************************************#
 ################ No variable settings below this line! #######################
@@ -110,6 +94,7 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     else
         CMAKE_SRC_ROOT=..
     fi
+    [ ${CBUILDTYPE} ] || CBUILDTYPE="Release"
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -144,15 +129,15 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-                -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
+        as_root useradd  -c "${USRCMNT}" -d /dev/null \
+                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-            -u 18 -s /bin/false $PROGUSER
+    as_root useradd -c "${USRCMNT}" -d /dev/null \
+            -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
 fi
@@ -177,20 +162,17 @@ if [ ${VCS} ]; then
         echo "error: unkown value for VCS; aborting."
         exit 1
     fi
-    if ! [ -d ${PROG}-${VERSION} ]; then
-        ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
-        REUSE=1
-    fi
+    ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}-${VERSION}.src.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then
-            wget ${DL_ALT}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
-        if [ $FAIL_DL == 1 ]; then
+        if [ $((FAIL_DL)) == 1 ]; then
             echo "Download failed! Find alternate link and try again."
             exit 1
         elif (($FAIL_DL)); then
@@ -199,9 +181,12 @@ else
         fi
     fi
 #
-    # md5sum:
+    # checksum:
     if [ ${MD5} ]; then
         echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
+            ( exit ${PIPESTATUS[0]} )
+    elif [ ${SHA1} ]; then
+        echo "${SHA1} ${PROG}-${VERSION}.${ARCHIVE}" | shasum -c ;\
             ( exit ${PIPESTATUS[0]} )
     fi
 #
@@ -220,25 +205,32 @@ else
 fi # End "if [ ${VCS} ]..."
 #
 pushd ${PROG}-${VERSION}
-if ((${REUSE})); then
-    rm -rf build
-fi
 [ ${PATCH} ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
-##cmake child build
-#mkdir -v build && cd build
-##cmake parabuild
-#mkdir ../{PROG}-build && cd ../${PROG}-build
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
+    if ((${CMAKE_PARALLEL})); then
+        mkdir ../{PROG}-build && cd ../${PROG}-build
+    else
+        mkdir -v build && cd build
+    fi
+fi
 ##autogen first
 #./autogen.sh
+#
+as_root tee -a /etc/syslog.conf << "EOF"
+# Begin fcron addition to /etc/syslog.conf
+
+cron.* -/var/log/cron.log
+
+# End fcron addition
+EOF
+as_root /etc/rc.d/init.d/sysklogd reload
 #
 if [ ${CONFIGURE} ]; then
     ${CONFIGURE} ${CONFIG_FLAGS}
 fi
 #
 ${MAKE} ${MAKE_FLAGS}
-# Restore manual.txt if it is empty
-test -s doc/manual.txt || mv -v doc/manual.txt{.shipped,}
 #
 # Test:
 if [ $TEST ]; then
@@ -255,12 +247,13 @@ if [ $TEST ]; then
 fi
 #
 as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
-as_root install -v -m644 ../doc/manual.{pdf,tex} \
-        /usr/share/doc/${PROG}-${VERSION}
 popd
 as_root rm -rf ${PROG}-${VERSION}
 ##cmake parabuild
-#as_root rm -rf ${PROG}-build
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ] &&
+        ((${CMAKE_PARALLEL})); then
+    as_root rm -rf ${PROG}-build
+fi
 #
 # Add to installed list for this computer:
 echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
@@ -281,11 +274,9 @@ fi
 # Configuration
 #***************
 #
-# To enable GnuPG
-#cat /usr/share/doc/${PROG}-${VERSION}/samples/gpg.rc >> ~/.muttrc
-#
 ###################################################
 #
 # Common snippets
 #if (cat /list-${CHRISTENED}-${SURNAME} | grep "^XYXY-" > /dev/null); then
+
 

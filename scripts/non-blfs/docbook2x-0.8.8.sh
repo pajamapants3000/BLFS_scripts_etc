@@ -35,7 +35,7 @@ WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=
+DL_URL=http://sourceforge.net/projects
 DL_ALT=
 REPO=
 # VCS=[git,hg,svn,...]
@@ -125,14 +125,14 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u 18 -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
@@ -161,7 +161,7 @@ if [ ${VCS} ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/files/${PROG}/${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then

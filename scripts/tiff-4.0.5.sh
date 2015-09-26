@@ -38,8 +38,8 @@ WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=http://download.osgeo.org/tiff
-DL_ALT=ftp://ftp.remotesensing.org/tiff
+DL_URL=http://download.osgeo.org/libtiff
+DL_ALT=ftp://ftp.remotesensing.org/libtiff
 # Prepare sources
 PATCHDIR=${WORKING_DIR}/patches
 PATCH=
@@ -106,14 +106,14 @@ if [ $PROGGROUP ]; then
     fi
     if [ $PROGUSER ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u 18 -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi

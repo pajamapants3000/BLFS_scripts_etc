@@ -24,8 +24,8 @@ source blfs_profile
 #
 # Name of program, with version and package/archive type
 # (libpurple is part of the pidgin program)
-DERIVPROG=pidgin
-PROG=libpurple
+PROG=pidgin
+DERIVPROG=libpurple
 VERSION=2.10.11
 ARCHIVE=tar.bz2
 MD5=7c8bb6f997e05e7929104439872c2844
@@ -120,14 +120,14 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u 18 -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
@@ -138,7 +138,7 @@ fi
 # Check for previous installation:
 PROCEED="yes"
 REINSTALL=0
-grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
+grep "^${DERIVPROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
     REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
 [ $PROCEED = "yes" ] || [ $PROCEED = "y" ] || exit 0
 # Download:
@@ -156,7 +156,7 @@ if [ ${VCS} ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${DERIVPROG}/files/Pidgin/${VERSION}/${DERIVPROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/files/Pidgin/${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then
@@ -190,7 +190,8 @@ else
     tar -xf ${PROG}-${VERSION}.${ARCHIVE} -C ${PROG}-${VERSION} --strip-components=1
 fi # End "if [ ${VCS} ]..."
 #
-pushd ${PROG}-${VERSION}/${PROG}
+# NOTE: We cd to libpurple subfolder; configure in root though (prepend ../)
+pushd ${PROG}-${VERSION}
 [ ${PATCH} ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
 ##cmake child build
@@ -204,6 +205,7 @@ if [ ${CONFIGURE} ]; then
     ${CONFIGURE} ${CONFIG_FLAGS}
 fi
 #
+cd ${DERIVPROG}
 ${MAKE} ${MAKE_FLAGS}
 #
 # Test:
@@ -227,7 +229,7 @@ as_root rm -rf ${PROG}-${VERSION}
 #as_root rm -rf ${PROG}-build
 #
 # Add to installed list for this computer:
-echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
+echo "${DERIVPROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 (($REINSTALL)) && exit 0 || (exit 0)
 ###################################################

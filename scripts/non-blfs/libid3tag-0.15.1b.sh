@@ -12,8 +12,10 @@ if [ ${#} -gt 1 ]; then
 fi
 #
 # Dependencies
+#*************
 #
 # Options
+#********
 #
 # Preparation
 #*************
@@ -23,23 +25,24 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=centerim5
-VERSION=5.0.0beta2
+PROG=libid3tag
+VERSION=0.15.1b
 ARCHIVE=tar.gz
-MD5=dea9be68ea6219f9dbe1dd25f7af3f44
+MD5=e5808ad997ba32c498803822078748c3
+SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=http://www.centerim.org/download/cim5
+DL_URL=http://sourceforge.net/projects/mad/files
 DL_ALT=
 REPO=
 # VCS=[git,hg,svn,...]
 VCS=
 BRANCH=master
-# Prepare sources
-PATCHDIR=${WORKING_DIR}/patches
+# Prepare sources - PATCHDIR default is in blfs_profile
+#PATCHDIR=${WORKING_DIR}/patches
 #PATCH=${PROG}-${VERSION}.patch
 # Configure; prepare build
 PREFICKS=/usr
@@ -56,6 +59,10 @@ CONFIGURE="./configure"
 # Default for cmake is to build in build subdirectory, but some programs
 #+demand building in a directory that is paralleli to (a sibling of) source.
 #CMAKE_PARALLEL=1
+# Another common cmake parameter is the build type; defaults to Release or
+#+uncomment below
+#CBUILDTYPE=RelWithDebInfo
+#
 CONFIG_FLAGS=""
 MAKE="make"
 MAKE_FLAGS=""
@@ -83,6 +90,7 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     else
         CMAKE_SRC_ROOT=..
     fi
+    [ ${CBUILDTYPE} ] || CBUILDTYPE="Release"
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -117,15 +125,15 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-                -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-            -u 18 -s /bin/false $PROGUSER
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+            -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
 fi
@@ -153,14 +161,14 @@ if [ ${VCS} ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then
             wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
-        if [ $FAIL_DL == 1 ]; then
+        if [ $((FAIL_DL)) == 1 ]; then
             echo "Download failed! Find alternate link and try again."
             exit 1
         elif (($FAIL_DL)); then
@@ -169,9 +177,14 @@ else
         fi
     fi
 #
-    # md5sum:
-    echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
-        ( exit ${PIPESTATUS[0]} )
+    # checksum:
+    if [ ${MD5} ]; then
+        echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
+            ( exit ${PIPESTATUS[0]} )
+    elif [ ${SHA1} ]; then
+        echo "${SHA1} ${PROG}-${VERSION}.${ARCHIVE}" | shasum -c ;\
+            ( exit ${PIPESTATUS[0]} )
+    fi
 #
     # Backup previous folder if it exists
     num=1
@@ -190,10 +203,13 @@ fi # End "if [ ${VCS} ]..."
 pushd ${PROG}-${VERSION}
 [ ${PATCH} ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
-##cmake child build
-#mkdir -v build && cd build
-##cmake parabuild
-#mkdir ../{PROG}-build && cd ../${PROG}-build
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
+    if ((${CMAKE_PARALLEL})); then
+        mkdir ../{PROG}-build && cd ../${PROG}-build
+    else
+        mkdir -v build && cd build
+    fi
+fi
 ##autogen first
 #./autogen.sh
 #
@@ -221,7 +237,10 @@ as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 popd
 as_root rm -rf ${PROG}-${VERSION}
 ##cmake parabuild
-#as_root rm -rf ${PROG}-build
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ] &&
+        ((${CMAKE_PARALLEL})); then
+    as_root rm -rf ${PROG}-build
+fi
 #
 # Add to installed list for this computer:
 echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}

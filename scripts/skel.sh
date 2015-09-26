@@ -39,7 +39,7 @@ DL_URL=
 DL_ALT=
 REPO=
 # VCS=[git,hg,svn,...]
-VCS=
+#VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile
 #PATCHDIR=${WORKING_DIR}/patches
@@ -125,15 +125,15 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-                -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-            -u 18 -s /bin/false $PROGUSER
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+            -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
 fi

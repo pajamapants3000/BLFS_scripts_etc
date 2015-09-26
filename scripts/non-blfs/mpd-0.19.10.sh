@@ -18,6 +18,9 @@ fi
 # Options
 #********
 # There are a TON of configure options! So many audio/media types.
+# Use alsa or PulseAudio
+#XXAOXX=pulse
+XXAOXX=alsa
 #
 # Preparation
 #*************
@@ -71,11 +74,11 @@ INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
-PROGGROUP=
-PROGGROUPNUM=
-PROGUSER=
+PROGGROUP=mpd
+PROGGROUPNUM=66
+PROGUSER=mpd
 PROGUSERNUM=${PROGGROUPNUM}
-USRCMNT=
+USRCMNT="Music_Player_Daemon"
 #
 #****************************************************************************#
 ################ No variable settings below this line! #######################
@@ -122,15 +125,15 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-                -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-            -u 18 -s /bin/false $PROGUSER
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+            -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
 fi
@@ -246,6 +249,43 @@ fi
 #
 # Configuration
 #***************
+#
+# Arch Linux recommends for fast Fourier transform visualization (fftw)
+as_root tee -a /etc/mpd.conf << EOF
+bind_to_address "/var/run/mpd/socket"
+user "mpd"
+group "mpd"
+audio_output {
+    type                    "fifo"
+    name                    "my_fifo"
+    path                    "/tmp/mpd.fifo"
+    format                  "44100:16:2"
+}
+EOF
+#
+# Some more advice from
+#http://www.linuxandlife.com/2012/01/simple-guide-to-set-up-mpd-with-ncmpcpp.html
+mkdir -pv ${HOME}/.config/mpd/playlists
+touch ${HOME}/.config/mpd/{mpd.db,mpd.log,mpd.pid,mpdstate}
+# Then
+tee -a ${HOME}/.config/mpd/mpd.conf << EOF
+bind_to_address "${HOME}/.config/mpd/socket"
+music_directory "${HOME}/Music"
+playlist_directory "${HOME}/.config/mpd/playlists"
+db_file      "${HOME}/.config/mpd/mpd.db"
+log_file      "${HOME}/.config/mpd/mpd.log"
+pid_file      "${HOME}/.config/mpd/mpd.pid"
+state_file     "${HOME}/.config/mpd/mpdstate"
+mixer_type      "software"
+follow_outside_symlinks     "yes"
+follow_inside_symlinks     "yes"
+audio_output {
+    type  "XXAOXX"
+    name  "MPD XXAOXX Output"
+}
+EOF
+# Use set value for audio system (alsa or pulse)
+sed -i "s/XXAOXX/${XXAOXX}/" ${HOME}/.config/mpd/mpd.conf
 #
 ###################################################
 #

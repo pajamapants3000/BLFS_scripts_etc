@@ -12,8 +12,10 @@ if [ ${#} -gt 1 ]; then
 fi
 #
 # Dependencies
+#*************
 #
 # Options
+#********
 #
 # Preparation
 #*************
@@ -22,24 +24,26 @@ source blfs_profile
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
-# For packages that don't support or do well with parallel build
-#PARALLEL=1
-#
 # Name of program, with version and package/archive type
-PROG=dzen2
-VERSION=git
-ARCHIVE=tar.gz
-MD5=dbc2c84321a070201da0de47463692f9
+PROG=mpc
+VERSION=0.27
+ARCHIVE=tar.xz
+MD5=
+SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=https://github.com/robm/dzen/tarball/master
+DL_URL=http://www.musicpd.org/download/mpc/0
 DL_ALT=
-# Prepare sources
-PATCHDIR=${WORKING_DIR}/patches
-PATCH=${PROG}-${VERSION}.patch
+REPO=
+# VCS=[git,hg,svn,...]
+VCS=
+BRANCH=master
+# Prepare sources - PATCHDIR default is in blfs_profile
+#PATCHDIR=${WORKING_DIR}/patches
+#PATCH=${PROG}-${VERSION}.patch
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
@@ -47,22 +51,32 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined
-CONFIGURE=""
+CONFIGURE="./configure"
 #
 # Flags
-# -j${PARALLEL} included by default; uncomment line above to unset.
+# -j${PARALLEL} included by default; uncomment this to unset.
+#PARALLEL=1
+# Default for cmake is to build in build subdirectory, but some programs
+#+demand building in a directory that is paralleli to (a sibling of) source.
+#CMAKE_PARALLEL=1
+# Another common cmake parameter is the build type; defaults to Release or
+#+uncomment below
+#CBUILDTYPE=RelWithDebInfo
+#
 CONFIG_FLAGS=""
 MAKE="make"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
 INSTALL="install"
-INSTALL_FLAGS="clean"
+INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
 PROGGROUP=
+PROGGROUPNUM=
 PROGUSER=
+PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
 #****************************************************************************#
@@ -71,6 +85,12 @@ USRCMNT=
 #
 # Standard configuration settings: ./configure, cmake, qmake, ./autogen.sh
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
+    if ((${CMAKE_PARALLEL})); then
+        CMAKE_SRC_ROOT=../${PROG}-${VERSION}
+    else
+        CMAKE_SRC_ROOT=..
+    fi
+    [ ${CBUILDTYPE} ] || CBUILDTYPE="Release"
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -98,22 +118,22 @@ TEST_FLAGS="-j${PARALLEL} ${TEST_FLAGS}"
 INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
 #
 # Add group/user
-if [ $PROGGROUP ]; then
-    if ! (cat /etc/group | grep $PROGGROUP > /dev/null); then
+if [ ${PROGGROUP} ]; then
+    if ! (cat /etc/group | grep ${PROGGROUP} > /dev/null); then
         pathappend /usr/sbin
-        as_root groupadd -g 18 $PROGGROUP
+        as_root groupadd -g ${PROGGROUPNUM} ${PROGGROUP}
     fi
-    if [ $PROGUSER ]; then
+    if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-                -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-            -u 18 -s /bin/false $PROGUSER
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+            -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
 fi
@@ -127,52 +147,77 @@ grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
     REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
 [ $PROCEED = "yes" ] || [ $PROCEED = "y" ] || exit 0
 # Download:
-if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-    wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
-        -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
-    # FTP/alt Download:
-    if (($FAIL_DL)) && [ $DL_ALT ]; then
-        wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
-        -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
-    fi
-    if [ $FAIL_DL == 1 ]; then
-        echo "Download failed! Find alternate link and try again."
-        exit 1
-    elif (($FAIL_DL)); then
-        echo "${FAIL_DL} downloads failed! Find alternate link and try again."
+if [ ${VCS} ]; then
+    if [ ${VCS} == "git" -o ${VCS} == "hg" ]; then
+        VCS_CMD="clone"
+        BRANCH_FLAG="-b"
+    elif [ ${VCS} == "svn" ]; then
+        VCS_CMD="co"
+        BRANCH_FLAG=
+    else
+        echo "error: unkown value for VCS; aborting."
         exit 1
     fi
-fi
+    ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
+else
+    if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
+        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+            -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
+        # FTP/alt Download:
+        if (($FAIL_DL)) && [ $DL_ALT ]; then
+            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
+        fi
+        if [ $((FAIL_DL)) == 1 ]; then
+            echo "Download failed! Find alternate link and try again."
+            exit 1
+        elif (($FAIL_DL)); then
+            echo "${FAIL_DL} downloads failed! Find alternate link and try again."
+            exit 1
+        fi
+    fi
 #
-# md5sum:
-echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
-    ( exit ${PIPESTATUS[0]} )
+    # checksum:
+    if [ ${MD5} ]; then
+        echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
+            ( exit ${PIPESTATUS[0]} )
+    elif [ ${SHA1} ]; then
+        echo "${SHA1} ${PROG}-${VERSION}.${ARCHIVE}" | shasum -c ;\
+            ( exit ${PIPESTATUS[0]} )
+    fi
 #
-# Backup previous folder if it exists
-num=1
-while [ -d ${PROG}-${VERSION}${INC} ]; do
-    INC="-${num}"
-    ((num++))
-done
-if [ ${num} -gt 1 ]; then
-    as_root mv ${PROG}-${VERSION} ${PROG}-${VERSION}${INC}
-fi
+    # Backup previous folder if it exists
+    num=1
+    while [ -d ${PROG}-${VERSION}${INC} ]; do
+        INC="-${num}"
+        ((num++))
+    done
+    if [ ${num} -gt 1 ]; then
+        as_root mv ${PROG}-${VERSION} ${PROG}-${VERSION}${INC}
+    fi
 #
-mkdir -v ${PROG}-${VERSION}
-tar -xf ${PROG}-${VERSION}.${ARCHIVE} -C ${PROG}-${VERSION} --strip-components=1
+    mkdir -v ${PROG}-${VERSION}
+    tar -xf ${PROG}-${VERSION}.${ARCHIVE} -C ${PROG}-${VERSION} --strip-components=1
+fi # End "if [ ${VCS} ]..."
+#
 pushd ${PROG}-${VERSION}
 [ ${PATCH} ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
-##cmake child build
-#mkdir -v build && cd build
-##cmake parabuild
-#mkdir ../{PROG}-build && cd ../${PROG}-build
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
+    if ((${CMAKE_PARALLEL})); then
+        mkdir ../{PROG}-build && cd ../${PROG}-build
+    else
+        mkdir -v build && cd build
+    fi
+fi
 ##autogen first
 #./autogen.sh
 #
-#${CONFIGURE} ${CONFIG_FLAGS}
+if [ ${CONFIGURE} ]; then
+    ${CONFIGURE} ${CONFIG_FLAGS}
+fi
 #
-#${MAKE} ${MAKE_FLAGS}
+${MAKE} ${MAKE_FLAGS}
 #
 # Test:
 if [ $TEST ]; then
@@ -189,12 +234,21 @@ if [ $TEST ]; then
 fi
 #
 as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
-cd gadgets
-as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+#
+as_root install -v -Dm644 -o root -g root \
+    doc/mpc-completion.bash /etc/bash_completion.d/
+[ -d ${HOME}/.config/mpc ] || mkdir -pv ${HOME}/.config/mpc
+cp -v doc/mpd-m3u-handler.sh ${HOME}/.config/mpc/
+cp -v doc/mpd-pls-handler.sh ${HOME}/.config/mpc/
+cp -v doc/mppledit ${HOME}/.config/mpc/
+#
 popd
 as_root rm -rf ${PROG}-${VERSION}
 ##cmake parabuild
-#as_root rm -rf ${PROG}-build
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ] &&
+        ((${CMAKE_PARALLEL})); then
+    as_root rm -rf ${PROG}-build
+fi
 #
 # Add to installed list for this computer:
 echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
@@ -211,4 +265,19 @@ if [ $BOOTSCRIPT ]; then
 fi
 #
 ###################################################
+#
+# Configuration
+#***************
+[ -d ${HOME}/bin ] || mkdir -pv ${HOME}/bin
+tee ${HOME}/bin/mpc-wrapper << EOF
+#!/bin/bash
+MPD_HOST=${HOME}/.config/mpd/socket mpc \$@
+EOF
+chmod 755 ${HOME}/bin/mpc-wrapper
+#
+###################################################
+#
+# Common snippets
+#if (cat /list-${CHRISTENED}-${SURNAME} | grep "^XYXY-" > /dev/null); then
+
 

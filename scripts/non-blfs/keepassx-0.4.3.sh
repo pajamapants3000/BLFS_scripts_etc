@@ -25,7 +25,7 @@ grep "keepassx-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
     REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
 [ $PROCEED = "yes" ] || [ $PROCEED = "y" ] || exit 0
 # Download:
-#wget http://www.keepassx.org/releases/keepassx-0.4.3.tar.gz
+wget http://www.keepassx.org/releases/keepassx-0.4.3.tar.gz
 # md5sum:
 echo "1df67bb22b2e08df49f09e61d156f508 keepassx-0.4.3.tar.gz" | md5sum -c ;\
     ( exit ${PIPESTATUS[0]} )

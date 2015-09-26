@@ -42,7 +42,7 @@ source blfs_profile
 #
 tar -xvf qpdfview-0.4.15.tar.gz
 cd qpdfview-0.4.15
-qmake CONFIG+="${QPDF_CONFIG}" qpdfview.pro
+qmake-qt5 CONFIG+="${QPDF_CONFIG}" qpdfview.pro
 make
 # Test:
 make check

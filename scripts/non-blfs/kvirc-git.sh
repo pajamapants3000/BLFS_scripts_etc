@@ -12,66 +12,73 @@ if [ ${#} -gt 1 ]; then
 fi
 #
 # Dependencies
-#
-# This script relies on the presence of lua-5.1! NOT Lua-5.3, not Lua-5.0,...
-#+you get the idea. liblua5.1.a should be installed in /usr/lib/, and
-#+the headers should be in /usr/include/lua5.1 with unversioned names.
-#   THIS WORKS!
-#
-# The biggest bitch dependency was tolua++, which is like a decade old and
-#+not maintained for the last five years at least.
-#
-# Note: Both Lua5.1 and tolua++ had to be compiled with -fPIC. Not exactly
-#+sure if there are any consequence of this; Generates Position Independent
-#+Code, important for shared objects/libraries. Why don't I use this more?
-#
-# I spent so much time getting this right that I don't feel like writing out
-#+a complete listing of dependencies. Look at the options, most of the deps
-#+are optional and obvious from the existing flags, most of which are in
-#+this script. (possibly all of them! another thing I should do is verify
-#+this; another time perhaps.)
+#*************
+# Required
+#C++ compiler
+#pkg-config
+#cmake>=2.8.12.2 (recommended with ccmake curses gui)
+#Pthreads
+#ZLib>=1.2.8
+#X Rendering Extension
+#X11 client-side library
+#Qt>=4.8
+# Recommended
+#git-core
+#Phonon framework
+#OpenSSL
+#Perl>=5.004 (5.10 recommended)
+# Optional
+#Doxygen
+#KDE
+#Enchant
+#GSM speech compressor
+#GNU gettext
+#Python
 #
 # Options
-#
-# Ok, this guy is LOADED with options! Best way to go is probably to do this
-#+manually with ccmake instead of cmake, but I will try to make a good
-#+automation here.
-# Options that may vary and are hard to automate:
-# BUILD_EVE - EVE online
-# BUILD_IBM - IBM/Lenovo Notebooks
-B_IBM=OFF
-# BUILD_NVIDIA - nVidia Support
-B_NV=OFF
-# BUILD_WLAN
-B_W=OFF
-# BUILD_XSHAPE - ?
+#********
 #
 # Preparation
 #*************
 source blfs_profile
 # Other common preparations:
-#source loadqt4
+# Qt5 preferred, but Qt version must match version used to build KDE if
+#+building with KDE support.
+#
+#***************
+#
+# Appears to detect system very well. Running KDE4 with Qt5 active, ccmake
+#+picked up KF5 and Qt5 and seems to have configured to use these well, even
+#+though KDEDIR is set to /opt/kde. This makes me think that the defaults
+#+should be good for the most part (just set the prefix).
+#
+# By the way, they seem to have done a great job with the documentation,
+#+including a great list of options - probably not exhaustive but good.
+#
+#***************
+#
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=conky
-VERSION=1.10.0
-ARCHIVE=tar.gz
-MD5=cdc0298e5f257829d574ae8114170d9b
+PROG=kvirc
+VERSION=git
+ARCHIVE=
+MD5=
+SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=https://github.com/brndnmtthws
+DL_URL=
 DL_ALT=
-REPO=
-# VCS=[git,hg,svn,...]
-VCS=
+REPO=https://github.com/kvirc/KVIrc.git
+# VCS=[git,hg,svn,...]; typically same as VERSION
+VCS=${VERSION}
 BRANCH=master
-# Prepare sources
+# Prepare sources - PATCHDIR default is in blfs_profile
 #PATCHDIR=${WORKING_DIR}/patches
-PATCH=${PROG}-${VERSION}.patch
+#PATCH=${PROG}-${VERSION}.patch
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
@@ -87,71 +94,11 @@ CONFIGURE="cmake"
 # Default for cmake is to build in build subdirectory, but some programs
 #+demand building in a directory that is paralleli to (a sibling of) source.
 #CMAKE_PARALLEL=1
+# Another common cmake parameter is the build type; defaults to Release or
+#+uncomment below
+#CBUILDTYPE=RelWithDebInfo
 #
-# These should work ok as defaults
-CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_ICONV=ON"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_OLD_CONFIG=OFF"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_BUILTIN_CONFIG=OFF"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_WEATHER_METAR=ON -DBUILD_WEATHER_XOAP=ON"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DDEFAULTNETDEV=${IFACE}"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DLOCALE_DIR=${PREFICKS}/share/locale"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DPACKAGE_LIBRARY_DIR=${PREFICKS}/lib/conky"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DLUA_LIBRARIES=lua5.1;dl;m"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DLUA_INCLUDE_DIRS='/usr/include/lua5.1'"
-# Manually set above
-CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_IBM=${B_IBM}"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_NVIDIA=${B_NV}"
-CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_WLAN=${B_W}"
-# Add support as necessary (an associative array would be nice here!)
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^curl-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_CURL=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^libical-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_ICAL=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^imlib2-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_IMLIB2=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^audacious-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_AUDACIOUS=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^bmpx-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_BMPX=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^cmus-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_CMUS=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^eve-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_EVE=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^moc-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_MOC=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^mpd-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_MPD=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^mysql-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_MYSQL=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^xmms2-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_XMMS2=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^libircclient-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_IRC=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^libmicrohttpd-" > /dev/null); then
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_HTTP=ON"
-fi
-if (cat /list-${CHRISTENED}-${SURNAME} | grep "^lua-" > /dev/null); then
-#if ((0)); then
-    if (cat /list-${CHRISTENED}-${SURNAME} | grep "^cairo-" > /dev/null); then
-        CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_LUA_CAIRO=ON"
-    fi
-    if (cat /list-${CHRISTENED}-${SURNAME} | grep "^imlib2-" > /dev/null); then
-        CONFIG_FLAGS="${CONFIG_FLAGS} -DBUILD_LUA_IMLIB2=ON"
-    fi
-fi
-#
+CONFIG_FLAGS=""
 MAKE="make"
 MAKE_FLAGS=""
 TEST=
@@ -178,6 +125,7 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     else
         CMAKE_SRC_ROOT=..
     fi
+    [ ${CBUILDTYPE} ] || CBUILDTYPE="Release"
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -212,15 +160,15 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-                -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
-            -u 18 -s /bin/false $PROGUSER
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+            -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
 fi
@@ -248,14 +196,14 @@ if [ ${VCS} ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}/archive/v${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then
             wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
-        if [ $FAIL_DL == 1 ]; then
+        if [ $((FAIL_DL)) == 1 ]; then
             echo "Download failed! Find alternate link and try again."
             exit 1
         elif (($FAIL_DL)); then
@@ -264,9 +212,14 @@ else
         fi
     fi
 #
-    # md5sum:
-    echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
-        ( exit ${PIPESTATUS[0]} )
+    # checksum:
+    if [ ${MD5} ]; then
+        echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
+            ( exit ${PIPESTATUS[0]} )
+    elif [ ${SHA1} ]; then
+        echo "${SHA1} ${PROG}-${VERSION}.${ARCHIVE}" | shasum -c ;\
+            ( exit ${PIPESTATUS[0]} )
+    fi
 #
     # Backup previous folder if it exists
     num=1
@@ -285,10 +238,13 @@ fi # End "if [ ${VCS} ]..."
 pushd ${PROG}-${VERSION}
 [ ${PATCH} ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
-##cmake child build
-mkdir -v build && cd build
-##cmake parabuild
-#mkdir ../{PROG}-build && cd ../${PROG}-build
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
+    if ((${CMAKE_PARALLEL})); then
+        mkdir ../{PROG}-build && cd ../${PROG}-build
+    else
+        mkdir -v build && cd build
+    fi
+fi
 ##autogen first
 #./autogen.sh
 #
@@ -313,30 +269,26 @@ if [ $TEST ]; then
 fi
 #
 as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
-cd ..
-[ -d ${HOME}/.config/conky ] || mkdir ${HOME}/.config/conky
-cp -v data/*.conf ${HOME}/.config/conky/
-[ -f ${HOME}/.conkyrc ] && mv -v ${HOME}/.conkyrc ${HOME}/.conkyrc.bak || (exit 0)
-ln -sfv .config/conky/conky.conf ${HOME}/.conkyrc
-## Extra vim filetype detection and syntax plugins for conkyrc
-for dir in ftdetect syntax; do
-    [ -d ${HOME}/.vim/${dir} ] || mkdir -pv ${HOME}/.vim/${dir}
-    cp -v extras/vim/${dir}/conkyrc.vim ${HOME}/.vim/${dir}/
-done
-##
-## nano syntax coloring for conkyrc
-[ -d ${HOME}/.config/nano ] || mkdir -pv ${HOME}/.config/nano
-cp extras/nano/conky.nanorc ${HOME}/.config/nano/
-##
-popd
-#as_root rm -rf ${PROG}-${VERSION}
-##cmake parabuild
-#as_root rm -rf ${PROG}-build
 #
 # Add to installed list for this computer:
-#echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
+echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 (($REINSTALL)) && exit 0 || (exit 0)
+#
+cd ..
+[ -d ${HOME}/.config/kvirc ] || mkdir -pv ${HOME}/.config/kvirc
+cp -v doc/*.txt ${HOME}/.config/kvirc/
+cp -v doc/FAQ ${HOME}/.config/kvirc/
+cp -v doc/README ${HOME}/.config/kvirc/
+#
+popd
+as_root rm -rf ${PROG}-${VERSION}
+##cmake parabuild
+if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ] &&
+        ((${CMAKE_PARALLEL})); then
+    as_root rm -rf ${PROG}-build
+fi
+#
 ###################################################
 #
 # Init Script

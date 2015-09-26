@@ -18,6 +18,13 @@ fi
 #
 # Options
 #
+# NOTE: Latest major version of ncursesw is 6, but configure is hardcoded for
+#+5! Leave as manual fix for now, since the only system I've tried building on
+#+with ncursesw6 fails. May or may not be due to this different version;
+#+errors are all related to sigc++ libraries from what I can see.
+#
+# Also, cmake is available and at some point I may want to use that instead.
+#
 # Preparation
 #*************
 source blfs_profile
@@ -120,14 +127,14 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u 18 -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi

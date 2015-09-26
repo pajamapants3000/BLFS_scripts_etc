@@ -82,9 +82,9 @@ as_root mv        /usr/share/doc/git-2.5.0/howto/{*.txt,text}
 as_root mv        /usr/share/doc/git-2.5.0/howto/{*.,}html
 #
 # bash/zsh completions
-[ -e /etc/bash_completion.d ] || mkdir -v /etc/bash_completion.d
+[ -e /etc/bash_completion.d ] || sudo mkdir -v /etc/bash_completion.d
 sudo cp -v contrib/completion/git-completion.bash /etc/bash_completion.d
-[ -e /etc/zsh_completion.d ] || mkdir -v /etc/zsh_completion.d
+[ -e /etc/zsh_completion.d ] || sudo mkdir -v /etc/zsh_completion.d
 sudo cp -v contrib/completion/git-completion.zsh /etc/zsh_completion.d
 # Script to put git status in terminal prompt
 [ -e ${HOME}/bin ] || mkdir -v ${HOME}/bin

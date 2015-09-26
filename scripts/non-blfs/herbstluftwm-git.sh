@@ -14,6 +14,8 @@ fi
 # Dependencies
 #*************
 # Required
+#libxml2
+#docbook_xml
 #asciidoc
 #
 # Options
@@ -127,14 +129,14 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u 18 -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi

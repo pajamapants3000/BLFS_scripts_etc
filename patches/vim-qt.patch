@@ -5,7 +5,7 @@ diff -rup vim-qt-orig/src/Makefile vim-qt/src/Makefile
  #CONF_ARGS = --with-global-runtime=/etc/vim
  #CONF_ARGS = --with-local-dir=/usr/share
  #CONF_ARGS = --without-local-dir
-+CONF_ARGS = --prefix=/usr --with-qt-qmake=/opt/qt4/bin/qmake
++CONF_ARGS = --prefix=/usr --with-qt-qmake=/usr/bin/qmake
  
  # Use this one if you distribute a modified version of Vim.
  #CONF_ARGS = --with-modified-by="John Doe"

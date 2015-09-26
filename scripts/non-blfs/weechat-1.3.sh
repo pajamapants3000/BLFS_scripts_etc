@@ -32,6 +32,7 @@ fi
 #********
 #
 # Prefer python3
+# Uupdate - python3 built fine, but weechat recommends 2.7. Change it?
 if (cat /list-${CHRISTENED}-${SURNAME} | grep "^python-3" > /dev/null); then
     PYVER="3.4m"
 elif (cat /list-${CHRISTENED}-${SURNAME} | grep "^python-2" > /dev/null); then
@@ -39,6 +40,9 @@ elif (cat /list-${CHRISTENED}-${SURNAME} | grep "^python-2" > /dev/null); then
 else
     PYVER=
 fi
+#
+# Overwrite python version to force 2.7
+PYVER=2.7
 #
 # Preparation
 #*************
@@ -86,7 +90,7 @@ CONFIGURE="cmake"
 #+uncomment below
 #CBUILDTYPE=RelWithDebInfo
 #
-CONFIG_FLAGS=""
+CONFIG_FLAGS="-DWEECHAT_HOME=${HOME}/.weechat"
 MAKE="make"
 MAKE_FLAGS=""
 TEST=
@@ -148,14 +152,14 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u 18 -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
@@ -250,7 +254,7 @@ if [ ${PYVER} ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS} -DENABLE_PYTHON=ON"
     CONFIG_FLAGS="${CONFIG_FLAGS} -DPYTHON_EXECUTABLE=/usr/bin/python${PYVER}"
     CONFIG_FLAGS="${CONFIG_FLAGS} -DPYTHON_INCLUDE_PATH=/usr/include/python${PYVER}"
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DPYTHON_LIBRARY=/usr/lib64/libpython${PYVER}.so"
+    CONFIG_FLAGS="${CONFIG_FLAGS} -DPYTHON_LIBRARY=/usr/lib/libpython${PYVER}.so"
 fi
 #
 if [ ${CONFIGURE} ]; then

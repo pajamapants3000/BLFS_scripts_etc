@@ -131,14 +131,14 @@ if [ ${PROGGROUP} ]; then
     fi
     if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u 18 -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/dbus \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u 18 -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
@@ -234,8 +234,8 @@ fi
 as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #
 # Create initial config
-mkdir -pv ${HOME}/.config/ncmpcpp
-cp doc/config ${HOME}/.config/ncmpcpp/
+[ -d ${HOME}/.config/ncmpcpp ] || mkdir -pv ${HOME}/.config/ncmpcpp
+[ -f ${HOME}/.config/ncmpcpp/config ] || cp doc/config ${HOME}/.config/ncmpcpp/
 popd
 as_root rm -rf ${PROG}-${VERSION}
 ##cmake parabuild
@@ -260,17 +260,10 @@ fi
 # Configuration
 #***************
 #
-# Arch Linux recommends for fast Fourier transform visualization (fftw)
-as_root tee -a /etc/mpd.conf << EOF
-audio_output {
-    type                    "fifo"
-    name                    "my_fifo"
-    path                    "/tmp/mpd.fifo"
-    format                  "44100:16:2"
-}
-EOF
-#
 tee -a ${HOME}/.config/ncmpcpp/config << EOF
+ncmpcpp_directory = ${HOME}/.config/ncmpcpp
+mpd_host = /home/tommy/.config/mpd/socket
+mpd_music_dir = ${HOME}/Music
 visualizer_fifo_path = "/tmp/mpd.fifo"
 visualizer_output_name = "my_fifo"
 visualizer_sync_interval = "30"
@@ -279,32 +272,19 @@ visualizer_in_stereo = "yes"
 visualizer_type = "spectrum" (spectrum/wave)
 EOF
 #
-# Some more advice from
-#http://www.linuxandlife.com/2012/01/simple-guide-to-set-up-mpd-with-ncmpcpp.html
-mkdir -p ${HOME}/.config/mpd/playlists
-touch ${HOME}/.config/mpd/{mpd.db,mpd.log,mpd.pid,mpdstate}
-# Then
-tee -a ${HOME}/.config/mpd/mpd.conf << EOF
-music_directory "${HOME}/Music
-playlist_directory "${HOME}/.config/mpd/playlists"
-db_file      "${HOME}/.config/mpd/mpd.db"
-log_file      "${HOME}/.config/mpd/mpd.log"
-pid_file      "${HOME}/.config/mpd/mpd.pid"
-state_file     "${HOME}/.config/mpd/mpdstate"
-audio_output {
-    type  "XXAOXX"
-    name  "whatever name you want"
-}
-EOF
-# Use set value for audio system (alsa or pulse)
-sed -i "s/XXAOXX/${XXAOXX}/" ${HOME}/.config/mpd/mpd.conf
-#
 # Then create a handy script to launch the mpd daemon and the music player in
 #+a terminal
+tee ${HOME}/bin/ncmpcpp-wrapper << EOF
+#!/bin/bash
+ncmpcpp -c ${HOME}/.config/ncmpcpp/config
+EOF
+#
 tee ${HOME}/bin/ncmpcpp-launch << EOF
 #!/bin/bash
-mpd
-st -e ncmpcpp
+if ! (ps -e | grep "mpd" > /dev/null); then
+    mpd
+fi
+st -e ncmpcpp-wrapper
 EOF
 #
 # The author of this article also posted his own config file at

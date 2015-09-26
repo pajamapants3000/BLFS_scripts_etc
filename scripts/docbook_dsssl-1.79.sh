@@ -47,7 +47,7 @@ wget http://downloads.sourceforge.net/docbook/docbook-dsssl-doc-1.79.tar.bz2
 echo "9a7b809a21ab7d2749bb328334c380f2 docbook-dsssl-doc-1.79.tar.bz2" | md5sum -c ;\
     ( exit ${PIPESTATUS[0]} )
 #
-tar -xvf docbook-dsssl-1.79.tar.gz
+tar -xvf docbook-dsssl-1.79.tar.bz2
 cd docbook-dsssl-1.79
 #
 # Optional doc downloaded...

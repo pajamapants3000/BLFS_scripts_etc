@@ -44,7 +44,7 @@ cd dbus-1.10.0
 if ! (cat /etc/group | grep messagebus > /dev/null); then
     pathappend /usr/sbin
     as_root groupadd -g 18 messagebus
-    as_root useradd -c "D-Bus_Message_Daemon_User" -d /var/run/dbus \
+    as_root useradd -c "D-Bus_Message_Daemon_User" -d /var/run/${PROGUSER} \
             -u 18 -g messagebus -s /bin/false messagebus
     pathremove /usr/sbin
 fi

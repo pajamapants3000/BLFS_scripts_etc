@@ -33,6 +33,8 @@ as_root pip3 install bpython           \
                      peewee
 #
 # Rebuild cairocffi's cairo library
+# Note how we change directories; the output goes in to the current working
+#+directory, and if it's not in the site-packages folder, python won't see it!
 cd /usr/lib/python3.4/site-packages
 as_root python3 cairocffi/ffi_build.py
 #
