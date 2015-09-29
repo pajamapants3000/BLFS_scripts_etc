@@ -13,6 +13,12 @@ fi
 #
 # Dependencies
 #*************
+# Recommended
+#openssl-1.0.2d
+#local MDA (e.g. procmail-3.22)
+# Optional
+#python-2.7.10
+#tk-8.6.4
 #
 # Options
 #********
@@ -25,18 +31,18 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
-MD5=
+PROG=fetchmail
+VERSION=6.3.26
+ARCHIVE=tar.xz
+MD5=61b66faad044afa26e142bb1791aa2b3
 SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=
-DL_ALT=
+DL_URL=http://downloads.sourceforge.net
+DL_ALT=ftp://ftp.at.gnucash.org/pub/infosys/mail
 REPO=
 # VCS=[git,hg,svn,...]
 #VCS=${VERSION}
@@ -63,7 +69,7 @@ CONFIGURE="./configure"
 #+uncomment below
 #CBUILDTYPE=RelWithDebInfo
 #
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--with-ssl --enable-fallback=procmail"
 MAKE="make"
 MAKE_FLAGS=""
 TEST=
@@ -161,11 +167,11 @@ if [ ${VCS} ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -221,10 +227,9 @@ ${MAKE} ${MAKE_FLAGS}
 #
 # Test:
 if [ $TEST ]; then
-    [ -d ${WORKING_DIR}/logs ] || mkdir -v ${WORKING_DIR}/logs
     ${MAKE} ${TEST_FLAGS} ${TEST} 2>&1 | \
-        tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
-    STAT=${PIPESTATUS[0]}
+            tee ../logs/${PROG}-${VERSION}-${DATE}.check; \
+    STAT=${PIPESTATUS[0]}; ( exit 0 )
     if (( STAT )); then
         echo "Some tests failed; log in ../$(basename $0)-log"
         echo "Pull up another terminal and check the output"
@@ -261,9 +266,20 @@ fi
 #
 # Configuration
 #***************
+cat > ~/.fetchmailrc << "EOF"
+set logfile /var/log/fetchmail.log
+set no bouncemail
+set postmaster root
+
+poll SERVERNAME :
+    user tommy pass medium;
+    mda "/usr/bin/procmail -f %F -d %T";
+EOF
+chmod -v 0600 ~/.fetchmailrc
 #
 ###################################################
 #
 # Common snippets
 #if (cat /list-${CHRISTENED}-${SURNAME} | grep "^XYXY-" > /dev/null); then
+
 

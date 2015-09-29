@@ -25,18 +25,18 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
+PROG=procmail
+VERSION=3.22
 ARCHIVE=tar.gz
-MD5=
+MD5=1678ea99b973eb77eda4ecf6acae53f1
 SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=
-DL_ALT=
+DL_URL=http://www.ring.gr.jp/archives/net/mail
+DL_ALT=ftp://ftp.ucsb.edu/pub/mirrors
 REPO=
 # VCS=[git,hg,svn,...]
 #VCS=${VERSION}
@@ -51,7 +51,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined
-CONFIGURE="./configure"
+CONFIGURE=""
 #
 # Flags
 # -j${PARALLEL} included by default; uncomment this to unset.
@@ -68,8 +68,9 @@ MAKE="make"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
-INSTALL="install"
-INSTALL_FLAGS=""
+INSTALL1="install"
+INSTALL2="install-suid"
+INSTALL_FLAGS="LOCKINGTEST=/tmp MANDIR=/usr/share/man"
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
@@ -161,11 +162,11 @@ if [ ${VCS} ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -217,14 +218,13 @@ if [ ${CONFIGURE} ]; then
     ${CONFIGURE} ${CONFIG_FLAGS}
 fi
 #
-${MAKE} ${MAKE_FLAGS}
+#${MAKE} ${MAKE_FLAGS}
 #
 # Test:
 if [ $TEST ]; then
-    [ -d ${WORKING_DIR}/logs ] || mkdir -v ${WORKING_DIR}/logs
     ${MAKE} ${TEST_FLAGS} ${TEST} 2>&1 | \
-        tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
-    STAT=${PIPESTATUS[0]}
+            tee ../logs/${PROG}-${VERSION}-${DATE}.check; \
+    STAT=${PIPESTATUS[0]}; ( exit 0 )
     if (( STAT )); then
         echo "Some tests failed; log in ../$(basename $0)-log"
         echo "Pull up another terminal and check the output"
@@ -234,7 +234,14 @@ if [ $TEST ]; then
     fi
 fi
 #
-as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+as_root sed -i 's/getline/get_line/' src/*.[ch]
+as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL1}
+as_root ${MAKE} ${INSTALL2}
+#
+install -v -Dm755 -o ${USER} -g ${USER} examples/1procmailrc ${HOME}/.procmailrc
+install -v -Dm755 -o ${USER} -g ${USER} examples/1rmail ${HOME}/bin/rmail
+[ -d ${HOME}/Mail ] || mkdir -v ${HOME}/Mail
+#
 popd
 as_root rm -rf ${PROG}-${VERSION}
 ##cmake parabuild
@@ -266,4 +273,5 @@ fi
 #
 # Common snippets
 #if (cat /list-${CHRISTENED}-${SURNAME} | grep "^XYXY-" > /dev/null); then
+
 

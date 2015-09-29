@@ -13,9 +13,35 @@ fi
 #
 # Dependencies
 #*************
+# Required
+#cmake-3.3.1
+#openssl-1.0.2d
+# Recommended
+#libevent-2.0.22
+# Optional
+#boost-1.59.0
+#libxml2-2.9.2
+#linux_pam-1.2.1
+#pcre-8.37
+#ruby-2.2.3
+#unixodbc-2.3.2
+#valgrind-3.10.1
+#groonga
+#kytea
+#judy
+#libaio
+#lz4
+#mecab
+#messagepack
+#mruby
+#sphinx
+#tokudb
+#zeromq
 #
 # Options
 #********
+##Build the client without the server
+#CLIENT_ONLY=1
 #
 # Preparation
 #*************
@@ -25,18 +51,18 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
+PROG=mariadb
+VERSION=10.0.21
 ARCHIVE=tar.gz
-MD5=
+MD5=956561f3798d1fe8dfbe4b665287a87a
 SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=
-DL_ALT=
+DL_URL=https://downloads.mariadb.org/interstitial
+DL_ALT=ftp://mirrors.fe.up.pt/pub
 REPO=
 # VCS=[git,hg,svn,...]
 #VCS=${VERSION}
@@ -51,7 +77,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined
-CONFIGURE="./configure"
+CONFIGURE="cmake"
 #
 # Flags
 # -j${PARALLEL} included by default; uncomment this to unset.
@@ -59,25 +85,44 @@ CONFIGURE="./configure"
 # Default for cmake is to build in build subdirectory, but some programs
 #+demand building in a directory that is paralleli to (a sibling of) source.
 #CMAKE_PARALLEL=1
+#
 # Another common cmake parameter is the build type; defaults to Release or
-#+uncomment below
+#+uncomment below; A good alternative is RelWithDebInfo; Another common
+#+alternative is Debug.
 #CBUILDTYPE=RelWithDebInfo
 #
-CONFIG_FLAGS=""
+# These flags will be passed to whatever configuration utility is used
+CONFIG_FLAGS="-DINSTALL_DOCDIR=share/doc/${PROG}-${VERSION}"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_DOCREADMEDIR=share/doc/${PROG}-${VERSION}"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_MANDIR=share/man"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_MYSQLSHAREDIR=share/mysql"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_MYSQLTESTDIR=share/mysql/test"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_PLUGINDIR=lib/mysql/plugin"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_SBINDIR=sbin -DINSTALL_SCRIPTDIR=bin"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_SQLBENCHDIR=share/mysql/bench"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DINSTALL_SUPPORTFILESDIR=share/mysql"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DMYSQL_DATADIR=/srv/mysql"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DMYSQL_UNIX_ADDR=/run/mysqld/mysqld.sock"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DWITH_EXTRA_CHARSETS=complex"
+CONFIG_FLAGS="${CONFIG_FLAGS} -DWITH_EMBEDDED_SERVER=ON -DTOKUDB_OK=0"
+if ((${CLIENT_ONLY})); then
+    CONFIG_FLAGS="${CONFIG_FLAGS} -DWITHOUT_SERVER=ON -DWITH_UNIT_TESTS=OFF"
+fi
+# These flags will be passed to make during the various stages of building
 MAKE="make"
 MAKE_FLAGS=""
-TEST=
+TEST=test
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
-BOOTSCRIPT=
-PROGGROUP=
-PROGGROUPNUM=
-PROGUSER=
+BOOTSCRIPT=mysql
+PROGGROUP=mysql
+PROGGROUPNUM=40
+PROGUSER=mysql
 PROGUSERNUM=${PROGGROUPNUM}
-USRCMNT=
+USRCMNT="MySQL_Server"
 #
 #****************************************************************************#
 ################ No variable settings below this line! #######################
@@ -161,11 +206,11 @@ if [ ${VCS} ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}-${VERSION}/source/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ $DL_ALT ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}/${PROG}-${VERSION}/source/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -201,6 +246,9 @@ else
 fi # End "if [ ${VCS} ]..."
 #
 pushd ${PROG}-${VERSION}
+# BLFS: Set correct installation directory for some components
+sed -i "s@data/test@\${INSTALL_MYSQLTESTDIR}@g" sql/CMakeLists.txt
+#
 [ ${PATCH} ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
@@ -261,9 +309,23 @@ fi
 #
 # Configuration
 #***************
+as_root install -v -dm 755 /etc/mysql
+as_root install -v -Dm644 -o root -g root ${BLFSDIR}/files/my.cnf /etc/mysql/
+#
+as_root mysql_install_db --basedir=/usr --datadir=/srv/mysql --user=mysql
+as_root chown -R mysql:mysql /srv/mysql
+#
+# Further configuration requires the MariaDB server to be running
+as_root install -v -m755 -o mysql -g mysql -d /run/mysqld
+as_root mysqld_safe --user=mysql 2>&1 >/dev/null &
+# Set password for administrator
+as_root mysqladmin -u root password
+# Configuration is now finished; shutdown the server
+as_root mysqladmin -p shutdown
 #
 ###################################################
 #
 # Common snippets
 #if (cat /list-${CHRISTENED}-${SURNAME} | grep "^XYXY-" > /dev/null); then
+
 
