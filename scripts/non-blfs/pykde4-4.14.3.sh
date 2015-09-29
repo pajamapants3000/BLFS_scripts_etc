@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for pykde4-4.14.3
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for WebKit
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Required: CMake >= 2.8.8, BISON 2.3 or FLEX 2.5.34, Gperf 3.0.1, Perl 5.10.0,
 #   PythonInterp 2.6.0
 # Recommended: Ruby 1.8.7

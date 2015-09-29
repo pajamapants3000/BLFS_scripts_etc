@@ -1,6 +1,10 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
-# Installation script for libxfce4util-4.12.1
+#
+# Installation Script
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

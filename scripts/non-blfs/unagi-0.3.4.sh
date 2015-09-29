@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for XXX
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 ###########################################
 # Required: (*** were missing, installed separately without issue.)
 #* Main XCB libraries:

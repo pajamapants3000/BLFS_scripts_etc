@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for i3-4.10.2
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Updated 07/19/2015
 #
 # Dependencies: See separate i3.DEPENDS file, or DEPENDS in root folder of

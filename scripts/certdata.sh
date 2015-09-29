@@ -2,7 +2,10 @@
 # Beyond Linux From Scratch 7.7
 # Main run - 06
 # Certificate Authority Certificates
-# Installation script for certdata
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Time: less than 0.1 SBU
 # Size: 1.2 MB
 # Dependencies

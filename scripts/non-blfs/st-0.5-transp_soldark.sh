@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for st
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Version: transparency support, solarized dark colorscheme
 # Requirements: Xlib header files
 # Download:

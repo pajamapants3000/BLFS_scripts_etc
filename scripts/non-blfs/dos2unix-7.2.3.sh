@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for dos2unix-7.2.3
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Updated 07/21/2015
 #
 # Check for previous installation:

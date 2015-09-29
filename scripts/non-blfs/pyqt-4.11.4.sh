@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for pyqt-4.11.4
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

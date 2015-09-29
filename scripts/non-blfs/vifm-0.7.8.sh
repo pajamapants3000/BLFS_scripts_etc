@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for VIFM-0.7.8
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # VI-based file manager
 # Requirements: ncurses built as a shared library; ASCII-compliant terminal
 # Optional: Perl, VIM

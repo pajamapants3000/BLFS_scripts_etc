@@ -1,6 +1,9 @@
 #!/bin/bash -ev
 # Beyond Linux From Scratch 7.6
-# Installation script for vim-7.4
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Required: Under Ubuntu using apt:
 #   libncurses5-dev, libgnome2-dev, libgnomeui-dev, libgtk2.0-dev, libatk1.0-dev, libbonoboui2-dev, libcairo2-dev

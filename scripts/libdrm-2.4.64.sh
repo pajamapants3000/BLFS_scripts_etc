@@ -1,7 +1,11 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Updated 07/20/2015
-# Installation script for libdrm-2.4.64
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

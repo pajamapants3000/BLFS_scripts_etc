@@ -1,6 +1,10 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
-# Installation script for dbus_glib-0.104
+#
+# Installation Script
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

@@ -1,6 +1,10 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
-# Installation script for calligra-2.9.6
+#
+# Installation Script
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # NOTE: Installed without issue; calligragemini giving error message saying
 #+"installation is broken". But most of the installation seems to work.

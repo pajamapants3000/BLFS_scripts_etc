@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for copy_agent
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Updated as of 07/19/2015
 #
 #  copy.com sync installer

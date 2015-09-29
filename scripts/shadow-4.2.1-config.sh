@@ -1,5 +1,6 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Additional Config for Shadow-4.2.1
 # Check for previous installation:
 #

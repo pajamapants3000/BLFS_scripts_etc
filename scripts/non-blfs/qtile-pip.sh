@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for qtile-pip
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Obtains latest development version (currently 0.10.1) from main git branch
 #
 # Dependencies

@@ -1,7 +1,11 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Main run - 09
-# Installation script for Iptables-1.4.21
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Time: 0.2 SBU
 # Check for previous installation:
 PROCEED="yes"

@@ -1,6 +1,9 @@
 #!/bin/bash -ev
 # Beyond Linux From Scratch 7.7
-# Installation script for keybinder-0.3.0
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

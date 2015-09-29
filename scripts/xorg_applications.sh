@@ -1,7 +1,11 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Xorg Applications
-# Installation script for xorg_applications
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

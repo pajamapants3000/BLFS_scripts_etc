@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for asciidoc-8.6.9
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Requirements: Only main requirement is python. (not specific)
 # Additional requirements - README lists the following tools present for
 #   known-working asciidocs:

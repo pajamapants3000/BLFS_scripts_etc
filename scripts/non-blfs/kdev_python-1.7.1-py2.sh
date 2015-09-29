@@ -1,6 +1,10 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
-# Installation script for kdev_python-1.7.1-py2
+#
+# Installation Script
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Dependencies
 #**************

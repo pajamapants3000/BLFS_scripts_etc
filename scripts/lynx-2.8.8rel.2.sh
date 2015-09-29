@@ -1,7 +1,11 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Main run - 08 - alt
-# Installation script for lynx-2.8.8rel2
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Time: 0.3 SBU
 #
 # Dependencies

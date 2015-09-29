@@ -1,7 +1,11 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Xorg Fonts
-# Installation script for xorg_fonts
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # This script will download, test, and install all packages.
 #
 # Dependencies

@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for dmenu
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Requirements: Xlib header files
 # Check for previous installation:
 PROCEED="yes"

@@ -1,6 +1,10 @@
 #!/bin/bash -e
-# Beyond Linux From Scratch
-# Installation script for docbook-3.1
+#
+# Installation Script
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Make sure only root can run our script
 if [ "$(id -u)" != "0" ]; then

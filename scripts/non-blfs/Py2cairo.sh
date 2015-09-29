@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for py2cairo
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Required: Python-2.7.8 and Cairo-1.12.16, xpyb
 # Check for previous installation:
 PROCEED="yes"

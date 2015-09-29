@@ -1,5 +1,8 @@
 #!/bin/bash -ev
-# Installation script for calibre_latest_git_binary
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Updated 07/20/2015
 #
 # Installs using python, easy!

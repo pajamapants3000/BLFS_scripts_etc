@@ -1,5 +1,6 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Bash shell startup files and other initial configurations
 ######################
 #

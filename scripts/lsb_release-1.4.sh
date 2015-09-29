@@ -1,7 +1,11 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
+#
+# Installation Script
 # Main run - 02
-# Installation script for lsb_release-1.4
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 # Time: less than 0.1 SBU 
 # Check for previous installation:
 PROCEED="yes"

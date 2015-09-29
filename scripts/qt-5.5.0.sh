@@ -1,6 +1,10 @@
 #!/bin/bash -ev
-# Beyond Linux From Scratch
-# Installation script for qt-5.5.0
+#
+# Installation Script
+# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
+# Github: https://github.com/pajamapants3000
+# Legal: See LICENSE in parent directory
+#
 #
 # Important note: This build is VERY memory intensive. It seems there should
 #+be ~2GB RAM per process. To be on the safe side, if you're not sure just do
