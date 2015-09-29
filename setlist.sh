@@ -24,8 +24,4 @@ echo "LIST changed to \"$PARAM\"") ||
 ([ $VARTOCHANGE = "LISTDIR" -o $VARTOCHANGE = "listdir" ] &&
 sed -i s@"^\(LISTDIR=\).*$"@"\1\"$PARAM\""@ generator.sh &&
 echo "LISTDIR changed to \"$PARAM\"" &&
-if [ ! -d $PARAM ]; then echo "Warning: directory doesn't exist!"; fi) ||
-([ $VARTOCHANGE = "SCRIPTDIR" -o $VARTOCHANGE = "scriptdir" ] &&
-sed -i s@"^\(SCRIPTDIR=\).*$"@"\1\"$PARAM\""@ generator.sh &&
-echo "SCRIPTDIR changed to \"$PARAM\"" &&
 if [ ! -d $PARAM ]; then echo "Warning: directory doesn't exist!"; fi)

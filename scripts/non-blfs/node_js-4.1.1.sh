@@ -1,9 +1,6 @@
 #!/bin/bash -ev
-#
-# Installation script
-# Written by: Tommy Lincoln <pajamapants3000@gmail.com>
-# License: See LICENSE in parent folder
-#
+# Beyond Linux From Scratch
+# Installation script for XYXY
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
 #
@@ -16,6 +13,7 @@ fi
 #
 # Dependencies
 #*************
+#python-2.7.10
 #
 # Options
 #********
@@ -23,22 +21,23 @@ fi
 # Preparation
 #*************
 source blfs_profile
+export PYTHON=/usr/bin/python2
 # Other common preparations:
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
-MD5=
+PROG=node
+VERSION=v4.1.1
+ARCHIVE=tar.xz
+MD5=5d3d806527cf179db119a66279e123af
 SHA1=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s)
-DL_URL=
+DL_URL=https://nodejs.org/dist
 DL_ALT=
 REPO=
 # VCS=[git,hg,svn,...]
@@ -69,7 +68,7 @@ CONFIGURE="./configure"
 CONFIG_FLAGS=""
 MAKE="make"
 MAKE_FLAGS=""
-TEST=
+TEST="test"
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
@@ -93,17 +92,15 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     else
         CMAKE_SRC_ROOT=..
     fi
-    [ "${CBUILDTYPE}" ] || CBUILDTYPE="Release"
+    [ ${CBUILDTYPE} ] || CBUILDTYPE="Release"
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x./configure" ]; then
-    [ "${CFG_PREFIX_FLAG}" ] || CFG_PREFIX_FLAG="--prefix"
-    [ "${CFG_SYSCONFDIR_FLAG}" ] || CFG_SYSCONFDIR_FLAG="--sysconfdir"
-    [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
+    [ $CFG_PREFIX_FLAG ] || CFG_PREFIX_FLAG="--prefix"
+    [ $CFG_SYSCONFDIR_FLAG ] || CFG_SYSCONFDIR_FLAG="--sysconfdir"
+    [ $CFG_LOCALSTATEDIR_FLAG ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
     CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
-                  ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
-                  ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER} \
                   ${CONFIG_FLAGS}"
 # Leave place for other possible configuration utilities to set up
 # For now, just do-nothing placeholder command
@@ -121,19 +118,19 @@ TEST_FLAGS="-j${PARALLEL} ${TEST_FLAGS}"
 INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
 #
 # Add group/user
-if [ "${PROGGROUP}" ]; then
+if [ ${PROGGROUP} ]; then
     if ! (cat /etc/group | grep ${PROGGROUP} > /dev/null); then
         pathappend /usr/sbin
         as_root groupadd -g ${PROGGROUPNUM} ${PROGGROUP}
     fi
-    if [ "${PROGUSER}" ]; then
+    if [ ${PROGUSER} ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
         as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
-elif [ "${PROGUSER}" ]; then
+elif [ $PROGUSER ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
     as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u ${PROGUSERNUM} -s /bin/false $PROGUSER
@@ -148,13 +145,13 @@ PROCEED="yes"
 REINSTALL=0
 grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
     REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
-[ "${PROCEED}" = "yes" ] || [ "${PROCEED}" = "y" ] || exit 0
+[ $PROCEED = "yes" ] || [ $PROCEED = "y" ] || exit 0
 # Download:
-if [ "${VCS}" ]; then
-    if [ "${VCS}" == "git" -o ${VCS} == "hg" ]; then
+if [ ${VCS} ]; then
+    if [ ${VCS} == "git" -o ${VCS} == "hg" ]; then
         VCS_CMD="clone"
         BRANCH_FLAG="-b"
-    elif [ "${VCS}" == "svn" ]; then
+    elif [ ${VCS} == "svn" ]; then
         VCS_CMD="co"
         BRANCH_FLAG=
     else
@@ -164,11 +161,11 @@ if [ "${VCS}" ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
-        if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+        if (($FAIL_DL)) && [ $DL_ALT ]; then
+            wget ${DL_ALT}/${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -181,10 +178,10 @@ else
     fi
 #
     # checksum:
-    if [ "${MD5}" ]; then
+    if [ ${MD5} ]; then
         echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
             ( exit ${PIPESTATUS[0]} )
-    elif [ "${SHA1}" ]; then
+    elif [ ${SHA1} ]; then
         echo "${SHA1} ${PROG}-${VERSION}.${ARCHIVE}" | shasum -c ;\
             ( exit ${PIPESTATUS[0]} )
     fi
@@ -204,7 +201,7 @@ else
 fi # End "if [ ${VCS} ]..."
 #
 pushd ${PROG}-${VERSION}
-[ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
+[ ${PATCH} ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     if ((${CMAKE_PARALLEL})); then
@@ -223,8 +220,8 @@ fi
 ${MAKE} ${MAKE_FLAGS}
 #
 # Test:
-if [ "${TEST}" ]; then
-    [ -d ${WORKING_DIR}/logs ] || mkdir -v ${WORKING_DIR}/logs
+if [ "$TEST" ]; then
+    [ -d "${WORKING_DIR}/logs" ] || mkdir -v ${WORKING_DIR}/logs
     ${MAKE} ${TEST_FLAGS} ${TEST} 2>&1 | \
         tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
     STAT=${PIPESTATUS[0]}
@@ -254,7 +251,7 @@ echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 # Init Script
 #*************
-if [ "${BOOTSCRIPT}" ]; then
+if [ $BOOTSCRIPT ]; then
     cd blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     cd ..
@@ -269,4 +266,5 @@ fi
 #
 # Common snippets
 #if (cat /list-${CHRISTENED}-${SURNAME} | grep "^XYXY-" > /dev/null); then
+
 

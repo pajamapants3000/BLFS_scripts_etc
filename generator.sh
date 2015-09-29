@@ -5,8 +5,8 @@
 # To do: Allow for argument for different install list.
 #   Complication: Need flags for more than one optional argument.
 #
-SCRIPTDIR="/home/tommy/Copy/LFS/BLFS/scripts"
 LISTDIR="/home/tommy/Copy/LFS/BLFS"
+SCRIPTDIR="${LISTDIR}/scripts"
 LIST="ENL"
 LISTFILE="list-"$LIST
 PREFIX=${1:-$LIST}
