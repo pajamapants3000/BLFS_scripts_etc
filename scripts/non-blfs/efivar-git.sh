@@ -18,6 +18,11 @@ fi
 #
 # Dependencies
 #*************
+#popt-1.16 - Must be built WITH static library for efivar-static to build
+# If popt not built with static lib (easy enough to rebuild/install), change
+# BINTARGETS in src/Makefile to BINTARGETS=efivar; that should do it. This is
+# covered with a sed command activated by the NOSTATIC option.
+# 
 #
 # Options
 #********
@@ -26,6 +31,10 @@ fi
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
+# If popt not built with static libs and you're too lazy to rebuild (which
+#+REALLY doesn't take long!), disable efivar-static build by uncommenting
+#NOSTATIC=1
+#
 #
 # Preparation
 #*************
@@ -35,9 +44,9 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
+PROG=efivar
+VERSION=git
+#ARCHIVE=tar.gz
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
@@ -48,9 +57,9 @@ DL_ALT=
 MD5=
 SHASUM=
 SHAALG=1
-REPO=
+REPO=https://github.com/rhinstaller/efivar.git
 # VCS=[git,hg,svn,...]; usually used as VERSION
-#VCS=${VERSION}
+VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
@@ -62,7 +71,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="./configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -276,6 +285,13 @@ fi
 # Post-config modifications before building...?
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+if ((${NOSTATIC})); then
+    sed -i 's/^BINTARGETS=.*$/BINTARGETS=efivar/' src/Makefile
+fi
+# Fix a silly typo
+sed -i 's/OBJCETS/OBJECTS/'g src/Makefile
+# Don't let make remove efivar-guids.h, which is sourced by efivar.h at runtime
+sed -i 's/^\.INTERMEDIATE/#&/' src/Makefile
 #
 # Build
 #^^^^^^^
@@ -301,9 +317,14 @@ fi
 #^^^^^^^^^
 as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #
+# Keep the static libraries
+sudo install -Dm644 -o root -g root src/*.a ${PREFICKS}/lib
+#
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+# Fix a missing runtime dependency in pkgconfig
+sudo sed -i 's/-lefivar/-ldl &/' ${PREFICKS}/lib/pkgconfig/efivar.pc
 #
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -341,3 +362,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

@@ -37,13 +37,13 @@ echo "3743beefa3dd6247a73f8f7a32c14c33 popt-1.16.tar.gz" | md5sum -c ;\
 #
 tar -xvf popt-1.16.tar.gz
 cd popt-1.16
-./configure --prefix=/usr --disable-static
+./configure --prefix=/usr
 make
 # with doxygen
 #doxygen
 #
 # Test:
-make check
+#make check
 #
 as_root make install
 # with doxygen

@@ -35,17 +35,17 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
+PROG=mtools
+VERSION=4.0.18
 ARCHIVE=tar.gz
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=ftp://ftp.gnu.org/gnu
 DL_ALT=
-MD5=
+MD5=17b9f525c1ae3583a478338deb7fbc19
 SHASUM=
 SHAALG=1
 REPO=
@@ -197,7 +197,7 @@ if [ "${VCS}" ]; then
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
 else
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
@@ -341,3 +341,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

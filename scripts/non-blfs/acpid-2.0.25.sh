@@ -35,17 +35,17 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
+PROG=acpid
+VERSION=2.0.25
+ARCHIVE=tar.xz
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://sourceforge.net/projects/acpid2/files
 DL_ALT=
-MD5=
+MD5=69bb0cc4a0a89eb2dfecc4851087f568
 SHASUM=
 SHAALG=1
 REPO=
@@ -341,3 +341,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

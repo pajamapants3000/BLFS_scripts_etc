@@ -14,6 +14,9 @@
 # If you have installed libnotify comment out this line:
 #ac_add_options --disable-libnotify
 
+# If you have installed GConf, comment out this line
+ac_add_options --disable-gconf
+
 # GStreamer is necessary for H.264 video playback in HTML5 Video Player;
 # to be enabled, also remember to set "media.gstreamer.enabled" to "true"
 # in about:config. If you have GStreamer 0.x.y, uncomment this line:
@@ -26,7 +29,7 @@ ac_add_options --enable-gstreamer=1.0
 ac_add_options --enable-startup-notification
 
 # Comment out following option if you have PulseAudio installed
-ac_add_options --disable-pulseaudio
+#ac_add_options --disable-pulseaudio
 
 # If you have not installed Yasm then uncomment this line:
 #ac_add_options --disable-webm
@@ -34,7 +37,8 @@ ac_add_options --disable-pulseaudio
 # Comment out following options if you have not installed
 # recommended dependencies:
 ac_add_options --enable-system-sqlite
-ac_add_options --with-system-libevent
+# firefox-41.0.2 build fails on Lilu due to libevent errors!
+#ac_add_options --with-system-libevent
 ac_add_options --with-system-libvpx
 ac_add_options --with-system-nspr
 ac_add_options --with-system-nss
@@ -57,7 +61,9 @@ ac_add_options --enable-official-branding
 ac_add_options --enable-safe-browsing
 ac_add_options --enable-url-classifier
 
-ac_add_options --enable-system-cairo
+# From firefox-40, using system cairo causes firefox to crash
+#+frequently when it is doing background rendering in a tab.
+#ac_add_options --enable-system-cairo
 ac_add_options --enable-system-ffi
 ac_add_options --enable-system-pixman
 

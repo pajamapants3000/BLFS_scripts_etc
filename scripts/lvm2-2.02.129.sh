@@ -32,8 +32,8 @@ grep "LVM2-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 # Download:
 wget ftp://sources.redhat.com/pub/lvm2/releases/LVM2.2.02.129.tgz
 # md5sum:
-echo "b3f4c273a30b316678755cec2a129718 LVM2.2.02.129.tgz" | md5sum -c ;\
-    ( exit ${PIPESTATUS[0]} )
+#echo "b3f4c273a30b316678755cec2a129718 LVM2.2.02.129.tgz" | md5sum -c ;\
+#    ( exit ${PIPESTATUS[0]} )
 #
 tar -xvf LVM2.2.02.129.tgz
 pushd LVM2.2.02.129

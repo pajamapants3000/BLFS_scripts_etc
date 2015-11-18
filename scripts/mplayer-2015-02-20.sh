@@ -4,6 +4,7 @@
 # Github: https://github.com/pajamapants3000
 # Legal: See LICENSE in parent directory
 #
+[ ${BLFS_DIR} ] && source ${BLFS_DIR}/blfs_profile || source blfs_profile
 #
 # Dependencies
 #**************
@@ -84,6 +85,8 @@
 # Begin Kernel
 # End Kernel
 #
+# Options
+GUI=1
 # Installation
 #**************
 # Check for previous installation:
@@ -92,6 +95,14 @@ REINSTALL=0
 grep mplayer-2015-02-20 /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
     REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
 [ $PROCEED = "yes" ] || [ $PROCEED = "y" ] || exit 0
+CONFIG_FLAGS="--prefix=${PREFICKS} --confdir=${CONFDERR}"
+CONFIG_FLAGS="${CONFIG_FLAGS} --enable-dynamic-plugins --enable-menu"
+# If we have GTk and want the GUI, add --enable-gui
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^gtk+-2" > /dev/null); then
+    if [ ${GUI} ]; then
+        CONFIG_FLAGS="${CONFIG_FLAGS} --enable-gui"
+    fi
+fi
 # Download:
 wget http://anduin.linuxfromscratch.org/sources/other/mplayer-2015-02-20.tar.xz
 # md5sum:
@@ -106,14 +117,11 @@ wget http://www.mplayerhq.hu/MPlayer/skins/Clearlooks-1.6.tar.bz2
 tar -xvf mplayer-2015-02-20.tar.xz
 cd mplayer-2015-02-20
 sed -i 's:libsmbclient.h:samba-4.0/&:' configure stream/stream_smb.c
-./configure --prefix=/usr            \
-            --confdir=/etc/mplayer   \
-            --enable-dynamic-plugins \
-            --enable-menu            \
-            --enable-gui
-make
+
+./configure "${CONFIG_FLAGS}"
+make -j${PARALLEL}
 #
-as_root make install
+as_root make -j${PARALLEL} install
 as_root ln -svf ../icons/hicolor/48x48/apps/mplayer.png \
         /usr/share/pixmaps/mplayer.png
 as_root install -v -m755 -d /usr/share/doc/mplayer-2015-02-20

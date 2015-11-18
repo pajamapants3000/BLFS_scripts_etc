@@ -31,12 +31,12 @@ grep parted-3.2 /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 # Download:
 wget http://ftp.gnu.org/gnu/parted/parted-3.2.tar.xz
 # md5sum:
-echo "0247b6a7b314f8edeb618159fa95f9cb parted-3.2.tar.gz" | md5sum -c ;\
+echo "0247b6a7b314f8edeb618159fa95f9cb parted-3.2.tar.xz" | md5sum -c ;\
     ( exit ${PIPESTATUS[0]} )
 #
 # Optional patch
 wget http://www.linuxfromscratch.org/patches/blfs/svn/parted-3.2-devmapper-1.patch
-tar -xvf parted-3.2.tar.gz
+tar -xvf parted-3.2.tar.xz
 cd parted-3.2
 patch -Np1 -i ../parted-3.2-devmapper-1.patch
 ./configure --prefix=/usr --disable-static

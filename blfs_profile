@@ -412,7 +412,8 @@ fi
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
-#export IFACE="enp0s10"
+#export IFACE="eth0"
+#export WIFACE="wlan0"
 ##gpm-1.20.7
 #export MOUSE_PROTOCOL="logim"
 ##cyrus-sasl
@@ -464,7 +465,7 @@ export SCRIPTDIR=${BLFSDIR}/scripts
 export INSTALLERDIR=${BLFSDIR}/package_installer
 export IFACE="enp0s10"
 ##gpm-1.20.7
-export MOUSE_PROTOCOL="logim"
+export MOUSE_PROTOCOL="imps2"
 ##cyrus-sasl
 export AUTHMECH="pam"
 ##Mesalib

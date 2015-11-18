@@ -18,6 +18,8 @@ fi
 #
 # Dependencies
 #*************
+# Required
+#efivar-git
 #
 # Options
 #********
@@ -35,9 +37,9 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
+PROG=efibootmgr
+VERSION=git
+#ARCHIVE=tar.gz
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
@@ -48,9 +50,9 @@ DL_ALT=
 MD5=
 SHASUM=
 SHAALG=1
-REPO=
+REPO=https://github.com/rhinstaller/efibootmgr.git
 # VCS=[git,hg,svn,...]; usually used as VERSION
-#VCS=${VERSION}
+VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
@@ -62,7 +64,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="./configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -341,3 +343,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+
