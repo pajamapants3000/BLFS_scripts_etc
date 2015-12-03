@@ -23,11 +23,23 @@ fi
 #********
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
-# Uncomment to build only, do NOT install or modify system
-#BUILD_ONLY=1
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
+#
+# Support for GZIP compression - requires lzma; uncomment to disable (don't!)
+#DISABLE_GZIP=1
+# Support for XZ compression - requires lzma; uncomment to disable
+#DISABLE_XZ=1
+# Support for LZO compression - requires liblzo2.so; uncomment to disable
+#DISABLE_LZO=1
+# Support for LZ4 compression - requires liblz4.so; uncommen2t to disable
+#DISABLE_LZ4=1
+# Override default compression: Preference goes LZ4, LZO, XZ, gzip (we are
+#+leaving out the old LZMA1), using the first that is present. Note that these
+#+essentially prefer faster algoritms; if space is the preference then override
+#+with XZ, then gzip, LZ4, LZO (not totally sure about this).
+#COMP_DEFAULT=XZ
 #
 # Preparation
 #*************
@@ -37,19 +49,18 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
+PROG=squashfs
+VERSION=4.3
 ARCHIVE=tar.gz
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://sourceforge.net/projects
 DL_ALT=
 MD5=
-SHASUM=
+SHASUM=a615979db9cee82e4a934a1455577f597d290b41
 SHAALG=1
 REPO=
 # VCS=[git,hg,svn,...]; usually used as VERSION
@@ -65,7 +76,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="./configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -197,27 +208,10 @@ if [ "${VCS}" ]; then
         echo "error: unkown value for VCS; aborting."
         exit 1
     fi
-#
-    # Preserve any previous builds; Ensure empty target directory
-    #*************************************************************
-    num=1
-    while [ -d ${PROG}-${VERSION}${INC} ]; do
-        INC="-${num}"
-        ((num++))
-    done
-    if [ ${num} -gt 1 ]; then
-        as_root mv ${PROG}-${VERSION} ${PROG}-${VERSION}${INC}
-    fi
-#
-    # Clone Repository
-    #******************
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
-#
 else
-    # Download Package
-    #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/files/${PROG}/${PROG}${VERSION}/${PROG}${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
@@ -283,9 +277,6 @@ fi
 #^^^^^^^^^^^^^^^^^^^^^
 #./autogen.sh
 #
-# ... or autoreconf if only configure.ac or configure.in are present
-#autoreconf
-#
 # Configure
 #^^^^^^^^^^^
 if [ "${CONFIGURE}" ]; then
@@ -298,6 +289,34 @@ fi
 #
 # Post-config modifications before building...?
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# All relevant files are in subfolder...
+cd squashfs-tools
+# Activate desired and available compression methods; set default.
+if ! ((DISABLE_LZ4)) &&
+        (cat /list-${CHRISTENED}-${SURNAME} | grep "^lz4-" > /dev/null); then
+    sed -i "s/^#\(LZ4_SUPPORT.*\)$/\1/" Makefile
+    [ "${COMP_DEFAULT}" ] || COMP_DEFAULT=lz4
+fi
+if ! ((DISABLE_LZO)) &&
+        (cat /list-${CHRISTENED}-${SURNAME} | grep "^lzo-" > /dev/null); then
+    sed -i "s/^#\(LZO_SUPPORT.*\)$/\1/" Makefile
+    [ "${COMP_DEFAULT}" ] || COMP_DEFAULT=lzo
+fi
+if ! ((DISABLE_XZ)) && (which lzma > /dev/null); then
+    sed -i "s/^#\(XZ_SUPPORT.*\)$/\1/" Makefile
+    [ "${COMP_DEFAULT}" ] || COMP_DEFAULT=xz
+fi
+if ((DISABLE_GZIP)); then
+    sed -i "s/^\(GZ_SUPPORT.*\)$/#\1/" Makefile
+    [ "${COMP_DEFAULT}" ] ||
+        echo "No compression method available!" && exit 1
+else
+    [ "${COMP_DEFAULT}" ] || COMP_DEFAULT=gzip
+fi
+# Apply default compression if one is set -- ... should be
+[ "${COMP_DEFAULT}" ] && sed -i "s@^\(COMP_DEFAULT =\).*@\1 ${COMP_DEFAULT}@" Makefile
+# Set prefix
+[ "${PREFICKS}" ] && sed -i "s@^\(INSTALL_DIR =\).*@\1 ${PREFICKS}/bin@" Makefile
 #
 #
 # Build
@@ -322,9 +341,7 @@ fi
 #
 # Install
 #^^^^^^^^^
-if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
-fi
+as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -366,3 +383,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

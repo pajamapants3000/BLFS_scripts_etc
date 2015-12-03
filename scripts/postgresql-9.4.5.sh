@@ -18,6 +18,21 @@ fi
 #
 # Dependencies
 #*************
+# Optional
+#python-2.7.10
+#tcl-8.6.4
+#openssl-1.0.2d
+#libxml2-2.9.3
+#libxslt-1.1.28
+#openldap-2.4.43
+#linux_pam-1.2.1
+#krb5-1.14
+#bonjour
+# Optional (to regenerate documentation)
+#docbook-4.5
+#docbook_dsssl-1.79
+#openjade-1.3.2
+#sgmlspm-1.1
 #
 # Options
 #********
@@ -37,18 +52,18 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
+PROG=postgresql
+VERSION=9.4.5
+ARCHIVE=tar.bz2
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
-DL_ALT=
-MD5=
+DL_URL=http://ftp.postgresql.org/pub/source
+DL_ALT=ftp://ftp.postgresql.org/pub/source
+MD5=8b2e3472a8dc786649b4d02d02e039a0
 SHASUM=
 SHAALG=1
 REPO=
@@ -86,21 +101,21 @@ CONFIGURE="./configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--enable-thread-safety --docdir=${DOCDER}"
 MAKE="make"
-MAKE_FLAGS=""
-TEST=
+MAKE_FLAGS="world"
+TEST=check
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
-BOOTSCRIPT=
-PROGGROUP=
-PROGGROUPNUM=
-PROGUSER=
+#BOOTSCRIPT=postgresql
+PROGGROUP=postgres
+PROGGROUPNUM=41
+PROGUSER=postgres
 PROGUSERNUM=${PROGGROUPNUM}
-USRCMNT=
+USRCMNT="PostgreSQL_Server"
 #
 #****************************************************************************#
 ################ No variable settings below this line! #######################
@@ -154,6 +169,8 @@ INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
 #
 # Create Group and/or User
 #**************************
+as_root install -v -dm700 /srv/pgsql/data
+as_root install -v -dm755 /run/postgresql
 if [ "${PROGGROUP}" ]; then
     if ! (cat /etc/group | grep ${PROGGROUP} > /dev/null); then
         pathappend /usr/sbin
@@ -161,8 +178,8 @@ if [ "${PROGGROUP}" ]; then
     fi
     if [ "${PROGUSER}" ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
-                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
+        as_root useradd -c "${USRCMNT}" -d /srv/pgsql/data \
+                -u ${PROGUSERNUM} -g $PROGGROUP $PROGUSER
         pathremove /usr/sbin
         fi
     fi
@@ -217,11 +234,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/v${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/v${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -269,6 +286,7 @@ pushd ${PROG}-${VERSION}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
+sed -i '/DEFAULT_PGSOCKET_DIR/s@/tmp@/run/postgresql@' src/include/pg_config_manual.h
 # CMake: Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
@@ -323,12 +341,14 @@ fi
 # Install
 #^^^^^^^^^
 if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-world
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-docs
 fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+as_root chown -Rv postgres:postgres /srv/pgsql /run/postgresql
 #
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -365,4 +385,7 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
+as_root ${SCRIPTDIR}/${PROG}-${VERSION}-config.sh
+#
 ###################################################
+

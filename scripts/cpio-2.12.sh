@@ -37,18 +37,17 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
+PROG=cpio
+VERSION=2.12
+ARCHIVE=tar.bz2
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
-DL_ALT=
-MD5=
+DL_URL=http://ftp.gnu.org/pub/gnu
+DL_ALT=ftp://ftp.gnu.org/pub/gnu
+MD5=93eea9f07c0058c097891c73e4955456
 SHASUM=
 SHAALG=1
 REPO=
@@ -86,10 +85,10 @@ CONFIGURE="./configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--bindir=/bin --enable-mt --with-rmt=/usr/libexec/rmt"
 MAKE="make"
 MAKE_FLAGS=""
-TEST=
+TEST=check
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
@@ -197,31 +196,14 @@ if [ "${VCS}" ]; then
         echo "error: unkown value for VCS; aborting."
         exit 1
     fi
-#
-    # Preserve any previous builds; Ensure empty target directory
-    #*************************************************************
-    num=1
-    while [ -d ${PROG}-${VERSION}${INC} ]; do
-        INC="-${num}"
-        ((num++))
-    done
-    if [ ${num} -gt 1 ]; then
-        as_root mv ${PROG}-${VERSION} ${PROG}-${VERSION}${INC}
-    fi
-#
-    # Clone Repository
-    #******************
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
-#
 else
-    # Download Package
-    #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -283,9 +265,6 @@ fi
 #^^^^^^^^^^^^^^^^^^^^^
 #./autogen.sh
 #
-# ... or autoreconf if only configure.ac or configure.in are present
-#autoreconf
-#
 # Configure
 #^^^^^^^^^^^
 if [ "${CONFIGURE}" ]; then
@@ -304,6 +283,14 @@ fi
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
+makeinfo --html            -o doc/html      doc/cpio.texi
+makeinfo --html --no-split -o doc/cpio.html doc/cpio.texi
+makeinfo --plaintext       -o doc/cpio.txt  doc/cpio.texi
+#
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^texlive-" > /dev/null); then
+    make -C doc pdf
+    make -C doc ps
+fi
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
@@ -324,6 +311,12 @@ fi
 #^^^^^^^^^
 if ! ((BUILD_ONLY)); then
     as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+    as_root install -v -m755 -d /usr/share/doc/cpio-2.12/html
+    as_root install -v -m644    doc/html/* /usr/share/doc/cpio-2.12/html
+    as_root install -v -m644    doc/cpio.{html,txt} /usr/share/doc/cpio-2.12
+    if (cat /list-${CHRISTENED}-${SURNAME} | grep "^texlive-" > /dev/null); then
+        as_root install -v -m644 doc/cpio.{pdf,ps,dvi} /usr/share/doc/cpio-2.12
+    fi
 fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
@@ -366,3 +359,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

@@ -37,13 +37,12 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
-VERSION=
-ARCHIVE=tar.gz
+PROG=bash_completion
+VERSION=git
+ARCHIVE=
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
 DL_URL=
@@ -51,9 +50,9 @@ DL_ALT=
 MD5=
 SHASUM=
 SHAALG=1
-REPO=
+REPO=git://git.debian.org/git/bash-completion/bash-completion.git
 # VCS=[git,hg,svn,...]; usually used as VERSION
-#VCS=${VERSION}
+VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
@@ -89,7 +88,7 @@ CONFIGURE="./configure"
 CONFIG_FLAGS=""
 MAKE="make"
 MAKE_FLAGS=""
-TEST=
+#TEST=check             # Requires dejagnu and tcllib
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
@@ -197,7 +196,6 @@ if [ "${VCS}" ]; then
         echo "error: unkown value for VCS; aborting."
         exit 1
     fi
-#
     # Preserve any previous builds; Ensure empty target directory
     #*************************************************************
     num=1
@@ -212,10 +210,7 @@ if [ "${VCS}" ]; then
     # Clone Repository
     #******************
     ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
-#
 else
-    # Download Package
-    #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
         wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
@@ -284,7 +279,10 @@ fi
 #./autogen.sh
 #
 # ... or autoreconf if only configure.ac or configure.in are present
-#autoreconf
+__AUTOMAKE=$AUTOMAKE
+export AUTOMAKE='automake --add-missing'
+autoreconf
+export AUTOMAKE=__AUTOMAKE
 #
 # Configure
 #^^^^^^^^^^^
@@ -366,3 +364,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

@@ -329,7 +329,4 @@ as_root mysqladmin -p shutdown
 #
 ###################################################
 #
-# Common snippets
-#if (cat /list-${CHRISTENED}-${SURNAME} | grep "^XYXY-" > /dev/null); then
-
 
