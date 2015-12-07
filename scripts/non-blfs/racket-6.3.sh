@@ -18,21 +18,6 @@ fi
 #
 # Dependencies
 #*************
-# Optional
-#python-2.7.10
-#tcl-8.6.4
-#openssl-1.0.2d
-#libxml2-2.9.3
-#libxslt-1.1.28
-#openldap-2.4.43
-#linux_pam-1.2.1
-#krb5-1.14
-#bonjour
-# Optional (to regenerate documentation)
-#docbook-4.5
-#docbook_dsssl-1.79
-#openjade-1.3.2
-#sgmlspm-1.1
 #
 # Options
 #********
@@ -52,18 +37,20 @@ source blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=postgresql
-VERSION=9.4.5
-ARCHIVE=tar.bz2
+PROG=racket
+VERSION=6.3
+ARCHIVE=tgz
 #
 WORKING_DIR=$PWD
-SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
+PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
+SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}/src
+BUILDDIR=${WORKING_DIR}/${PROG}-${VERSION}/src/build
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://ftp.postgresql.org/pub/source
-DL_ALT=ftp://ftp.postgresql.org/pub/source
-MD5=8b2e3472a8dc786649b4d02d02e039a0
+DL_URL=http://mirror.racket-lang.org/installers
+DL_ALT=http://www.cs.utah.edu/plt/installers
+MD5=1971271074b93462c3458907331dcbf7
 SHASUM=
 SHAALG=1
 REPO=
@@ -80,7 +67,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="./configure"
+CONFIGURE="../configure"
 #
 # Flags
 #*******
@@ -101,21 +88,21 @@ CONFIGURE="./configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS="--enable-thread-safety --docdir=${DOCDER}"
+CONFIG_FLAGS="--enable-shared"
 MAKE="make"
-MAKE_FLAGS="world"
-TEST=check
+MAKE_FLAGS=""
+TEST=
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
-#BOOTSCRIPT=postgresql
-PROGGROUP=postgres
-PROGGROUPNUM=41
-PROGUSER=postgres
+BOOTSCRIPT=
+PROGGROUP=
+PROGGROUPNUM=
+PROGUSER=
 PROGUSERNUM=${PROGGROUPNUM}
-USRCMNT="PostgreSQL_Server"
+USRCMNT=
 #
 #****************************************************************************#
 ################ No variable settings below this line! #######################
@@ -169,8 +156,6 @@ INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
 #
 # Create Group and/or User
 #**************************
-as_root install -v -dm700 /srv/pgsql/data
-as_root install -v -dm777 /run/postgresql
 if [ "${PROGGROUP}" ]; then
     if ! (cat /etc/group | grep ${PROGGROUP} > /dev/null); then
         pathappend /usr/sbin
@@ -178,8 +163,8 @@ if [ "${PROGGROUP}" ]; then
     fi
     if [ "${PROGUSER}" ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /srv/pgsql/data \
-                -u ${PROGUSERNUM} -g $PROGGROUP $PROGUSER
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+                -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
@@ -234,11 +219,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/v${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${VERSION}/${PROG}-${VERSION}-src-builtpkgs.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/v${VERSION}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${VERSION}/${PROG}-${VERSION}-src-builtpkgs.${ARCHIVE} \
             -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -281,12 +266,11 @@ fi # End "if [ ${VCS} ]..."
 #********************
 # Change to source directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^
-pushd ${PROG}-${VERSION}
+pushd ${PROG}-${VERSION}/src
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
-sed -i '/DEFAULT_PGSOCKET_DIR/s@/tmp@/run/postgresql@' src/include/pg_config_manual.h
 # CMake: Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
@@ -297,6 +281,8 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     fi
 fi
 #
+mkdir -v build
+pushd build
 # Autogen if necessary
 #^^^^^^^^^^^^^^^^^^^^^
 #./autogen.sh
@@ -341,17 +327,16 @@ fi
 # Install
 #^^^^^^^^^
 if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-world
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-docs
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-as_root chown -Rv postgres:postgres /srv/pgsql /run/postgresql
 #
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+popd
 popd
 if ! ((${PRESERVE_BUILD})); then
     as_root rm -rf ${PROG}-${VERSION}
@@ -385,14 +370,5 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
-as_root ${SCRIPTDIR}/${PROG}-${VERSION}-config.sh
-#
-# Set up for current user (usually tommy)
-install -v -dm700 ${HOME}/.config/pgsql/data
-initdb ${HOME}/.config/pgsql/data
-echo "echo PGDATA=${HOME}/.config/pgsql/data" >> ${HOME}/.config/bash/bash_envar.sh
-#
-# Launch the server by executing, as tommy
-#$pg_ctl -l logfile start
 ###################################################
 

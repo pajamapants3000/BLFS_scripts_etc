@@ -1,11 +1,11 @@
-diff -rup src/Makefile src-new/Makefile
---- src/Makefile	2015-12-06 03:16:32.533303134 -0800
-+++ src-new/Makefile	2015-12-06 03:18:51.511008273 -0800
+diff -rup vim-qt-old/src/Makefile vim-qt/src/Makefile
+--- vim-qt-old/src/Makefile	2015-12-06 07:43:36.885598732 -0800
++++ vim-qt/src/Makefile	2015-12-06 07:53:47.478748605 -0800
 @@ -316,6 +316,7 @@ CClink = $(CC)
  #CONF_ARGS = --with-global-runtime=/etc/vim
  #CONF_ARGS = --with-local-dir=/usr/share
  #CONF_ARGS = --without-local-dir
-+CONF_ARGS = --prefix=/usr --with-qt-qmake=/usr/bin/qmake
++CONF_ARGS = --prefix=/usr --with-qt-qmake=/opt/qt4/bin/qmake
  
  # Use this one if you distribute a modified version of Vim.
  #CONF_ARGS = --with-modified-by="John Doe"
@@ -26,16 +26,28 @@ diff -rup src/Makefile src-new/Makefile
  
  # LUA
  # Uncomment one of these when you want to include the Lua interface.
-@@ -384,7 +386,7 @@ CClink = $(CC)
- # Use --with-luajit if you want to use LuaJIT instead of Lua.
- # Set PATH environment variable to find lua or luajit executable.
+@@ -386,7 +388,7 @@ CClink = $(CC)
  #CONF_OPT_LUA = --enable-luainterp
--#CONF_OPT_LUA = --enable-luainterp=dynamic
-+CONF_OPT_LUA = --enable-luainterp=dynamic
+ #CONF_OPT_LUA = --enable-luainterp=dynamic
  #CONF_OPT_LUA = --enable-luainterp --with-luajit
- #CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
+-#CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
++CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
  # Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
-@@ -410,7 +412,7 @@ CClink = $(CC)
+ #CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
+ 
+@@ -394,9 +396,10 @@ CClink = $(CC)
+ # Uncomment this when you want to include the MzScheme interface.
+ #CONF_OPT_MZSCHEME = --enable-mzschemeinterp
+ # PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
+-#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
++CONF_OPT_PLTHOME  = --with-plthome=/usr
+ #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
+ #CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
++MZSCHEME_MZC = raco
+ 
+ # PERL
+ # Uncomment one of these when you want to include the Perl interface.
+@@ -410,7 +413,7 @@ CClink = $(CC)
  # one: "touch perl.exp".
  # This requires at least "small" features, "tiny" doesn't work.
  #CONF_OPT_PERL = --enable-perlinterp
@@ -44,7 +56,7 @@ diff -rup src/Makefile src-new/Makefile
  
  # PYTHON
  # Uncomment this when you want to include the Python interface.
-@@ -425,21 +427,21 @@ CClink = $(CC)
+@@ -425,26 +428,26 @@ CClink = $(CC)
  # However, this may still cause problems, such as "import termios" failing.
  # Build two separate versions of Vim in that case.
  #CONF_OPT_PYTHON = --enable-pythoninterp
@@ -70,7 +82,22 @@ diff -rup src/Makefile src-new/Makefile
  #CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
  
  # CSCOPE
-@@ -503,10 +505,10 @@ CClink = $(CC)
+ # Uncomment this when you want to include the Cscope interface.
+-#CONF_OPT_CSCOPE = --enable-cscope
++CONF_OPT_CSCOPE = --enable-cscope
+ 
+ # WORKSHOP - Sun Visual Workshop interface.  Only works with Motif!
+ #CONF_OPT_WORKSHOP = --enable-workshop
+@@ -455,7 +458,7 @@ CClink = $(CC)
+ #CONF_OPT_NETBEANS = --disable-netbeans
+ 
+ # SNIFF - Include support for SNiFF+.
+-#CONF_OPT_SNIFF = --enable-sniff
++CONF_OPT_SNIFF = --enable-sniff
+ 
+ # MULTIBYTE - To edit multi-byte characters.
+ # Uncomment this when you want to edit a multibyte language.
+@@ -503,10 +506,10 @@ CClink = $(CC)
  #CONF_OPT_FEAT = --with-features=small
  #CONF_OPT_FEAT = --with-features=normal
  #CONF_OPT_FEAT = --with-features=big
@@ -83,3 +110,12 @@ diff -rup src/Makefile src-new/Makefile
  
  # X WINDOWS DISABLE - For creating a plain Vim without any X11 related fancies
  # (otherwise Vim configure will try to include xterm titlebar access)
+@@ -2742,7 +2745,7 @@ objects/if_mzsch.o: if_mzsch.c $(MZSCHEM
+ 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
+  
+ mzscheme_base.c:
+-	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
++	$(MZSCHEME_MZC) ctool --c-mods mzscheme_base.c ++lib racket/base
+ 
+ objects/if_perl.o: auto/if_perl.c
+ 	$(CCC) $(PERL_CFLAGS) -o $@ auto/if_perl.c

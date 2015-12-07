@@ -19,27 +19,21 @@ if (cat /list-${CHRISTENED}-${SURNAME} | grep "qt-4" > /dev/null); then
         source setqt4
     fi
 else
-    echo "keepassx-0.4.3 will not build without qt4"
-    echo "Please install qt4 and try installing keepassx-0.4.3 again"
+    echo "krdc-4.14.3 will not build without qt4"
+    echo "Please install qt4 and try installing krdc-4.14.3 again"
     exit E_MISSINGDEP
 fi
 #
 # Dependencies
 #**************
-# Begin Required
+# Required
 #cmake-3.3.1
-#qt-5.5.0
+#qt-4.8.7
 #kde4_core
 #automoc-0.9.88
-# End Required
-# Begin Recommended (Runtime)
-#freerdp-git
+#libvncserver-git
 #telepathy-qt
-# End Recommended (Runtime)
-# Begin Optional
-# End Optional
-# Begin Kernel
-# End Kernel
+#freerdp-git
 #
 # Installation
 #**************

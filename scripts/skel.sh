@@ -31,18 +31,31 @@ fi
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 # Other common preparations:
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
 PROG=
+# Alternate program name, possibly with caps, etc.;
+#PROG_ALT=
 VERSION=
 ARCHIVE=tar.gz
 #
+# Useful paths
+# This is the directory in which we store any downloaded files; by default it
+#+is the directory from which this script was executed.
 WORKING_DIR=$PWD
-SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
+# This is where the root of the package directory will be found
+PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
+# This is where the sources are
+SRCDIR=${PKGDIR}
+# Subdirectory build
+BUILDDIR=${SRCDIR}/build
+# Parallel-directory build
+#BUILDDIR=${SRCDIR}/../build
+# Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
@@ -64,8 +77,8 @@ SYSCONFDER=/etc
 LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
-# CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="./configure"
+# CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
+CONFIGURE="${SRCDIR}/configure"
 #
 # Flags
 #*******
@@ -74,9 +87,8 @@ CONFIGURE="./configure"
 #
 # CMake
 #^^^^^^^
-# Default for cmake is to build in build subdirectory, but some programs
-#+demand building in a directory that is paralleli to (a sibling of) source.
-#CMAKE_PARALLEL=1
+# Use this if CMake source root is different from SRCDIR
+#CMAKE_SRC_ROOT=
 #
 # Another common cmake parameter is the build type; defaults to Release or
 #+uncomment below
@@ -111,20 +123,16 @@ USRCMNT=
 # CMake
 #^^^^^^^
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
-    if ((${CMAKE_PARALLEL})); then
-        CMAKE_SRC_ROOT=../${PROG}-${VERSION}
-    else
-        CMAKE_SRC_ROOT=..
-    fi
-    [ "${CBUILDTYPE}" ] || CBUILDTYPE="Release"
+    [ "${CMAKE_SRC_ROOT}" ] || CMAKE_SRC_ROOT=${SRCDIR}
+    [ "${CBUILDTYPE}" ]     || CBUILDTYPE="Release"
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
 # configure
 #^^^^^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x./configure" ]; then
-    [ "${CFG_PREFIX_FLAG}" ] || CFG_PREFIX_FLAG="--prefix"
-    [ "${CFG_SYSCONFDIR_FLAG}" ] || CFG_SYSCONFDIR_FLAG="--sysconfdir"
+    [ "${CFG_PREFIX_FLAG}" ]        || CFG_PREFIX_FLAG="--prefix"
+    [ "${CFG_SYSCONFDIR_FLAG}" ]    || CFG_SYSCONFDIR_FLAG="--sysconfdir"
     [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
     CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
                   ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
@@ -148,8 +156,8 @@ fi
 #
 # Default make flags
 #********************
-MAKE_FLAGS="-j${PARALLEL} ${MAKE_FLAGS}"
-TEST_FLAGS="-j${PARALLEL} ${TEST_FLAGS}"
+MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
+TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
 INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
 #
 # Create Group and/or User
@@ -182,8 +190,8 @@ grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
     REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
 [ "${PROCEED}" = "yes" ] || [ "${PROCEED}" = "y" ] || exit 0
 #
-((${TREATASNEW})) && REINSTALL=0
-((${TREATASOLD})) && REINSTALL=1
+((TREATASNEW)) && REINSTALL=0
+((TREATASOLD)) && REINSTALL=1
 # Obtain package
 #****************
 if [ "${VCS}" ]; then
@@ -201,28 +209,28 @@ if [ "${VCS}" ]; then
     # Preserve any previous builds; Ensure empty target directory
     #*************************************************************
     num=1
-    while [ -d ${PROG}-${VERSION}${INC} ]; do
+    while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
     if [ ${num} -gt 1 ]; then
-        as_root mv ${PROG}-${VERSION} ${PROG}-${VERSION}${INC}
+        as_root mv ${PKGDIR} ${PKGDIR}${INC}
     fi
 #
     # Clone Repository
     #******************
-    ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PROG}-${VERSION}
+    ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PKGDIR}
 #
 else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
         wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
-            -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
+            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
             wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
-            -O ${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
+            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
             echo "Download failed! Find alternate link and try again."
@@ -236,55 +244,56 @@ else
     # Verify package
     #****************
     if [ "${SHASUM}" ]; then
-        echo "${SHASUM}  ${PROG}-${VERSION}.${ARCHIVE}" | shasum -a ${SHAALG} -c ;\
+        echo "${SHASUM}  ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" |
+                shasum -a ${SHAALG} -c ;\
             ( exit ${PIPESTATUS[0]} )
     elif [ "${MD5}" ]; then
-        echo "${MD5} ${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
+        echo "${MD5} ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
             ( exit ${PIPESTATUS[0]} )
     fi
 #
     # Preserve any previous builds
     #******************************
     num=1
-    while [ -d ${PROG}-${VERSION}${INC} ]; do
+    while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
     if [ ${num} -gt 1 ]; then
-        as_root mv ${PROG}-${VERSION} ${PROG}-${VERSION}${INC}
+        as_root mv ${PKGDIR} ${PKGDIR}${INC}
     fi
 #
     # Extract package
     #*****************
-    mkdir -v ${PROG}-${VERSION}
-    tar -xf ${PROG}-${VERSION}.${ARCHIVE} -C ${PROG}-${VERSION} --strip-components=1
+    mkdir -v ${PKGDIR}
+    tar -xf ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} \
+            -C ${PKGDIR} --strip-components=1
 fi # End "if [ ${VCS} ]..."
 #
 # Begin Installation
 #********************
 # Change to source directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^
-pushd ${PROG}-${VERSION}
+pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
-# CMake: Create build directory
+# Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
-    if ((${CMAKE_PARALLEL})); then
-        mkdir ../{PROG}-build && cd ../${PROG}-build
-    else
-        mkdir -v build && cd build
-    fi
-fi
+mkdir -v ${BUILDDIR}
+pushd ${BUILDDIR}
 #
 # Autogen if necessary
 #^^^^^^^^^^^^^^^^^^^^^
-#./autogen.sh
+#${SRCDIR}/autogen.sh
 #
 # ... or autoreconf if only configure.ac or configure.in are present
-#autoreconf
+#autoreconf ${SRCDIR}
+#
+# Pre-config -- additional actions to take before running configuration
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 #
 # Configure
 #^^^^^^^^^^^
@@ -296,8 +305,8 @@ if [ "${CONFIGURE}" ]; then
     fi
 fi
 #
-# Post-config modifications before building...?
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Post-config modifications before building
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
 # Build
@@ -328,32 +337,35 @@ fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
+# All commands in this section will be executed, even for upgrades and
+#+reinstalls. To set a command to be executed only once, put it in the
+#+Configuration section below.
 #
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-popd
-if ! ((${PRESERVE_BUILD})); then
-    as_root rm -rf ${PROG}-${VERSION}
-    ##cmake parabuild
-    if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ] &&
-            ((${CMAKE_PARALLEL})); then
-        as_root rm -rf ${PROG}-build
-    fi
+popd    # Back to $SRCDIR
+popd    # Back to $WORKING_DIR
+if ! ((PRESERVE_BUILD)) && ! ((BUILD_ONLY)); then
+    as_root rm -rf ${BUILDDIR}
+else
+    as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
 fi
+as_root rm -rf ${PKGDIR}
+[ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
+    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
 #
 # Add to installed list for this computer:
 echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 # Stop here unless this is first install
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(($REINSTALL)) && exit 0 || (exit 0)
+((REINSTALL)) && exit 0 || (exit 0)
 ###################################################
 #
 # Init Script
 #*************
 if [ "${BOOTSCRIPT}" ]; then
-    pushd blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
+    pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     popd
 fi
