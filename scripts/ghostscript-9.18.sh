@@ -18,6 +18,21 @@ fi
 #
 # Dependencies
 #*************
+# Recommended
+#freetype-2.6.2
+#libjpeg_turbo-1.4.2
+#libpng-1.6.19
+#libtiff-4.0.6
+#little cms-2.7
+# Optional
+#cairo-1.14.4
+#cups-2.1.2
+#fontconfig-2.11.1 (required if you are installing any suggested font)
+#gtk+-2.24.28
+#libidn-1.32
+#libpaper-1.1.24+nmu4
+#little cms-1.19 (not used by default nor if lcms2 is present or found)
+#x_window_system
 #
 # Options
 #********
@@ -29,6 +44,19 @@ fi
 #TREATASNEW=1
 #TREATASOLD=1
 #
+# This will save some space by not linking to the CUPS library if it is present
+#NO_CUPS=0
+# Uncomment this to skip building the shared library; Only builds if GTK2 is present
+#NO_SHARED=1
+#
+# Install standard fonts
+STD_FONT=1
+# Install optional fonts
+#ALT_FONT=1
+#
+# Run small test at the end
+RUN_TEST=1
+#
 # Preparation
 #*************
 source ${HOME}/.blfs_profile
@@ -37,11 +65,11 @@ source ${HOME}/.blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=ghostscript
 # Alternate program name, possibly with caps, etc.;
 #PROG_ALT=
-VERSION=
-ARCHIVE=tar.gz
+VERSION=9.18
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -51,8 +79,6 @@ WORKING_DIR=$PWD
 PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
-# Source dir build
-#BUILDDIR=${SRCDIR}
 # Subdirectory build
 BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
@@ -61,12 +87,16 @@ BUILDDIR=${SRCDIR}/build
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://downloads.ghostscript.com/public
 DL_ALT=
-MD5=
+MD5=aa125af368d89b3dbd15fc379f13375f
 SHASUM=
 SHAALG=1
 REPO=
+DL_STD_FONT=http://downloads.sourceforge.net/gs-fonts/ghostscript-fonts-std-8.11.tar.gz
+MD5_STD_FONT=6865682b095f8c4500c54b285ff05ef6
+DL_ALT_FONT=http://downloads.sourceforge.net/gs-fonts/gnu-gs-fonts-other-6.0.tar.gz
+MD5_ALT_FONT=33457d3f37de7ef03d2eea05a9e6aa4f
 # VCS=[git,hg,svn,...]; usually used as VERSION
 #VCS=${VERSION}
 BRANCH=master
@@ -100,7 +130,11 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--disable-compile-inits --enable-dynamic"
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^libtiff-" > /dev/null); then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --with-system-libtiff"
+fi
+((NO_CUPS)) && CONFIG_FLAGS="${CONFIG_FLAGS} --disable-cups"
 MAKE="make"
 MAKE_FLAGS=""
 TEST=
@@ -148,7 +182,7 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xqmake" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
 # Autogen
 #^^^^^^^^^
-elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x/autogen.sh" ]; then
+elif [ "x${CONFIGURE:$((${#CONFIGURE}-12)):12}" = "x./autogen.sh" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
 # Default
 #^^^^^^^^^
@@ -272,6 +306,19 @@ else
             -C ${PKGDIR} --strip-components=1
 fi # End "if [ ${VCS} ]..."
 #
+# Additional Downloads
+((STD_FONT)) &&
+if ! [ -f ghostscript-fonts-std-8.11.tar.gz ]; then
+    wget ${DL_STD_FONT} -O ${WORKING_DIR}/ghostscript-fonts-std-8.11.tar.gz
+    echo "${MD5_STD_FONT} ${WORKING_DIR}/ghostscript-fonts-std-8.11.tar.gz" | md5sum -c ;\
+        ( exit ${PIPESTATUS[0]} )
+fi
+((ALT_FONT)) &&
+if ! [ -f gnu-gs-fonts-other-6.0.tar.gz ]; then
+    wget ${DL_ALT_FONT} -O ${WORKING_DIR}/gnu-gs-fonts-other-6.0.tar.gz
+    echo "${MD5_ALT_FONT} ${WORKING_DIR}/gnu-gs-fonts-other-6.0.tar.gz" | md5sum -c ;\
+        ( exit ${PIPESTATUS[0]} )
+fi
 # Begin Installation
 #********************
 # Change to source directory
@@ -280,6 +327,20 @@ pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
+#
+for lib in freetype libpng; do
+    if (cat /list-${CHRISTENED}-${SURNAME} | grep "^${lib}-" > /dev/null); then
+        GOT_LIBS="${GOT_LIBS} ${lib}"
+    fi
+done
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^little_cms-" > /dev/null); then
+    GOT_LIBS="${GOT_LIBS} lcms2"
+fi
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^libjpeg_turbo-" > /dev/null); then
+    GOT_LIBS="${GOT_LIBS} jpeg"
+fi
+sed -i 's/ZLIBDIR=src/ZLIBDIR=$includedir/' configure.ac configure &&
+rm -rf ${GOT_LIBS} zlib
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -295,7 +356,6 @@ pushd ${BUILDDIR}
 #
 # Pre-config -- additional actions to take before running configuration
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
 #
 # Configure
 #^^^^^^^^^^^
@@ -315,6 +375,9 @@ fi
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^gtk+-2" > /dev/null); then
+    ((NO_SHARED)) || make so
+fi
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
@@ -337,12 +400,29 @@ if ! ((BUILD_ONLY)); then
     as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 fi
 #
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^gtk+-2" > /dev/null) &&
+        ! ((NO_SHARED)); then
+    as_root make soinstall
+    as_root install -v -m644 ${SRCDIR}/base/*.h /usr/include/ghostscript
+    as_root ln -v -s ghostscript /usr/include/ps
+fi
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # All commands in this section will be executed, even for upgrades and
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
+as_root ln -sfvn ../${PROG}/${VERSION}/doc /usr/share/doc/${PROG}-${VERSION}
+#
+((STD_FONT)) &&
+    as_root tar -xvf ${WORKING_DIR}/ghostscript-fonts-std-8.11.tar.gz -C /usr/share/ghostscript --no-same-owner &&
+    as_root fc-cache -v /usr/share/ghostscript/fonts/
+((ALT_FONT)) &&
+    as_root tar -xvf ${WORKING_DIR}/gnu-gs-fonts-other-6.0.tar.gz -C /usr/share/ghostscript --no-same-owner &&
+    as_root fc-cache -v /usr/share/ghostscript/fonts/
+#
+# Just a little test
+gs -q -dBATCH /usr/share/${PROG}/${VERSION}/examples/tiger.eps
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -380,3 +460,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

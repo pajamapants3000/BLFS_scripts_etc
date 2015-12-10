@@ -37,10 +37,10 @@ source ${HOME}/.blfs_profile
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=guile_json
 # Alternate program name, possibly with caps, etc.;
-#PROG_ALT=
-VERSION=
+PROG_ALT=guile-json
+VERSION=0.4.0
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -51,8 +51,6 @@ WORKING_DIR=$PWD
 PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
-# Source dir build
-#BUILDDIR=${SRCDIR}
 # Subdirectory build
 BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
@@ -61,10 +59,10 @@ BUILDDIR=${SRCDIR}/build
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://download.savannah.gnu.org/releases
 DL_ALT=
 MD5=
-SHASUM=
+SHASUM=eadd920c4f5ac4fcf3d536979c830cb6eff7b7ce
 SHAALG=1
 REPO=
 # VCS=[git,hg,svn,...]; usually used as VERSION
@@ -227,11 +225,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -380,3 +378,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

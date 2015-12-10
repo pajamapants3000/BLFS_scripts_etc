@@ -19,6 +19,37 @@ fi
 # Dependencies
 #*************
 #
+# Recommended
+#freetype-2.6.2
+#fontconfig-2.11.1
+#freeglut-3.0.0
+#gdk_pixbuf-2.32.1
+#libjpeg_turbo-1.4.2
+#libpng-1.6.19
+#librsvg-2.40.12
+#pango-1.38.1 and xorg libraries
+# Optional
+#devil
+#electric fence
+#libglade-2.6.4
+#liblasi
+#gd library
+#glitz
+#ghostscript-9.18
+#gtk+-2.24.28 and qt-4.8.7
+# Optional (to build language bindings)
+#swig-3.0.7 (swig must be installed or no bindings will be built)
+#guile-2.0.11
+#openjdk-1.8.0.66
+#io
+#lua-5.3.2
+#mono
+#ocaml
+#php-7.0.0
+#python-2.7.11
+#r
+#ruby-2.2.3
+#tcl-8.6.4 and tk-8.6.4
 # Options
 #********
 # Uncomment to keep build files and sources
@@ -33,14 +64,14 @@ fi
 #*************
 source ${HOME}/.blfs_profile
 # Other common preparations:
-#source loadqt4
+source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=graphviz
 # Alternate program name, possibly with caps, etc.;
 #PROG_ALT=
-VERSION=
+VERSION=2.38.0
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -51,19 +82,19 @@ WORKING_DIR=$PWD
 PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
-# Source dir build
-#BUILDDIR=${SRCDIR}
 # Subdirectory build
-BUILDDIR=${SRCDIR}/build
+#BUILDDIR=${SRCDIR}/build
+# Source dir build
+BUILDDIR=${SRCDIR}
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://pkgs.fedoraproject.org/repo/pkgs
 DL_ALT=
-MD5=
+MD5=5b6a829b2ac94efcd5fa3c223ed6d3ae
 SHASUM=
 SHAALG=1
 REPO=
@@ -227,11 +258,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${PROG}-${VERSION}.${ARCHIVE}/${MD5}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}/${PROG}-${VERSION}.${ARCHIVE}/${MD5}${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -281,9 +312,14 @@ pushd ${SRCDIR}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
+sed -e "s:ruby-1.9:ruby-2.2:g" \
+        -i configure
+sed -e 's/ e_/ gs_error_/' \
+        -i plugin/gs/gvloadimage_gs.c
+#
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-mkdir -v ${BUILDDIR}
+mkdir -pv ${BUILDDIR}
 pushd ${BUILDDIR}
 #
 # Autogen if necessary
@@ -342,6 +378,8 @@ fi
 # All commands in this section will be executed, even for upgrades and
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
+as_root ln -v -s /usr/share/${PROG}/doc \
+             /usr/share/doc/${PROG}-${VERSION}
 #
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -380,3 +418,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

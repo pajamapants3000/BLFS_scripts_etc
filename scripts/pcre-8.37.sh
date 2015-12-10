@@ -18,6 +18,8 @@
 # Begin Kernel
 # End Kernel
 #
+# NOTE: Reinstall grep after installing this!
+#
 # Installation
 #**************
 # Check for previous installation:
