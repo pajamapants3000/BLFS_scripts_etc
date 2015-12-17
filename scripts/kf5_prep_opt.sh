@@ -8,8 +8,8 @@
 #
 KF5_PREFIX=/opt/kf5
 
-as_root install -Dm644 -o root -g root files/kf5.sh /etc/profile.d/kf5.sh
-as_root install -Dm644 -o root -g root files/setkf5 /usr/bin/setkf5
+as_root install -Dm644 -o root -g root files/etc/profile.d/kf5.sh /etc/profile.d/kf5.sh
+as_root install -Dm644 -o root -g root files/usr/bin/setkf5 /usr/bin/setkf5
 as_root tee -a /etc/profile.d/bash_envar.sh << "EOF"
 # Begin kf5 addition
 KF5_PREFIX=$KF5_PREFIX

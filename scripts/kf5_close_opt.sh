@@ -20,7 +20,7 @@ as_root ln -sfv kf5-5.12.0 /opt/kf5
 #
 as_root sed -i "s/\(^Exec=.*startkde\)/\1-wrapper/" \
     /usr/share/xsessions/plasma.desktop
-as_root install -Dm755 -v -o root -g root files/plasma-wrapper \
+as_root install -Dm755 -v -o root -g root files/usr/bin/plasma-wrapper \
     $KF5_PREFIX/bin/startkde-wrapper
 #
 # Add to installed list for this computer:

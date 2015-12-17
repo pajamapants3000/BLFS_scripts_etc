@@ -53,7 +53,7 @@ as_root cp -v doc/*.{html,css,gif,png} /usr/share/doc/lua-5.3.1
 cd ..
 as_root rm -rf lua-5.3.1
 #
-as_root install -Dm644 -g root -o root files/lua.pc /usr/lib/pkgconfig/
+as_root install -Dm644 -g root -o root files/usr/lib/pkgconfig/lua.pc /usr/lib/pkgconfig/
 # Add to installed list for this computer:
 echo "lua-5.3.1" >> /list-$CHRISTENED"-"$SURNAME
 #

@@ -27,7 +27,7 @@ grep "enl_close_opt" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 [ $PROCEED = "yes" ] || [ $PROCEED = "y" ] || exit 0
 #
 rm enlightenment.sh
-install -Dm755 -o $USER -g $USER files/.xinitrc-enl $HOME/
+install -Dm755 -o $USER -g $USER files/home/profile/.xinitrc-enl $HOME/
 sed -i "s/^#\( *enl\)/\1/" $HOME/.xinitrc
 #
 echo "Enlightenment has been installed!"

@@ -56,7 +56,7 @@ echo "libmad-0.15.1b" >> /list-$CHRISTENED"-"$SURNAME
 #
 (($REINSTALL)) && exit 0 || (exit 0)
 as_root install -Dm644 -o root -g root \
-    files/mad.pc /usr/lib/pkgconfig/mad.pc
+    files/usr/lib/pkgconfig/mad.pc /usr/lib/pkgconfig/mad.pc
 #
 ###################################################
 

@@ -1,32 +1,46 @@
-#
 # Begin /etc/profile
+# by Tommy Lincoln <pajamapants3000@gmail.com>
+#**********************************************
 
-
-if [ ${ETC_PROFILE} ]; then exit 0;
-else export ETC_PROFILE=1
-
+# Language
+#^^^^^^^^^^
 export LANG=en_US.UTF-8
 
+# Identify
+#^^^^^^^^^^
+# Default values for CHRISTENED and SURNAME
+#CHRISTENED=${cat /etc/hostname}
+#SURNAME=${uname -s}
+CHRISTENED="Lilu"
+SURNAME="lfs-20150723"
+export CHRISTENED SURNAME
+
 # Source additional scripts
-for script in /etc/profile.d/active/*.sh ; do
-  if [ -r $script ] ; then
-    source $script
-  fi
-done
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[ -r /etc/profile.d/bash_envar.sh ]    && source /etc/profile.d/bash_envar.sh
+[ -r /etc/profile.d/bash_function.sh ] && source /etc/profile.d/bash_function.sh
+[ -r /etc/profile.d/bash_path.sh ]     && source /etc/profile.d/bash_path.sh
+[ -r /etc/profile.d/umask.sh ]         && source /etc/profile.d/umask.sh
+[ -r /etc/profile.d/pkgconfig.sh ]     && source /etc/profile.d/pkgconfig.sh
+[ -r /etc/profile.d/xdg.sh ]           && source /etc/profile.d/xdg.sh
+[ -r /etc/profile.d/extrapaths.sh ]    && source /etc/profile.d/extrapaths.sh
+[ -r /etc/profile.d/readline.sh ]      && source /etc/profile.d/readline.sh
+[ -r /etc/profile.d/xorg.sh ]          && source /etc/profile.d/xorg.sh
+# Symlink to whichever version of Qt is being used
+[ -r /etc/profile.d/qt.sh ]            && source /etc/profile.d/qt.sh
+# Symlink to whichever version of PyQt is being used
+[ -r /etc/profile.d/pyqt.sh ]          && source /etc/profile.d/pyqt.sh
+# Symlink to whichever Window Manager is being used
+[ -r /etc/profile.d/WM.sh ]            && source /etc/profile.d/WM.sh
+[ -r /etc/profile.d/kdevelop.sh ]      && source /etc/profile.d/kdevelop.sh
+[ -r /etc/profile.d/calligra.sh ]      && source /etc/profile.d/calligra.sh
+[ -r /etc/profile.d/openjdk.sh ]       && source /etc/profile.d/openjdk.sh
+[ -r /etc/profile.d/cdrtools.sh ]      && source /etc/profile.d/cdrtools.sh
 
-# By default, the umask should be set.
-if [ "$(id -gn)" = "$(id -un)" -a $EUID -gt 99 ] ; then
-  umask 002
-else
-  umask 022
+if [ -r /etc/bashrc ]; then
+    source /etc/bashrc
+elif [ -r /etc/bash.bashrc ]; then
+    source /etc/bash.bashrc
 fi
-
-[ -e /usr/share/terminfo/x/xterm-256color ] &&
-export TERM=xterm-256color || export TERM=xterm-color
-
-export CHRISTENED="Lilu"
-export SURNAME="lfs-20150723"
-
-fi # End source-guard
 
 # End /etc/profile

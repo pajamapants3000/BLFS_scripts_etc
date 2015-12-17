@@ -79,7 +79,7 @@ cd ..
 #
 # Configuration with pam
 for file in sddm sddm-autologin sddm-greeter; do
-    as_root cp -v files/$file /etc/pam.d/
+    as_root cp -v files/etc/pam.d/$file /etc/pam.d/
     as_root chown root:root /etc/pam.d/$file
     as_root chmod 644 /etc/pam.d/$file
 done

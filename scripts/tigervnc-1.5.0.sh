@@ -74,8 +74,8 @@ as_root cd unix/xserver/hw/vnc
 as_root make install
 as_root [ -e /usr/bin/Xvnc ] || ln -svf $XORG_PREFIX/bin/Xvnc /usr/bin/Xvnc
 #
-as_root cp -v ../files/vncviewer.desktop /usr/share/applications/
-install -Dm755 ../files/xstartup $HOME/.vnc/xstartup
+as_root cp -v ../files/usr/share/applications/vncviewer.desktop /usr/share/applications/
+install -Dm755 ../files/home/profile/.vnc/xstartup $HOME/.vnc/xstartup
 #
 cd ..
 as_root rm -rf tigervnc-1.5.0

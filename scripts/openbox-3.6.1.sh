@@ -67,6 +67,6 @@ cp -rf /etc/xdg/openbox ~/.config/
 #
 # Here is a default .xinitrc for openbox that uses dbus and numlockx,
 #+and dislays a random background image from the folder ~/.config/backgrounds
-install -Dm755 -o $USER -g $USER files/.xinitrc-openbox $HOME/
+install -Dm755 -o $USER -g $USER files/home/profile/.xinitrc-openbox $HOME/
 #
 #################################################

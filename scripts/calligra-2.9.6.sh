@@ -141,7 +141,7 @@ fi
 # Configuration
 #***************
 as_root ln -sv /opt/${PROG}-${VERSION} /opt/${PROG}
-as_root install -Dm755 -o root -g root ${BLFSDIR}/files/calligra.sh \
+as_root install -Dm755 -o root -g root ${BLFSDIR}/files/etc/profile.d/calligra.sh \
     /etc/profile.d
 as_root ln -sfv /etc/profile.d/calligra.sh /etc/profile.d/active/79-calligra.sh
 as_root tee -a /etc/ld.so.conf << "EOF"

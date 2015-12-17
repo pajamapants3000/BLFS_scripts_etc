@@ -54,7 +54,7 @@ as_root tee -a /etc/modprobe.d/blacklist << "EOF"
 blacklist nouveau
 EOF
 #
-as_root cp -v files/10-nvidia.conf /etc/X11/xorg.conf.d/
+as_root cp -v files/etc/X11/xorg.conf.d/10-nvidia.conf /etc/X11/xorg.conf.d/
 as_root chown root:root /etc/xorg.conf.d/10-nvidia.conf
 as_root chmod 644 /etc/X11/xorg.conf.d/10-nvidia.conf
 #

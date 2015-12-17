@@ -32,9 +32,9 @@ mkdir -pv ~/.config/qtile
 install -Dm644 -o $USER -g $USER \
     /usr/lib/python3.4/site-packages/libqtile/resources/default_config.py \
     ~/.config/qtile/default_config.py
-cp -nv ~/.config/qtile/default_config.py ~/.config/qtile/config.py
+cp -nv ${BLFSDIR}/files/home/profile/.config/qtile/config.py ~/.config/qtile/config.py
 as_root install -Dm644 -o root -g root \
-    files/qtile.desktop /usr/share/xsessions/qtile.desktop
+    ${BLFSDIR}/files/usr/share/xsessions/qtile.desktop /usr/share/xsessions/qtile.desktop
 #
 # Add to list of installed programs on this system
 echo "qtile-pip" >> /list-$CHRISTENED"-"$SURNAME

@@ -67,8 +67,8 @@ while read -r line; do
   echo $packagedir >> /list-$CHRISTENED"-"$SURNAME
 done < plasma-5.3.2.md5
 #
-as_root install -Dm644 -g root -o root ../files/kde /etc/pam.d/
-as_root install -Dm755 -g root -o root ../files/startkde-wrapper \
+as_root install -Dm644 -g root -o root ../files/etc/pam.d/kde /etc/pam.d/
+as_root install -Dm755 -g root -o root ../files/usr/bin/startkde-wrapper \
     $KF5_PREFIX/bin/
 # This seems to actually cause problems, not fix anything as far as I can tell.
 #sed -i "s:qtpaths:&-qt5:g" $KF5_PREFIX/bin/startkde

@@ -175,7 +175,7 @@ EOF
 as_root ldconfig
 #
 # Create QT5 environment
-as_root cp -v ../files/qt5.sh /etc/profile.d/
+as_root cp -v ../files/etc/profile.d/qt5.sh /etc/profile.d/
 as_root chown root:root /etc/profile.d/qt5.sh
 as_root chmod 755 /etc/profile.d/qt5.sh
 [ -f /etc/profile.d/active/60-*.sh ] &&
@@ -185,7 +185,7 @@ as_root ln -sv /etc/profile.d/qt5.sh /etc/profile.d/active/60-qt.sh
 #
 # Add scripts to manage different versions (QT4 and QT5)
 for file in setqt4 setqt5 loadqt4 loadqt5; do
-  as_root cp -fv ../files/${file} /usr/bin/
+  as_root cp -fv ../files/usr/bin/${file} /usr/bin/
   as_root chown root:root /usr/bin/${file}
   as_root chmod 755 /usr/bin/${file}
 done

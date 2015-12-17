@@ -54,7 +54,7 @@ echo "xscreensaver-5.33" >> /list-$CHRISTENED"-"$SURNAME
 # Configuration (pam)
 #
 if (cat /list-$CHRISTENED"-"$SURNAME | grep "linux_pam" > /dev/null); then
-    install -Dm644 -o root -g root files/xscreensaver /etc/pam.d/xscreensaver
+    install -Dm644 -o root -g root files/etc/pam.d/xscreensaver /etc/pam.d/xscreensaver
 fi
 #
 ###################################################

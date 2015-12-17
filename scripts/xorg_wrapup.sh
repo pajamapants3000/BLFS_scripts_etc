@@ -34,9 +34,9 @@ do
     rm -v $file
 done
 as_root install -dm755 -o root -g root /etc/X11/app-defaults/xinitrc.d
-for file in $(ls -A files/xinitrc.d); do
+for file in $(ls -A files/etc/X11/app-defaults/xinitrc.d); do
     install -v -o root -g root -Dm755 \
-        files/xinitrc.d/${file} /etc/X11/app-defaults/xinitrc.d
+        files/etc/X11/app-defaults/xinitrc.d/${file} /etc/X11/app-defaults/xinitrc.d
 done
 # Add to installed list for this computer:
 echo "xorg_wrapup" >> /list-$CHRISTENED"-"$SURNAME

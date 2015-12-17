@@ -47,7 +47,7 @@ cd ..
 as_root rm -rf PyQt-gpl-5.5
 #
 # Set environment
-as_root install -o root -g root -Dm644 files/pyqt5.sh /etc/profile.d/pyqt5.sh
+as_root install -o root -g root -Dm644 files/etc/profile.d/pyqt5.sh /etc/profile.d/pyqt5.sh
 as_root ln -sfv /etc/profile.d/pyqt5.sh /etc/profile.d/active/65-pyqt.sh
 as_root tee -a /etc/profile.d/bash_envar.sh << "EOF"
 "PYQT5_SIP_DIR=/usr/share/sip/PyQt5"

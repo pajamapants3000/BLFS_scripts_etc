@@ -77,7 +77,7 @@ cd ..
 # Configuration
 #***************
 #
-as_root cp -v files/rsyncd.conf /etc/
+as_root cp -v files/etc/rsyncd.conf /etc/
 as_root chown -v root:root /etc/rsyncd.conf
 as_root chmod -v 755 /etc/rsyncd.conf
 #

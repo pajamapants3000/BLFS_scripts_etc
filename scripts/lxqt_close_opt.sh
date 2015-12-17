@@ -39,7 +39,7 @@ echo "lxqt_close_opt" >> /list-$CHRISTENED"-"$SURNAME
 #
 as_root sed -i "s/\(^Exec=.*startlxqt\)/\1-wrapper/" \
     /usr/share/xsessions/lxqt.desktop
-as_root install -Dm755 -v -o root -g root files/startlxqt-wrapper \
+as_root install -Dm755 -v -o root -g root files/usr/bin/startlxqt-wrapper \
     $LXQT_PREFIX/bin/startlxqt-wrapper
 #
 ###################################################

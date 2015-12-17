@@ -29,8 +29,8 @@ grep "enl_prep_opt" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 ENL_PREFIX=/opt/enlightenment
 #
 as_root install -Dm644 -o root -g root \
-        files/enlightenment.sh /etc/profile.d/enlightenment.sh
-as_root install -Dm644 -o root -g root files/setenl /usr/bin/setenl
+        files/etc/profile.d/enlightenment.sh /etc/profile.d/enlightenment.sh
+as_root install -Dm644 -o root -g root files/usr/bin/setenl /usr/bin/setenl
 as_root tee -a /etc/profile.d/bash_alias << "EOF"
 # Begin Enlightenment addition
 alias setenl='source setenl'

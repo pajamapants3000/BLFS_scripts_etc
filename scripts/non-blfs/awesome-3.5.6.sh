@@ -47,7 +47,7 @@ as_root make install
 cd ..
 as_root cp -v awesome.desktop /usr/share/xsessions/
 popd
-cp -vR ../files/awsesome ${HOME}/.config/
+cp -vR ../files/home/profile/.config/awsesome ${HOME}/.config/
 as_root rm -rf awesome-3.5.6
 # Add to list of installed programs on this system
 echo "awesome-3.5.6" >> /list-${CHRISTENED}-${SURNAME}

@@ -283,7 +283,7 @@ pushd ${SRCDIR}
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-mkdir -v ${BUILDDIR}
+[ -d ${BUILDDIR} ] || mkdir -v ${BUILDDIR}
 pushd ${BUILDDIR}
 #
 # Autogen if necessary

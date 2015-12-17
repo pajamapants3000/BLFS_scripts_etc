@@ -58,7 +58,7 @@ echo "kdevelop-4.7.1" >> /list-$CHRISTENED"-"$SURNAME
 ###################################################
 #
 # Configuration
-as_root cp -v files/kdevelop.sh /etc/profile.d
+as_root cp -v files/etc/profile.d/kdevelop.sh /etc/profile.d
 as_root chown root:root /etc/profile.d/kdevelop.sh
 as_root chmod 644 /etc/profile.d/kdevelop.sh
 as_root ln -sv /etc/profile.d/kdevelop.sh /etc/profile.d/active/78-kdevelop.sh

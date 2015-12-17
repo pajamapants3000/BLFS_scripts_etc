@@ -7,7 +7,7 @@
 #
 #
 export KDE_PREFIX=/opt/kde
-as_root cp -v files/kde.sh /etc/profile.d/
+as_root cp -v files/etc/profile.d/kde.sh /etc/profile.d/
 as_root chown -v root:root /etc/profile.d/kde.sh
 as_root chmod -v 755 /etc/profile.d/kde.sh
 as_root ln -sv /etc/profile.d/kde.sh /etc/profile.d/active/70-kde.sh

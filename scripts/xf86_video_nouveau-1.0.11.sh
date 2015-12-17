@@ -58,7 +58,8 @@ echo "xf86-video-nouveau-1.0.11" >> /list-$CHRISTENED"-"$SURNAME
 #
 # Pick one for single or dual monitor setup
 #as_root cp -v files/20-nouveau.conf /etc/X11/xorg.conf.d/
-as_root cp -v files/20-nouveau_double.conf /etc/X11/xorg.conf.d/20-nouveau.conf
+as_root cp -v files/etc/X11/xorg.conf.d/20-nouveau_double.conf \
+        /etc/X11/xorg.conf.d/20-nouveau.conf
 as_root chown -v root:root /etc/X11/xorg.conf.d/20-nouveau.conf
 as_root chmod -v 644 /etc/X11/xorg.conf.d/20-nouveau.conf
 #

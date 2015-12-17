@@ -314,7 +314,7 @@ fi
 # Configuration
 #***************
 as_root install -v -dm 755 /etc/mysql
-as_root install -v -Dm644 -o root -g root ${BLFSDIR}/files/my.cnf /etc/mysql/
+as_root install -v -Dm644 -o root -g root ${BLFSDIR}/files/etc/mysql/my.cnf /etc/mysql/
 #
 as_root mysql_install_db --basedir=/usr --datadir=/srv/mysql --user=mysql
 as_root chown -R mysql:mysql /srv/mysql

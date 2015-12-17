@@ -30,7 +30,7 @@ done
 useradd -m -U -G wheel,video,audio,usb,cdrom -s /bin/bash tommy
 #
 mkdir -pv /home/tommy/.config/bash
-cp -rv files/_config_bash/* /home/tommy/.config/bash/
+cp -rv files/home/profile/.config/bash/* /home/tommy/.config/bash/
 chown -vR tommy:tommy /home/tommy/.config/bash/
 chmod -vR 644 /home/tommy/.config/bash
 chmod -v 755 /home/tommy/.config/bash

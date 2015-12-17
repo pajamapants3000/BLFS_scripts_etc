@@ -34,9 +34,9 @@ as_root ln -sfv -v /usr/share/dbus-1 $LXQT_PREFIX/share/
 as_root ln -sfv -v /usr/share/polkit-1 $LXQT_PREFIX/share/
 #
 # Modify environment (requires refresh! - source /etc/profile)
-as_root install -Dm755 -o root -g root files/lxqt.sh /etc/profile.d/lxqt.sh
+as_root install -Dm755 -o root -g root files/etc/profile.d/lxqt.sh /etc/profile.d/lxqt.sh
 as_root ln -sfv /etc/profile.d/lxqt.sh /etc/profile.d/active/70-WM.sh
-as_root install -Dm755 -o root -g root files/setlxqt /usr/bin/setlxqt
+as_root install -Dm755 -o root -g root files/usr/bin/setlxqt /usr/bin/setlxqt
 as_root tee -a /etc/profile.d/bash_envar.sh << "EOF"
 # Begin lxqt addition
 LXQT_PREFIX=/opt/lxqt

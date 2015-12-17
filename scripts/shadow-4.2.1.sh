@@ -76,7 +76,7 @@ done
 for FILE in system-account system-auth system-passwd \
                login passwd su chage system-session
 do
-    as_root cp -v files/$FILE /etc/pam.d/
+    as_root cp -v files/etc/pam.d/$FILE /etc/pam.d/
 done
 for PROGRAM in chfn chgpasswd chpasswd chsh groupadd groupdel \
                groupmems groupmod newusers useradd userdel usermod

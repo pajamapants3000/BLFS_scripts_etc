@@ -46,7 +46,7 @@ as_root make install
 cd ..
 as_root rm -rf PyQt-x11-gpl-4.11.4
 #
-as_root cp -v files/pyqt4.sh /etc/profile.d/
+as_root cp -v files/etc/profile.d/pyqt4.sh /etc/profile.d/
 as_root chown root:root /etc/profile.d/pyqt4.sh
 as_root chmod 644 /etc/profile.d/pyqt4.sh
 #

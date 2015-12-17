@@ -114,11 +114,11 @@ if ! (cat /etc/group | grep nogroup > /dev/null); then
     pathremove /usr/sbin
 fi
 #
-as_root cp -v files/smb.conf /etc/samba/smb.conf
+as_root cp -v files/etc/samba/smb.conf /etc/samba/smb.conf
 as_root chown root:root /etc/samba/smb.conf
 as_root chmod 644 /etc/samba/smb.conf
 # Alternatively, just copy /etc/samba/smb.conf.default /etc/samba/smb.conf.default
-#+and sed it to desired changes, or copy and modify to new files/smb.conf
+#+and sed it to desired changes, or copy and modify to new files/etc/samba/smb.conf
 #
 # Also, see
 # http://www.linuxfromscratch.org/blfs/view/svn/basicnet/samba.html

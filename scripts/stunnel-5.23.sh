@@ -72,7 +72,7 @@ cd ..
 #***************
 as_root install -v -m750 -o stunnel -g stunnel -d /var/lib/stunnel/run
 as_root chown stunnel:stunnel /var/lib/stunnel
-as_root cp -v files/stunnel.conf /etc/stunnel/
+as_root cp -v files/etc/stunnel/stunnel.conf /etc/stunnel/
 as_root chmod -v 644 /etc/stunnel/stunnel.conf
 #
 ###################################################

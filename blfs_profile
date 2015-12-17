@@ -108,7 +108,7 @@ fi
 #export BLFSVER="20150901"
 #export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 #export BLFS_BOOTSCRIPTS_VER=20150823
-#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
@@ -158,7 +158,7 @@ fi
 #export BLFSVER="20150901"
 #export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 #export BLFS_BOOTSCRIPTS_VER=20150823
-#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
@@ -208,7 +208,7 @@ fi
 #export BLFSVER="20150901"
 #export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 #export BLFS_BOOTSCRIPTS_VER=20150823
-#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
@@ -258,7 +258,7 @@ fi
 #export BLFSVER="20150901"
 #export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 #export BLFS_BOOTSCRIPTS_VER=20150823
-#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
@@ -308,7 +308,7 @@ fi
 #export BLFSVER="20150901"
 #export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 #export BLFS_BOOTSCRIPTS_VER=20150823
-#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
@@ -358,7 +358,7 @@ fi
 #export BLFSVER="20150901"
 #export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 #export BLFS_BOOTSCRIPTS_VER=20150823
-#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
@@ -408,7 +408,7 @@ fi
 #export BLFSVER="20150901"
 #export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 #export BLFS_BOOTSCRIPTS_VER=20150823
-#export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+#export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 #export PATCHDIR=${BLFSDIR}/patches
 #export SCRIPTDIR=${BLFSDIR}/scripts
 #export INSTALLERDIR=${BLFSDIR}/package_installer
@@ -459,7 +459,7 @@ export LFSVER="20150901"
 export BLFSVER="20150901"
 export PARALLEL=$(($(getconf _NPROCESSORS_ONLN)+1))
 export BLFS_BOOTSCRIPTS_VER=20150823
-export BLFSDIR=${SYNCPATH}/Copy/LFS/BLFS
+export BLFSDIR=${HOME}/repo/github-pajamapants3000/BLFS_scripts_etc
 export PATCHDIR=${BLFSDIR}/patches
 export SCRIPTDIR=${BLFSDIR}/scripts
 export INSTALLERDIR=${BLFSDIR}/package_installer

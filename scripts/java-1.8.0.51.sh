@@ -62,7 +62,7 @@ echo "java-1.8.0.51" >> /list-$CHRISTENED"-"$SURNAME
 #
 # Configuration
 #
-as_root cp files/openjdk.sh /etc/profile.d/
+as_root cp files/etc/profile.d/openjdk.sh /etc/profile.d/
 as_root chown root:root /etc/profile.d/openjdk.sh
 as_root chmod 644 /etc/profile.d/openjdk.sh
 as_root ln -sv /etc/profile.d/openjdk.sh /etc/profile.d/active/88-openjdk.sh

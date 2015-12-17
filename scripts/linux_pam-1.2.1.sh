@@ -81,7 +81,7 @@ do
 done
 for file in other system-account system-passwd system-auth system-session login chage
 do
-    as_root cp -v ../files/${file} /etc/pam.d/
+    as_root cp -v ../files/etc/pam.d/${file} /etc/pam.d/
 done
 cd ..
 as_root rm -rf Linux-PAM-1.2.1
