@@ -25,13 +25,6 @@ fi
 # Dependencies
 #*************
 #
-# Preparation
-#*************
-source ${HOME}/.blfs_profile
-# Other common preparations:
-#source loadqt4
-#pathappend /opt/lxqt/share XDG_DATA_DIRS
-#
 # Options
 #********
 # Uncomment to keep build files and sources
@@ -41,14 +34,23 @@ source ${HOME}/.blfs_profile
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
+# Build with wide characters/unicode
+UNICODE=1
+#
+# Preparation
+#*************
+source ${HOME}/.blfs_profile
+# Other common preparations:
+#source loadqt4
+#pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=libedit
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=${PROG}
-VERSION=
+PROG_ALT=libedit-20150325
+VERSION=3.1
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -69,9 +71,9 @@ BUILDDIR=${SRCDIR}/build
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://thrysoee.dk/editline
 DL_ALT=
-MD5=
+MD5=43cdb5df3061d78b5e9d59109871b4f6
 SHASUM=
 SHAALG=1
 REPO=
@@ -81,10 +83,6 @@ BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
 #PATCH=${PROG}-${VERSION}.patch
-if [ ${PATCH} ]; then
-    [ -f ${PATCHDIR}/${PATCH} ] ||
-        echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1
-fi
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
@@ -112,7 +110,9 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+if ((UNICODE)); then
+    CONFIG_FLAGS="--enable-widec"
+fi
 MAKE="make"
 MAKE_FLAGS=""
 TEST=
@@ -128,13 +128,6 @@ PROGUSER=
 PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
-# Common commands
-INSTALL_USER=install -v -Dm644
-INSTALL_BINUSER=install -v -Dm755
-INSTALL_DIRUSER=install -vd
-INSTALL_ROOT=as_root ${INSTALL_USER} -o root -g root
-INSTALL_BINROOT=as_root ${INSTALL_BINUSER} -o root -g root
-INSTALL_DIRROOT=as_root ${INSTALL_DIRUSER} -o root -g root
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
@@ -327,6 +320,8 @@ if [ "${CONFIGURE}" ]; then
     if [ ${CMAKE_GEN} ]; then
         ${CONFIGURE} -G "${CMAKE_GEN}" ${CONFIG_FLAGS}
     else
+        echo ${CONFIGURE}
+        echo ${CONFIG_FLAGS}
         ${CONFIGURE} ${CONFIG_FLAGS}
     fi
 fi
@@ -406,3 +401,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

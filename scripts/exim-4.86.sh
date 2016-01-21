@@ -5,12 +5,6 @@
 # License: See LICENSE in parent folder
 #
 # TODO: Override or pass options via command line
-# TODO: Clean it up! Make configuration more obvious
-# TODO: Separate executable script and package configuration
-# TODO: Run sed to fix logfile location as reported in error message
-# TODO: Create library to source (functions file) for common tasks
-#+     +like checking for the installation of a package, downloading
-#+     +and testing checksum, avoiding duplicates and saving old builds, etc.
 #
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
@@ -24,13 +18,21 @@ fi
 #
 # Dependencies
 #*************
-#
-# Preparation
-#*************
-source ${HOME}/.blfs_profile
-# Other common preparations:
-#source loadqt4
-#pathappend /opt/lxqt/share XDG_DATA_DIRS
+# Required
+#pcre-8.38
+# Optional
+#db-6.1.26 (Berkeley DB) OR tdb (alternatives to gdbm built in lfs)
+#cyrus_sasl-2.1.26
+#libidn-1.32
+#linux_pam-1.2.1
+#mariadb-10.1.10 OR mysql
+#openldap-2.4.43
+#openssl-1.0.2e
+#gnutls-3.4.7
+#postgresql-9.4.5
+#sqlite-3.9.2
+#x_window_system
+#opendmarc
 #
 # Options
 #********
@@ -42,14 +44,19 @@ source ${HOME}/.blfs_profile
 #TREATASNEW=1
 #TREATASOLD=1
 #
+# Preparation
+#*************
+source ${HOME}/.blfs_profile
+# Other common preparations:
+#source loadqt4
+#pathappend /opt/lxqt/share XDG_DATA_DIRS
+#
 # Name of program, with version and package/archive type
-PROG=
-# Alternate program name; in case it doesn't match my conventions;
-# My conventions are: no capitals; only '-' between name and version,
-#+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+PROG=exim
+# Alternate program name, possibly with caps, etc.;
+#PROG_ALT=
+VERSION=4.86
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -60,18 +67,18 @@ PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
-#BUILDDIR=${SRCDIR}
+BUILDDIR=${SRCDIR}
 # Subdirectory build
-BUILDDIR=${SRCDIR}/build
+#BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
-DL_ALT=
-MD5=
+DL_URL=http://mirrors-uk.go-parts.com/eximftp/exim/exim4
+DL_ALT=ftp://ftp.exim.org/pub/exim/exim4
+MD5=797f248ef3e0c0e2f178e915f88fc4e9
 SHASUM=
 SHAALG=1
 REPO=
@@ -81,10 +88,6 @@ BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
 #PATCH=${PROG}-${VERSION}.patch
-if [ ${PATCH} ]; then
-    [ -f ${PATCHDIR}/${PATCH} ] ||
-        echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1
-fi
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
@@ -92,7 +95,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="${SRCDIR}/configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -121,20 +124,13 @@ INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
-BOOTSCRIPT=
-PROGGROUP=
-PROGGROUPNUM=
-PROGUSER=
+BOOTSCRIPT=exim
+PROGGROUP=exim
+PROGGROUPNUM=31
+PROGUSER=exim
 PROGUSERNUM=${PROGGROUPNUM}
-USRCMNT=
+USRCMNT="Exim_Daemon"
 #
-# Common commands
-INSTALL_USER=install -v -Dm644
-INSTALL_BINUSER=install -v -Dm755
-INSTALL_DIRUSER=install -vd
-INSTALL_ROOT=as_root ${INSTALL_USER} -o root -g root
-INSTALL_BINROOT=as_root ${INSTALL_BINUSER} -o root -g root
-INSTALL_DIRROOT=as_root ${INSTALL_DIRUSER} -o root -g root
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
@@ -155,13 +151,9 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
     [ "${CFG_PREFIX_FLAG}" ]        || CFG_PREFIX_FLAG="--prefix"
     [ "${CFG_SYSCONFDIR_FLAG}" ]    || CFG_SYSCONFDIR_FLAG="--sysconfdir"
     [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
-    [ "${CFG_DOCDIR_FLAG}" ]        || CFG_DOCDIR_FLAG="--docdir"
-    [ "${CFG_MANDIR_FLAG}" ]        || CFG_MANDIR_FLAG="--mandir"
     CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
                   ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
                   ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER} \
-                  ${CFG_DOCDIR_FLAG}=${DOCDER}             \
-                  ${CFG_MANDIR_FLAG}=${MANDER}             \
                   ${CONFIG_FLAGS}"
 # Leave place for other possible configuration utilities to set up
 # For now, just do-nothing placeholder command
@@ -194,14 +186,14 @@ if [ "${PROGGROUP}" ]; then
     fi
     if [ "${PROGUSER}" ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+        as_root useradd -c "${USRCMNT}" -d /dev/null \
                 -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ "${PROGUSER}" ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
+    as_root useradd -c "${USRCMNT}" -d /dev/null \
             -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
@@ -250,11 +242,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -334,6 +326,11 @@ fi
 # Post-config modifications before building
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+sed -e 's,^BIN_DIR.*$,BIN_DIRECTORY=/usr/sbin,' \
+        -e 's,^CONF.*$,CONFIGURE_FILE=/etc/exim.conf,' \
+        -e 's,^EXIM_USER.*$,EXIM_USER=exim,' \
+        -e 's,^EXIM_MONITOR,#EXIM_MONITOR,' src/EDITME > Local/Makefile
+printf "USE_GDBM = yes\nDBMLIB = -lgdbm\n" >> Local/Makefile
 #
 # Build
 #^^^^^^^
@@ -347,7 +344,7 @@ if [ "${TEST}" ]; then
         tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
     STAT=${PIPESTATUS[0]}
     if (( STAT )); then
-        echo "Some tests failed; log in ../logs/$(basename $0)-log"
+        echo "Some tests failed; log in ../$(basename $0)-log"
         echo "Pull up another terminal and check the output"
         echo "Shall we proceed? (say "'"yes"'" or "'"y"'" to proceed)"
         read PROCEED
@@ -367,6 +364,10 @@ fi
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
+as_root install -v -m644 doc/exim.8 /usr/share/man/man8
+as_root install -v -d -m755 /usr/share/doc/${PROG}-${VERSION}
+as_root install -v -m644 doc/* /usr/share/doc/${PROG}-${VERSION}
+as_root ln -sfv exim /usr/sbin/sendmail
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -381,9 +382,7 @@ as_root rm -rf ${PKGDIR}
     as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
 #
 # Add to installed list for this computer:
-if ! ((BUILD_ONLY)); then
-    echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
-fi
+echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 # Stop here unless this is first install
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -392,17 +391,27 @@ fi
 #
 # Init Script
 #*************
-if ! ((BUILD_ONLY)) && [ "${BOOTSCRIPT}" ]; then
+if [ "${BOOTSCRIPT}" ]; then
     pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     popd
 fi
 #
+# Modify the -q<time-interval> parameter in /etc/rc.d/init.d/exim as needed
 ###################################################
 #
 # Configuration
 #***************
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
+as_root tee -a /etc/aliases << "EOF"
+postmaster: root
+MAILER-DAEMON: root
+EOF
+# Check /etc/aliases for duplicates after running this!
+# Start mail daemon with a 15 minute check interval:
+#exim -v -bi
+#/usr/sbin/exim -bd -q15m
 #
 ###################################################
+

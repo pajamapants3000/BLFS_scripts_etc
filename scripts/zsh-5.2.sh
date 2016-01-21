@@ -28,6 +28,8 @@ fi
 # We would apply the following sed commands after configuring:
 #sed -i "s/\(db_gdbm.mdd link\)=dynamic/\1=sgdbm.mddtatic/" config.modules
 #sed -i "s/\(pcre.mdd link\)=dynamic/\1=static/"    config.modules
+# OR.... uncomment this to move the libraries to /lib and symlink in /usr/lib
+#PARTITIONED=1
 #
 # Preparation
 #*************
@@ -36,22 +38,23 @@ source blfs_profile
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
+# Set to 0 or comment out to skip optional documentation download
+DL_DOC=1
+#
 #Optional deps
 #libcap-2.24
-#pcre-8.37
-#valgrind-3.10.1
+#pcre-8.38
+#valgrind-3.11.0
 #
 # For packages that don't support or do well with parallel build
 #PARALLEL=1
 #
 # Name of program, with version and package/archive type
 PROG=zsh
-VERSION=5.1
+VERSION=5.2
 ARCHIVE=tar.xz
-MD5=fbf736a6540873f4fb7bdaf70cafb1f0
-MD5_DOC=1cae4809faf084081fb9aa08a3041288
-# Set to 0 or comment out to skip optional documentation download
-DL_DOC=1
+MD5=afe96fde08b70e23c1cab1ca7a68fb34
+MD5_DOC=873f1ade1fa5d0d15f9cba16d3ba5f98
 #
 WORKING_DIR=$PWD
 SRCDIR=${WORKING_DIR}/${PROG}-${VERSION}
@@ -64,7 +67,7 @@ PATCHDIR=${WORKING_DIR}/patches
 PATCH=
 # Configure; prepare build
 PREFICKS=/usr
-SYSCONFDER=/etc
+SYSCONFDER=/etc/${PROG}
 LOCALST8DER=/var
 # CONFIGURE: ./configure, cmake, qmake, ./autogen.sh, or other/undefined
 CONFIGURE="./configure"
@@ -72,7 +75,7 @@ CONFIGURE="./configure"
 # Flags
 # -j${PARALLEL} included by default; uncomment line above to unset.
 # Place zsh binaries in root filesystem instead of /usr/bin
-CONFIG_FLAGS="${CONFIG_FLAGS} --bindir=/bin"
+CONFIG_FLAGS="${CONFIG_FLAGS} --bindir=/bin --enable-etcdir=/etc/zsh"
 # Consolidate configuration files in /etc/zsh instead of conventional /etc
 #+or /usr/etc
 SYSCONFDIR=/etc/zsh
@@ -80,11 +83,13 @@ CONFIG_FLAGS="${CONFIG_FLAGS} --enable-etcdir=/etc/zsh"
 # Include pcre support
 if (cat /list-${CHRISTENED}-${SURNAME} | \
         grep "pcre-" > /dev/null); then
-CONFIG_FLAGS="${CONFIG_FLAGS} --enable-pcre"
+    CONFIG_FLAGS="${CONFIG_FLAGS} --enable-pcre"
+fi
 # Include libcap support
 if (cat /list-${CHRISTENED}-${SURNAME} | \
         grep "libcap-" > /dev/null); then
-CONFIG_FLAGS="${CONFIG_FLAGS} --enable-cap"
+    CONFIG_FLAGS="${CONFIG_FLAGS} --enable-cap"
+fi
 # Disable gdbm support (apparently this alters the license applied to the
 #+resulting binary - it will be under GPL instead of...? Something more
 #+"free"?)
@@ -92,7 +97,7 @@ CONFIG_FLAGS="${CONFIG_FLAGS} --enable-cap"
 #
 MAKE="make"
 MAKE_FLAGS=""
-#TEST=check
+TEST=check
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
@@ -228,7 +233,8 @@ makeinfo  Doc/zsh.texi --html --no-split --no-headers -o Doc/zsh.html
 # with texlive, can build pdf version of docs
 if (cat /list-${CHRISTENED}-${SURNAME} | \
         grep "texlive-" > /dev/null); then
-texi2pdf  Doc/zsh.texi -o Doc/zsh.pdf
+    texi2pdf  Doc/zsh.texi -o Doc/zsh.pdf
+fi
 #
 # Test:
 if [ $TEST ]; then
@@ -282,7 +288,14 @@ fi
 #
 # Configuration
 #***************
-cat >> /etc/shells << "EOF"
+if ((PARTITIONED)); then
+    as_root mv -v /usr/lib/libpcre.so.* /lib
+    as_root ln -v -sf ../../lib/libpcre.so.0 /usr/lib/libpcre.so
+    as_root mv -v /usr/lib/libgdbm.so.* /lib
+    as_root ln -v -sf ../../lib/libgdbm.so.3 /usr/lib/libgdbm.so
+fi
+#
+as_root tee -a /etc/shells << "EOF"
 /bin/zsh
 EOF
 #

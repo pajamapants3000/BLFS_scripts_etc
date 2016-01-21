@@ -8,9 +8,6 @@
 # TODO: Clean it up! Make configuration more obvious
 # TODO: Separate executable script and package configuration
 # TODO: Run sed to fix logfile location as reported in error message
-# TODO: Create library to source (functions file) for common tasks
-#+     +like checking for the installation of a package, downloading
-#+     +and testing checksum, avoiding duplicates and saving old builds, etc.
 #
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
@@ -24,13 +21,31 @@ fi
 #
 # Dependencies
 #*************
-#
-# Preparation
-#*************
-source ${HOME}/.blfs_profile
-# Other common preparations:
-#source loadqt4
-#pathappend /opt/lxqt/share XDG_DATA_DIRS
+# Required
+#glib-2.46.2
+#python-2.7.11
+#x_window_system
+# Recommended
+#sdl-1.2.15
+#bridge_utils-1.5
+# Optional
+#alsa-1.1.0
+#bluez-5.37
+#check-0.10.0
+#curl-7.46.0
+#cyrus_sasl-2.1.26
+#gnutls-3.4.8
+#gtk+-2.24.29
+#gtk+-3.18.6
+#libusb-1.0.20
+#libgcrypt-1.6.4
+#lzo-2.09
+#nettle-3.1.1
+#nss-3.21 (for libcacard.so)
+#mesa-11.0.8
+#sdl-1.2.15
+#vte-0.42.1
+#libssh2
 #
 # Options
 #********
@@ -42,14 +57,21 @@ source ${HOME}/.blfs_profile
 #TREATASNEW=1
 #TREATASOLD=1
 #
+# Preparation
+#*************
+source ${HOME}/.blfs_profile
+# Other common preparations:
+#source loadqt4
+#pathappend /opt/lxqt/share XDG_DATA_DIRS
+#
 # Name of program, with version and package/archive type
-PROG=
-# Alternate program name; in case it doesn't match my conventions;
+PROG=qemu
+# Alternate program name; the one I use if it is different from PROG
 # My conventions are: no capitals; only '-' between name and version,
-#+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+#+replace any other '-' with '_'.
+#PROG_ALT=
+VERSION=2.5.0
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -69,9 +91,9 @@ BUILDDIR=${SRCDIR}/build
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://wiki.qemu.org/download
 DL_ALT=
-MD5=
+MD5=f469f2330bbe76e3e39db10e9ac4f8db
 SHASUM=
 SHAALG=1
 REPO=
@@ -81,10 +103,6 @@ BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
 #PATCH=${PROG}-${VERSION}.patch
-if [ ${PATCH} ]; then
-    [ -f ${PATCHDIR}/${PATCH} ] ||
-        echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1
-fi
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
@@ -112,29 +130,23 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--target-list=$QEMU_ARCH --audio-drv-list=alsa"
 MAKE="make"
 MAKE_FLAGS=""
-TEST=
-TEST_FLAGS="-k"
+# One test is known to fail
+TEST=check
+TEST_FLAGS="V=1 -k"
 INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
-PROGGROUP=
-PROGGROUPNUM=
+PROGGROUP=kvm
+PROGGROUPNUM=61
 PROGUSER=
 PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
-# Common commands
-INSTALL_USER=install -v -Dm644
-INSTALL_BINUSER=install -v -Dm755
-INSTALL_DIRUSER=install -vd
-INSTALL_ROOT=as_root ${INSTALL_USER} -o root -g root
-INSTALL_BINROOT=as_root ${INSTALL_BINUSER} -o root -g root
-INSTALL_DIRROOT=as_root ${INSTALL_DIRUSER} -o root -g root
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
@@ -156,12 +168,10 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
     [ "${CFG_SYSCONFDIR_FLAG}" ]    || CFG_SYSCONFDIR_FLAG="--sysconfdir"
     [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
     [ "${CFG_DOCDIR_FLAG}" ]        || CFG_DOCDIR_FLAG="--docdir"
-    [ "${CFG_MANDIR_FLAG}" ]        || CFG_MANDIR_FLAG="--mandir"
     CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
                   ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
                   ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER} \
                   ${CFG_DOCDIR_FLAG}=${DOCDER}             \
-                  ${CFG_MANDIR_FLAG}=${MANDER}             \
                   ${CONFIG_FLAGS}"
 # Leave place for other possible configuration utilities to set up
 # For now, just do-nothing placeholder command
@@ -250,11 +260,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -320,6 +330,11 @@ pushd ${BUILDDIR}
 # Pre-config -- additional actions to take before running configuration
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+if [ $(uname -m) = i686 ]; then
+   QEMU_ARCH=i386-softmmu
+else
+  QEMU_ARCH=x86_64-softmmu
+fi
 #
 # Configure
 #^^^^^^^^^^^
@@ -334,6 +349,7 @@ fi
 # Post-config modifications before building
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+unset QEMU_ARCH
 #
 # Build
 #^^^^^^^
@@ -366,7 +382,10 @@ fi
 # All commands in this section will be executed, even for upgrades and
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
+[ -e  /usr/lib/libcacard.so ] && as_root chmod -v 755 /usr/lib/libcacard.so
+as_root usermod -aG ${PROGGROUP} ${USER}
 #
+as_root ln -sfv qemu-system-`uname -m` /usr/bin/qemu
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -404,5 +423,9 @@ fi
 #***************
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
+as_root tee /lib/udev/rules.d/65-kvm.rules << "EOF"
+KERNEL=="kvm", GROUP="kvm", MODE="0660"
+EOF
 #
 ###################################################
+

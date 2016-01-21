@@ -5,12 +5,11 @@
 # License: See LICENSE in parent folder
 #
 # TODO: Override or pass options via command line
-# TODO: Clean it up! Make configuration more obvious
-# TODO: Separate executable script and package configuration
-# TODO: Run sed to fix logfile location as reported in error message
-# TODO: Create library to source (functions file) for common tasks
-#+     +like checking for the installation of a package, downloading
-#+     +and testing checksum, avoiding duplicates and saving old builds, etc.
+#
+# BLFS info:
+#Download size: 10.5 MB
+#Estimated disk space required: 343 MB (additional 228 MB for tests)
+#Estimated build time: 1.2 SBU (additional 5.1 SBU for tests)
 #
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
@@ -24,13 +23,14 @@ fi
 #
 # Dependencies
 #*************
-#
-# Preparation
-#*************
-source ${HOME}/.blfs_profile
-# Other common preparations:
-#source loadqt4
-#pathappend /opt/lxqt/share XDG_DATA_DIRS
+# Optional
+#boost-1.60.0
+#llvm-3.7.0 (with Clang)
+#gdb-7.10.1 (for tests)
+#openmp
+# Optional - for regenerating documentation
+#libxslt-1.1.28
+#texlive-20150521 (or install-tl-unx)
 #
 # Options
 #********
@@ -42,14 +42,19 @@ source ${HOME}/.blfs_profile
 #TREATASNEW=1
 #TREATASOLD=1
 #
+# Preparation
+#*************
+source ${HOME}/.blfs_profile
+# Other common preparations:
+#source loadqt4
+#pathappend /opt/lxqt/share XDG_DATA_DIRS
+#
 # Name of program, with version and package/archive type
-PROG=
-# Alternate program name; in case it doesn't match my conventions;
-# My conventions are: no capitals; only '-' between name and version,
-#+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+PROG=valgrind
+# Alternate program name, possibly with caps, etc.;
+#PROG_ALT=
+VERSION=3.11.0
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -60,18 +65,18 @@ PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
-#BUILDDIR=${SRCDIR}
+BUILDDIR=${SRCDIR}
 # Subdirectory build
-BUILDDIR=${SRCDIR}/build
+#BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://valgrind.org/downloads
 DL_ALT=
-MD5=
+MD5=4ea62074da73ae82e0162d6550d3f129
 SHASUM=
 SHAALG=1
 REPO=
@@ -81,10 +86,6 @@ BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
 #PATCH=${PROG}-${VERSION}.patch
-if [ ${PATCH} ]; then
-    [ -f ${PATCHDIR}/${PATCH} ] ||
-        echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1
-fi
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
@@ -112,10 +113,11 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--datadir=$DOCDER"
 MAKE="make"
 MAKE_FLAGS=""
-TEST=
+# test may hang without gdb-7.10.1 (refers to valgrind-3.11.0)
+TEST=regtest
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
@@ -128,13 +130,6 @@ PROGUSER=
 PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
-# Common commands
-INSTALL_USER=install -v -Dm644
-INSTALL_BINUSER=install -v -Dm755
-INSTALL_DIRUSER=install -vd
-INSTALL_ROOT=as_root ${INSTALL_USER} -o root -g root
-INSTALL_BINROOT=as_root ${INSTALL_BINUSER} -o root -g root
-INSTALL_DIRROOT=as_root ${INSTALL_DIRUSER} -o root -g root
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
@@ -155,13 +150,9 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
     [ "${CFG_PREFIX_FLAG}" ]        || CFG_PREFIX_FLAG="--prefix"
     [ "${CFG_SYSCONFDIR_FLAG}" ]    || CFG_SYSCONFDIR_FLAG="--sysconfdir"
     [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
-    [ "${CFG_DOCDIR_FLAG}" ]        || CFG_DOCDIR_FLAG="--docdir"
-    [ "${CFG_MANDIR_FLAG}" ]        || CFG_MANDIR_FLAG="--mandir"
     CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
                   ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
                   ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER} \
-                  ${CFG_DOCDIR_FLAG}=${DOCDER}             \
-                  ${CFG_MANDIR_FLAG}=${MANDER}             \
                   ${CONFIG_FLAGS}"
 # Leave place for other possible configuration utilities to set up
 # For now, just do-nothing placeholder command
@@ -250,11 +241,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -320,6 +311,7 @@ pushd ${BUILDDIR}
 # Pre-config -- additional actions to take before running configuration
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+sed -i 's|/doc/valgrind||' docs/Makefile.in
 #
 # Configure
 #^^^^^^^^^^^
@@ -347,7 +339,7 @@ if [ "${TEST}" ]; then
         tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
     STAT=${PIPESTATUS[0]}
     if (( STAT )); then
-        echo "Some tests failed; log in ../logs/$(basename $0)-log"
+        echo "Some tests failed; log in ../$(basename $0)-log"
         echo "Pull up another terminal and check the output"
         echo "Shall we proceed? (say "'"yes"'" or "'"y"'" to proceed)"
         read PROCEED
@@ -381,9 +373,7 @@ as_root rm -rf ${PKGDIR}
     as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
 #
 # Add to installed list for this computer:
-if ! ((BUILD_ONLY)); then
-    echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
-fi
+echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 # Stop here unless this is first install
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -392,7 +382,7 @@ fi
 #
 # Init Script
 #*************
-if ! ((BUILD_ONLY)) && [ "${BOOTSCRIPT}" ]; then
+if [ "${BOOTSCRIPT}" ]; then
     pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     popd
@@ -406,3 +396,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

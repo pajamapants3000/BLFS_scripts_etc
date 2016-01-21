@@ -21,6 +21,10 @@ if [ ${#} -gt 1 ]; then
     sed -i "s:^${1}=.*$:${1}=${2}:"g ${0}
     exit 0
 fi
+#*************************************************************************
+# NOTE: This package does not follow the typical configure-build-install *
+#+format, but uses an installer.                                         *
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Dependencies
 #*************
@@ -34,6 +38,15 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Set kernel version before running! Then unset to avoid future mistakes
+# Can also set in environment.
+#TGT_KVER=
+if ! [ ${TGT_KVER} ]; then
+    echo "Please set target kernel version (TGT_KVER) before running"
+    exit 1
+fi
+# May choose one of many different premade config files
+XORG_CONF="10-nvidia.conf"
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
@@ -43,35 +56,42 @@ source ${HOME}/.blfs_profile
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=nvidia_kmod
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+PROG_ALT=NVIDIA-Linux-x86_64
+VERSION=361.18
+# In this case it's just the extension, not really an archive type.
+ARCHIVE=run
+# optional suffix of "-no-compat32" depending on which version is needed
+if [ $(uname -m) = "x86_64" ]; then
+    SUFFIX="-no-compat32"
+else
+    SUFFIX=
+fi
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
 #+is the directory from which this script was executed.
 WORKING_DIR=$PWD
 # This is where the root of the package directory will be found
-PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
+PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
 #BUILDDIR=${SRCDIR}
 # Subdirectory build
-BUILDDIR=${SRCDIR}/build
+BUILDDIR=${SRCDIR}/kernel
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=ftp://download.nvidia.com/XFree86/Linux-x86_64
 DL_ALT=
-MD5=
+MD5=29a88f1538d622cebf751593396053e4
 SHASUM=
 SHAALG=1
 REPO=
@@ -92,7 +112,7 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="${SRCDIR}/configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -114,10 +134,10 @@ CONFIGURE="${SRCDIR}/configure"
 # Pass them in... (these are in addition to the defaults; see below)
 CONFIG_FLAGS=""
 MAKE="make"
-MAKE_FLAGS=""
+MAKE_FLAGS="SYSSRC=/lib/modules/${TGT_KVER}/build module"
 TEST=
 TEST_FLAGS="-k"
-INSTALL="install"
+INSTALL=""
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
@@ -128,13 +148,6 @@ PROGUSER=
 PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
-# Common commands
-INSTALL_USER=install -v -Dm644
-INSTALL_BINUSER=install -v -Dm755
-INSTALL_DIRUSER=install -vd
-INSTALL_ROOT=as_root ${INSTALL_USER} -o root -g root
-INSTALL_BINROOT=as_root ${INSTALL_BINUSER} -o root -g root
-INSTALL_DIRROOT=as_root ${INSTALL_DIRUSER} -o root -g root
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
@@ -249,13 +262,13 @@ if [ "${VCS}" ]; then
 else
     # Download Package
     #******************
-    if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
-            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
+    if ! [ -f ${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} ]; then
+        wget ${DL_URL}/${VERSION}/${PROG_ALT}-${VERSION}${SUFFIX}.${ARCHIVE} \
+            -O ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
-            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
+            wget ${DL_ALT}/${VERSION}/${PROG_ALT}-${VERSION}${SUFFIX}.${ARCHIVE} \
+            -O ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -267,14 +280,14 @@ else
         fi
     fi
 #
-    # Verify package
+# Verify package
     #****************
     if [ "${SHASUM}" ]; then
-        echo "${SHASUM}  ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" |
+        echo "${SHASUM}  ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}" |
                 shasum -a ${SHAALG} -c ;\
             ( exit ${PIPESTATUS[0]} )
     elif [ "${MD5}" ]; then
-        echo "${MD5} ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
+        echo "${MD5} ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}" | md5sum -c ;\
             ( exit ${PIPESTATUS[0]} )
     fi
 #
@@ -291,9 +304,10 @@ else
 #
     # Extract package
     #*****************
-    mkdir -v ${PKGDIR}
-    tar -xf ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} \
-            -C ${PKGDIR} --strip-components=1
+    chmod u+x ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}
+    ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} --extract-only
+    mv ${WORKING_DIR}/${PROG_ALT}-${VERSION}${SUFFIX} ${SRCDIR}
+
 fi # End "if [ ${VCS} ]..."
 #
 # Begin Installation
@@ -335,7 +349,7 @@ fi
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
-# Build
+# Build (doesn't apply to this package)
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
@@ -357,15 +371,24 @@ fi
 #
 # Install
 #^^^^^^^^^
-if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
-fi
+#if ! ((BUILD_ONLY)); then
+#    as_root ${INSTALL} ${INSTALL_FLAGS}
+#fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # All commands in this section will be executed, even for upgrades and
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
+#
+# Install kernel module to versioned location
+${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules
+${INSTALL_ROOT} ${BUILDDIR}/*.ko \
+        ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/
+# Symlink kernel module to be used by target kernel
+${INSTALL_DIRROOT} /lib/modules/${TGT_KVER}/kernel/drivers/video
+ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/*.ko \
+        /lib/modules/$TGT_KVER/kernel/drivers/video/
 #
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -377,12 +400,12 @@ else
     as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
 fi
 as_root rm -rf ${PKGDIR}
-[ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
-    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
+[ -e ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} ] &&
+    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}
 #
 # Add to installed list for this computer:
 if ! ((BUILD_ONLY)); then
-    echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
+    echo "${PROG//-/_}-${VERSION}${SUFFIX}" >> /list-${CHRISTENED}-${SURNAME}
 fi
 #
 # Stop here unless this is first install
@@ -405,4 +428,15 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
+as_root tee -a /etc/modprobe.d/blacklist << "EOF"
+blacklist nouveau
+EOF
+#
+if [ -f ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF} ]; then
+    mv -v ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF} \
+          ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF}.bak
+fi
+as_root install -v -Dm644 -o root -g root \
+    ${BLFSDIR}/files/etc/X11/xorg.conf.d/${XORG_CONF} /etc/X11/xorg.conf.d/
 ###################################################
+

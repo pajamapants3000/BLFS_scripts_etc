@@ -1,0 +1,23 @@
+diff -rup NVIDIA-Linux-x86_64-352.21-no-compat32.orig/kernel/nv-procfs.c NVIDIA-Linux-x86_64-352.21-no-compat32/kernel/nv-procfs.c
+--- NVIDIA-Linux-x86_64-352.21-no-compat32.orig/kernel/nv-procfs.c	2016-01-20 05:39:38.401603944 -0800
++++ NVIDIA-Linux-x86_64-352.21-no-compat32/kernel/nv-procfs.c	2016-01-20 05:40:28.311948218 -0800
+@@ -358,7 +358,8 @@ nv_procfs_read_registry(
+     registry_keys = ((nvl != NULL) ?
+             nvl->registry_keys : nv_registry_keys);
+ 
+-    return seq_printf(s, "Binary: \"%s\"\n", registry_keys);
++    seq_printf(s, "Binary: \"%s\"\n", registry_keys);
++    return 0;
+ }
+ 
+ static ssize_t
+@@ -558,7 +559,8 @@ nv_procfs_read_text_file(
+     void *v
+ )
+ {
+-    return seq_puts(s, s->private);
++    seq_puts(s, s->private);
++    return 0;
+ }
+ 
+ NV_DEFINE_PROCFS_SINGLE_FILE(text_file);

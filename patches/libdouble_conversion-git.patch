@@ -1,0 +1,84 @@
+Binary files libdouble-conversion.orig/.git/index and libdouble-conversion/.git/index differ
+diff -rup libdouble-conversion.orig/Makefile.in libdouble-conversion/Makefile.in
+--- libdouble-conversion.orig/Makefile.in	2016-01-02 04:04:43.665462919 -0800
++++ libdouble-conversion/Makefile.in	2016-01-02 04:17:53.982253498 -0800
+@@ -1,3 +1,6 @@
++INSTALL = @INSTALL@
++INSTALL_DATA = @INSTALL_DATA@
++
+ all:
+ 	make -C src all
+ clean:
+@@ -13,26 +16,31 @@ distclean:
+ 	rm -Rf src/.libs
+ 	rm -f Makefile
+ 	rm -f src/Makefile
++	rm -f config.status
+ 
+ install:
+-	${INSTALL} -m 0755 -g wheel -o root src/.libs/libdouble-conversion.so.0 @prefix@/lib
+-	${INSTALL} -m 0755 -g wheel -o root src/.libs/libdouble-conversion.so @prefix@/lib
+-	${INSTALL} -m 0755 -g wheel -o root src/.libs/libdouble-conversion.la @prefix@/lib
++	${INSTALL} -m 0755 -g wheel -o root src/.libs/libdouble-conversion.so.0.0.0 @prefix@/lib/libdouble-conversion.so.1.1.1
++	ln -sfv libdouble-conversion.so.1.1.1 @prefix@/lib/libdouble-conversion.so.1.1
++	ln -sfv libdouble-conversion.so.1.1 @prefix@/lib/libdouble-conversion.so.1
++	ln -sfv libdouble-conversion.so.1 @prefix@/lib/libdouble-conversion.so
++	${INSTALL} -m 0755 -g wheel -o root src/libdouble-conversion.la @prefix@/lib
+ 	${INSTALL} -m 0755 -g wheel -o root src/.libs/libdouble-conversion.a @prefix@/lib
+ 	mkdir -p @prefix@/include/double-conversion
+-	${INSTALL} -m 0644 -g wheel -o root src/bignum-dtoa.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/double-conversion.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/strtod.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/bignum.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/fast-dtoa.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/utils.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/cached-powers.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/fixed-dtoa.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/diy-fp.h @prefix@/include/double-conversion/
+-	${INSTALL} -m 0644 -g wheel -o root src/ieee.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/bignum-dtoa.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/double-conversion.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/strtod.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/bignum.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/fast-dtoa.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/utils.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/cached-powers.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/fixed-dtoa.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/diy-fp.h @prefix@/include/double-conversion/
++	${INSTALL_DATA} -g wheel -o root src/ieee.h @prefix@/include/double-conversion/
+ 
+ deinstall:
+-	rm -f @prefix@/lib/libdouble-conversion.so.0
++	rm -f @prefix@/lib/libdouble-conversion.so.1.1.1
++	rm -f @prefix@/lib/libdouble-conversion.so.1.1
++	rm -f @prefix@/lib/libdouble-conversion.so.1
+ 	rm -f @prefix@/lib/libdouble-conversion.so
+ 	rm -f @prefix@/lib/libdouble-conversion.la
+ 	rm -f @prefix@/lib/libdouble-conversion.a
+diff -rup libdouble-conversion.orig/src/Makefile.in libdouble-conversion/src/Makefile.in
+--- libdouble-conversion.orig/src/Makefile.in	2016-01-02 04:04:43.678462981 -0800
++++ libdouble-conversion/src/Makefile.in	2016-01-02 04:18:35.494453063 -0800
+@@ -1,14 +1,14 @@
+ 
+ all:
+-	libtool --mode=compile ${CC} -O -c bignum.cc
+-	libtool --mode=compile ${CC} -O -c bignum-dtoa.cc
+-	libtool --mode=compile ${CC} -O -c cached-powers.cc
+-	libtool --mode=compile ${CC} -O -c diy-fp.cc
+-	libtool --mode=compile ${CC} -O -c double-conversion.cc
+-	libtool --mode=compile ${CC} -O -c fast-dtoa.cc
+-	libtool --mode=compile ${CC} -O -c fixed-dtoa.cc
+-	libtool --mode=compile ${CC} -O -c strtod.cc
+-	libtool --mode=link ${CC} -O -o libdouble-conversion.la \
++	libtool --tag=CXX --mode=compile ${CC} -O -c bignum.cc
++	libtool --tag=CXX --mode=compile ${CC} -O -c bignum-dtoa.cc
++	libtool --tag=CXX --mode=compile ${CC} -O -c cached-powers.cc
++	libtool --tag=CXX --mode=compile ${CC} -O -c diy-fp.cc
++	libtool --tag=CXX --mode=compile ${CC} -O -c double-conversion.cc
++	libtool --tag=CXX --mode=compile ${CC} -O -c fast-dtoa.cc
++	libtool --tag=CXX --mode=compile ${CC} -O -c fixed-dtoa.cc
++	libtool --tag=CXX --mode=compile ${CC} -O -c strtod.cc
++	libtool --tag=CXX --mode=link ${CC} -O -o libdouble-conversion.la \
+ 						bignum.lo \
+ 						bignum-dtoa.lo \
+ 						cached-powers.lo \
