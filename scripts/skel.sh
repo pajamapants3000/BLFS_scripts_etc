@@ -38,6 +38,8 @@ source ${HOME}/.blfs_profile
 #PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
 #BUILD_ONLY=1
+# Uncomment to install only; skips to the end for already built sources
+#INSTALL_ONLY=1
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
@@ -64,7 +66,7 @@ SRCDIR=${PKGDIR}
 # Subdirectory build
 BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
-#BUILDDIR=${SRCDIR}/../build
+#BUILDDIR=${SRCDIR}/../${PROG}-build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
@@ -89,8 +91,8 @@ fi
 PREFICKS=/usr
 SYSCONFDER=/etc
 LOCALST8DER=/var
-MANDER=/usr/share/man
-DOCDER=/usr/share/doc/${PROG}-${VERSION}
+MANDER=${PREFICKS}/share/man
+DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
 CONFIGURE="${SRCDIR}/configure"
 #
@@ -103,17 +105,14 @@ CONFIGURE="${SRCDIR}/configure"
 #^^^^^^^
 # Use this if CMake source root is different from SRCDIR
 #CMAKE_SRC_ROOT=
-#
 # Another common cmake parameter is the build type; defaults to Release or
 #+uncomment below
 #CBUILDTYPE=RelWithDebInfo
-#
-#Specify CMake generator
+#Specify CMake generator (only if non-standard; will set automatically below)
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
 CONFIG_FLAGS=""
-MAKE="make"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -129,12 +128,12 @@ PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
 # Common commands
-INSTALL_USER=install -v -Dm644
-INSTALL_BINUSER=install -v -Dm755
-INSTALL_DIRUSER=install -vd
-INSTALL_ROOT=as_root ${INSTALL_USER} -o root -g root
-INSTALL_BINROOT=as_root ${INSTALL_BINUSER} -o root -g root
-INSTALL_DIRROOT=as_root ${INSTALL_DIRUSER} -o root -g root
+INSTALL_USER='install -v -Dm644'
+INSTALL_BINUSER='install -v -Dm755'
+INSTALL_DIRUSER='install -vd'
+INSTALL_ROOT="as_root ${INSTALL_USER} -o root -g root"
+INSTALL_BINROOT="as_root ${INSTALL_BINUSER} -o root -g root"
+INSTALL_DIRROOT="as_root ${INSTALL_DIRUSER} -o root -g root"
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
@@ -146,6 +145,13 @@ INSTALL_DIRROOT=as_root ${INSTALL_DIRUSER} -o root -g root
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     [ "${CMAKE_SRC_ROOT}" ] || CMAKE_SRC_ROOT=${SRCDIR}
     [ "${CBUILDTYPE}" ]     || CBUILDTYPE="Release"
+    [ "${CMAKE_GEN}" ]      ||  if (which ninja); then
+                                    CMAKE_GEN="Ninja"
+                                    MAKE="ninja"
+                                else
+                                    CMAKE_GEN="Unix Makefiles"
+                                    MAKE="make"
+                                fi
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -163,27 +169,41 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
                   ${CFG_DOCDIR_FLAG}=${DOCDER}             \
                   ${CFG_MANDIR_FLAG}=${MANDER}             \
                   ${CONFIG_FLAGS}"
+    MAKE="make"
 # Leave place for other possible configuration utilities to set up
-# For now, just do-nothing placeholder command
+# For now, just do-nothing placeholder commands
 # QMake
 #^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xqmake" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Autogen
 #^^^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x/autogen.sh" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Default
 #^^^^^^^^^
 else
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 fi
 #
 # Default make flags
 #********************
-MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
-TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
-INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
+if [ "x${MAKE}" == "xmake" ]; then
+    MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
+    TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
+    INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
+elif [ "x${MAKE}" == "xninja" ]; then
+    MAKE_FLAGS="   ${MAKE_FLAGS}"
+    TEST_FLAGS="   ${TEST_FLAGS}"
+    INSTALL_FLAGS="${INSTALL_FLAGS}"
+else
+    MAKE_FLAGS="   ${MAKE_FLAGS}"
+    TEST_FLAGS="   ${TEST_FLAGS}"
+    INSTALL_FLAGS="${INSTALL_FLAGS}"
+fi
 #
 # Create Group and/or User
 #**************************
@@ -217,6 +237,7 @@ grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 #
 ((TREATASNEW)) && REINSTALL=0
 ((TREATASOLD)) && REINSTALL=1
+if ! ((INSTALL_ONLY)); then # Makes possible to install an already built src
 # Obtain package
 #****************
 if [ "${VCS}" ]; then
@@ -249,7 +270,7 @@ if [ "${VCS}" ]; then
 else
     # Download Package
     #******************
-    if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
+    if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
         wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
@@ -339,6 +360,10 @@ fi
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
+#
+# Post-build modifications before testing
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
@@ -355,6 +380,7 @@ if [ "${TEST}" ]; then
     fi
 fi
 #
+fi # ! ((INSTALL_ONLY))
 # Install
 #^^^^^^^^^
 if ! ((BUILD_ONLY)); then

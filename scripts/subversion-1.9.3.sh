@@ -21,13 +21,29 @@ if [ ${#} -gt 1 ]; then
     sed -i "s:^${1}=.*$:${1}=${2}:"g ${0}
     exit 0
 fi
-#*************************************************************************
-# NOTE: This package does not follow the typical configure-build-install *
-#+format, but uses an installer.                                         *
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Dependencies
 #*************
+# Required
+#apr_util-1.5.4
+#sqlite-3.10.2
+# Recommended
+#serf-1.3.8 (required for http and https!)
+# Optional
+#apache-2.4.18
+#cyrus_sasl-2.1.26
+#dbus-1.10.6
+#kdelibs-4.14.16 (for kwallet support)
+#python-2.7.11 (w/ sqlite support for tests)
+#ruby-2.3.0
+#swig-3.0.8 (for building Perl, Python, and Ruby bindings)
+#doxygen-1.8.11 (rebuild docs)
+# Optional Java support (pick at least one)
+#openjdk-1.8.0.51
+#dante
+#jikes
+# Optional Java test
+#junit-4.11
 #
 # Preparation
 #*************
@@ -38,25 +54,31 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
-# Set kernel version before running! Then unset to avoid future mistakes
-# Can also set in environment.
-#TGT_KVER=
-if ! [ ${TGT_KVER} ]; then
-    echo "Please set target kernel version (TGT_KVER) before running"
-    exit 1
+# Rebuild documentation if possible - if doxygen installed
+REBUILD_DOCS=1
+# Build with Java, Perl, Python2, and/or Ruby bindings if available
+BND_JAVA=1
+BND_PERL=1
+BND_PYTHON2=1
+BND_RUBY=1
+# Test these and turn off any that are unavailable - no need to edit!
+if ! (cat /list-${CHRISTENED}-${SURNAME} | grep "^openjdk" > /dev/null) &&
+   ! (cat /list-${CHRISTENED}-${SURNAME} | grep "^dante" > /dev/null)   &&
+   ! (cat /list-${CHRISTENED}-${SURNAME} | grep "^jikes" > /dev/null); then
+    BND_JAVA=0
 fi
-# May choose one of many different premade config files
-XORG_CONF="10-nvidia.conf"
-# Just copy the libraries, don't link them
-#CPONLY=1
-# For CPBIN and CPDAT; the follow options are available
-# 0 - Do not copy, no matter what.
-# 1 - Copy only if it doesn't involve overwriting existing copies
-# 2 - Copy no matter what
-# 1 is probably the best/safest choice, except for a full-system upgrade.
-CPBIN=1
-CPDAT=1
-# Uncomment
+if ! (cat /list-${CHRISTENED}-${SURNAME} | grep "^python-2" > /dev/null); then
+    BND_PYTHON2=0
+fi
+if ! (cat /list-${CHRISTENED}-${SURNAME} | grep "^ruby" > /dev/null); then
+    BND_RUBY=0
+fi
+if ! (cat /list-${CHRISTENED}-${SURNAME} | grep "^swig" > /dev/null); then
+    BND_PERL=0
+    BND_PYTHON2=0
+    BND_RUBY=0
+fi
+# (Perl should always be installed)
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
@@ -66,42 +88,35 @@ CPDAT=1
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=nvidia
+PROG=subversion
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=NVIDIA-Linux-x86_64
-VERSION=361.18
-# In this case it's just the extension, not really an archive type.
-ARCHIVE=run
-# optional suffix of "-no-compat32" depending on which version is needed
-if [ $(uname -m) = "x86_64" ]; then
-    SUFFIX="-no-compat32"
-else
-    SUFFIX=
-fi
+PROG_ALT=${PROG}
+VERSION=1.9.3
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
 #+is the directory from which this script was executed.
 WORKING_DIR=$PWD
 # This is where the root of the package directory will be found
-PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}
+PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
 #BUILDDIR=${SRCDIR}
 # Subdirectory build
-BUILDDIR=${SRCDIR}/kernel
+BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=ftp://download.nvidia.com/XFree86/Linux-x86_64
+DL_URL=http://www.apache.org/dist
 DL_ALT=
-MD5=29a88f1538d622cebf751593396053e4
+MD5=243036eb28b50ce517fc228eb3250add
 SHASUM=
 SHAALG=1
 REPO=
@@ -122,12 +137,12 @@ LOCALST8DER=/var
 MANDER=/usr/share/man
 DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE=""
+CONFIGURE="${SRCDIR}/configure"
 #
 # Flags
 #*******
 # -j${PARALLEL} included by default; uncomment this to force nonparallel build
-#PARALLEL=1
+PARALLEL=1
 #
 # CMake
 #^^^^^^^
@@ -142,12 +157,15 @@ CONFIGURE=""
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--disable-static --with-apache-libexecdir"
+if ((BND_JAVA)); then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --enable-javahl"
+fi
 MAKE="make"
-MAKE_FLAGS="SYSSRC=/lib/modules/${TGT_KVER}/build module"
+MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
-INSTALL=""
+INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
@@ -279,13 +297,13 @@ if [ "${VCS}" ]; then
 else
     # Download Package
     #******************
-    if ! [ -f ${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${VERSION}/${PROG_ALT}-${VERSION}${SUFFIX}.${ARCHIVE} \
-            -O ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} || FAIL_DL=1
+    if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
+        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${VERSION}/${PROG_ALT}-${VERSION}${SUFFIX}.${ARCHIVE} \
-            -O ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} &&
+            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -297,14 +315,14 @@ else
         fi
     fi
 #
-# Verify package
+    # Verify package
     #****************
     if [ "${SHASUM}" ]; then
-        echo "${SHASUM}  ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}" |
+        echo "${SHASUM}  ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" |
                 shasum -a ${SHAALG} -c ;\
             ( exit ${PIPESTATUS[0]} )
     elif [ "${MD5}" ]; then
-        echo "${MD5} ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}" | md5sum -c ;\
+        echo "${MD5} ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
             ( exit ${PIPESTATUS[0]} )
     fi
 #
@@ -321,10 +339,9 @@ else
 #
     # Extract package
     #*****************
-    chmod u+x ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}
-    ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} --extract-only
-    mv ${WORKING_DIR}/${PROG_ALT}-${VERSION}${SUFFIX} ${SRCDIR}
-
+    mkdir -v ${PKGDIR}
+    tar -xf ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} \
+            -C ${PKGDIR} --strip-components=1
 fi # End "if [ ${VCS} ]..."
 #
 # Begin Installation
@@ -366,10 +383,31 @@ fi
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
-# Build (doesn't apply to this package)
+# Build
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
+#
+# Post-build modifications before testing
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+if (cat /list-${CHRISTENED}-${SURNAME} | grep "^doxygen" > /dev/null); then
+    doxygen ${SRCDIR}/doc/doxygen.conf
+fi
+if ((BND_JAVA)); then
+    ${MAKE} javahl      # for java
+fi
+if ((BND_PERL)); then
+    ${MAKE} swig-pl     # for Perl
+fi
+if ((BND_RUBY)); then
+    ${MAKE} swig-rb     # for Ruby
+fi
+if ((BND_PYTHON2)); then
+    ${MAKE} swig-py \
+    swig_pydir=/usr/lib/python2.7/site-packages/libsvn \
+    swig_pydir_extra=/usr/lib/python2.7/site-packages/svn # for Python
+fi
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
@@ -386,11 +424,79 @@ if [ "${TEST}" ]; then
     fi
 fi
 #
+# Java test
+if ((BND_JAVA)); then
+    ${MAKE} ${TEST_FLAGS} ${TEST} 2>&1 | \
+        tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
+    STAT=${PIPESTATUS[0]}
+    if (( STAT )); then
+        echo "Some tests failed; log in ../logs/$(basename $0)-log"
+        echo "Pull up another terminal and check the output"
+        echo "Shall we proceed? (say "'"yes"'" or "'"y"'" to proceed)"
+        read PROCEED
+        [ "$PROCEED" = "y" ] || [ "$PROCEED" = "yes" ]
+    fi
+fi
+#
+if ((BND_PERL)); then
+    ${MAKE} check-swig-pl 2>&1 | \
+        tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
+    STAT=${PIPESTATUS[0]}
+    if (( STAT )); then
+        echo "Some tests failed; log in ../logs/$(basename $0)-log"
+        echo "Pull up another terminal and check the output"
+        echo "Shall we proceed? (say "'"yes"'" or "'"y"'" to proceed)"
+        read PROCEED
+        [ "$PROCEED" = "y" ] || [ "$PROCEED" = "yes" ]
+    fi
+fi
+#
+if ((BND_PYTHON2)); then
+    ${MAKE} check-swig-py 2>&1 | \
+        tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
+    STAT=${PIPESTATUS[0]}
+    if (( STAT )); then
+        echo "Some tests failed; log in ../logs/$(basename $0)-log"
+        echo "Pull up another terminal and check the output"
+        echo "Shall we proceed? (say "'"yes"'" or "'"y"'" to proceed)"
+        read PROCEED
+        [ "$PROCEED" = "y" ] || [ "$PROCEED" = "yes" ]
+    fi
+fi
+#
+# Ruby tests fail due to errors in the test suite
+if ((BND_RUBY)); then
+    ${MAKE} check-swig-rb 2>&1 | \
+        tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
+    STAT=${PIPESTATUS[0]}
+    if (( STAT )); then
+        echo "Some tests failed; log in ../logs/$(basename $0)-log"
+        echo "Pull up another terminal and check the output"
+        echo "Shall we proceed? (say "'"yes"'" or "'"y"'" to proceed)"
+        read PROCEED
+        [ "$PROCEED" = "y" ] || [ "$PROCEED" = "yes" ]
+    fi
+fi
+#
 # Install
 #^^^^^^^^^
-#if ! ((BUILD_ONLY)); then
-#    as_root ${INSTALL} ${INSTALL_FLAGS}
-#fi
+if ! ((BUILD_ONLY)); then
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+fi
+if ((BND_JAVA)); then
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-javahl      # for java
+fi
+if ((BND_PERL)); then
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-swig-pl     # for Perl
+fi
+if ((BND_RUBY)); then
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-swig-rb     # for Ruby
+fi
+if ((BND_PYTHON2)); then
+    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}-swig-py \
+    swig_pydir=/usr/lib/python2.7/site-packages/libsvn \
+    swig_pydir_extra=/usr/lib/python2.7/site-packages/svn # for Python
+fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -398,123 +504,8 @@ fi
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
-# Install kernel module to versioned location
-${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules
-${INSTALL_ROOT} ${BUILDDIR}/*.ko \
-        ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/
-# Symlink kernel module to be used by target kernel
-${INSTALL_DIRROOT} /lib/modules/${TGT_KVER}/kernel/drivers/video
-ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/*.ko \
-        /lib/modules/$TGT_KVER/kernel/drivers/video/
-#
-# Copy libraries
-${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/drivers
-${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions
-${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
-for _lib in $(find ${SRCDIR} -name '*.so*'); do
-    if [ ${_lib} != "tls_test_dso.so" ]; then
-        ${INSTALL_ROOT} ${_lib} ${PREFICKS}/lib/nvidia/${VERSION}/
-    fi
-done
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libglx.so.${VERSION} \
-              ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libglx.la \
-              ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/nvidia_drv.so \
-              ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/drivers/
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libvdpau_nvidia.so.${VERSION} \
-              ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libvdpau_trace.so.${VERSION} \
-              ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
-# Link libraries to put them in use
-if ! ((CPONLY)); then
-    for _lib in $(find ${PREFICKS}/lib/nvidia/${VERSION} -name '*.so*' |
-                  grep -v 'xorg/' | grep -v 'vdpau'); do
-        _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
-        _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
-        as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
-                ${PREFICKS}/lib/_soname
-        as_root ln -sfv ${PREFICKS}/lib/_soname ${PREFICKS}/lib/_base
-    done
-    for _lib in $(find ${PREFICKS}/lib/nvidia/${VERSION}/vdpau -name '*.so*'); do
-        _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
-        _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
-        as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
-                ${PREFICKS}/lib/vdpau/_soname
-        as_root ln -sfv ${PREFICKS}/lib/vdpau/_soname ${PREFICKS}/lib/vdpau/_base
-    done
-    as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/* \
-            ${PREFICKS}/lib/xorg/modules/extensions/
-    as_root ln -sfv libglx.so.${VERSION} \
-            ${PREFICKS}/lib/xorg/modules/extensions/libglx.so.1
-    as_root ln -sfv libglx.so.1 \
-            ${PREFICKS}/lib/xorg/modules/extensions/libglx.so
-    as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/drivers/* \
-            ${PREFICKS}/lib/xorg/modules/drivers/
-fi # if ! ((CPONLY))
-# Install binaries
-if ((CPBIN)); then
-    for _bin in \
-                    nvidia-debugdump        \
-                    nvidia-xconfig          \
-                    nvidia-settings         \
-                    nvidia-bug-report.sh    \
-                    nvidia-smi              \
-                    nvidia-cuda-mps-server  \
-                    nvidia-cuda-mps-control \
-                    nvidia-modprobe         \
-                    nvidia-persistenced     ; do
-        if ! ( ((CPBIN==1)) && [ -f ${PREFICKS}/bin/${_bin} ] ); then
-            ${INSTALL_BINROOT} ${SRCDIR}/${_bin} ${PREFICKS}/bin/
-        fi
-    done
-fi # if ((CPBIN))
-# Install data files
-if ((CPDAT)); then
-    for _man in \
-                    nvidia-xconfig.1.gz          \
-                    nvidia-settings.1.gz         \
-                    nvidia-smi.1.gz              \
-                    nvidia-cuda-mps-control.1.gz \
-                    nvidia-modprobe.1.gz         \
-                    nvidia-persistenced.1.gz     ; do
-        if ! ( ((CPDAT==1)) && [ -f ${MANDER}/man1/${_man} ] ); then
-            ${INSTALL_ROOT} ${SRCDIR}/${_man} ${MANDER}/man1/
-        fi
-    done
-    ${INSTALL_ROOT} LICENSE ${PREFICKS}/usr/share/licenses/nvidia/
-    for _license in \
-                        nvidia-utils  \
-                        opencl-nvidia \
-                        nvidia-libgl  ; do
-        if ! ( ((CPDAT==1)) &&
-            [ -f ${PREFICKS}/usr/share/licenses/${_license} ] ); then
-            as_root ln -sfv nvidia ${PREFICKS}/usr/share/licenses/${_license}
-        fi
-    done
-    for _doc in \
-                        README.txt       \
-                        NVIDIA_Changelog ; do
-        if ! ( ((CPDAT==1)) && [ -f ${DOCDER}/${_doc} ] ); then
-            ${INSTALL_ROOT} ${SRCDIR}/${_doc} ${DOCDER}
-        fi
-    done
-    if ! ( ((CPDAT==1)) && [ -e ${DOCDER}/html ] ); then
-        as_root cp -r html ${DOCDER}/
-    fi
-    as_root ln -sfv ${DOCDER} ${DOCDER}/../nvidia-utils
-    ${INSTALL_ROOT} nvidia-settings.desktop ${PREFICKS}/usr/share/applications/
-    ${INSTALL_ROOT} nvidia-settings.png ${PREFICKS}/usr/share/pixmaps/
-    as_root sed -e 's:__UTILS_PATH__:/usr/bin:' \
-                -e 's:__PIXMAP_PATH__:/usr/share/pixmaps:' \
-                -i "${pkgdir}/usr/share/applications/nvidia-settings.desktop"
-    ${INSTALL_ROOT} nvidia-drm-outputclass.conf \
-            ${PREFICKS}/usr/share/X11/xorg.conf.d/
-    # OpenCL (?)
-    ${INSTALL_DIRROOT} /etc/OpenCL/vendors
-    ${INSTALL_ROOT} nvidia.icd /etc/OpenCL/vendors/
-fi # if ((CPDAT))
-# Copy manpages and other files
+as_root install -v -m755 -d ${DOCDER}
+as_root cp -v -R ${SRCDIR}/doc/* ${DOCDER}
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -525,12 +516,12 @@ else
     as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
 fi
 as_root rm -rf ${PKGDIR}
-[ -e ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} ] &&
-    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}
+[ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
+    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
 #
 # Add to installed list for this computer:
 if ! ((BUILD_ONLY)); then
-    echo "${PROG//-/_}-${VERSION}${SUFFIX}" >> /list-${CHRISTENED}-${SURNAME}
+    echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 fi
 #
 # Stop here unless this is first install
@@ -553,15 +544,5 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
-as_root tee -a /etc/modprobe.d/blacklist << "EOF"
-blacklist nouveau
-EOF
-#
-if [ -f ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF} ]; then
-    mv -v ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF} \
-          ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF}.bak
-fi
-as_root install -v -Dm644 -o root -g root \
-    ${BLFSDIR}/files/etc/X11/xorg.conf.d/${XORG_CONF} /etc/X11/xorg.conf.d/
 ###################################################
 

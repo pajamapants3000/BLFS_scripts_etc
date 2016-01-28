@@ -148,6 +148,13 @@ PROGUSER=
 PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
+# Common commands
+INSTALL_USER='install -v -Dm644'
+INSTALL_BINUSER='install -v -Dm755'
+INSTALL_DIRUSER='install -vd'
+INSTALL_ROOT="as_root ${INSTALL_USER} -o root -g root"
+INSTALL_BINROOT="as_root ${INSTALL_BINUSER} -o root -g root"
+INSTALL_DIRROOT="as_root ${INSTALL_DIRUSER} -o root -g root"
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
