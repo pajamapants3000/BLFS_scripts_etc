@@ -12,6 +12,8 @@
 #+     +like checking for the installation of a package, downloading
 #+     +and testing checksum, avoiding duplicates and saving old builds, etc.
 #
+# TODO: Set up lib-only installation for multi-version installations
+#
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
 #
@@ -37,7 +39,7 @@ source ${HOME}/.blfs_profile
 # Run optional test suite
 OPT_TEST=1
 # Uncomment to keep build files and sources
-#PRESERVE_BUILD=1
+PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
 #BUILD_ONLY=1
 # Uncomment to install only; skips to the end for already built sources
@@ -75,7 +77,6 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Downloads; obtain and verify package(s); or specify repo to clone and type
 DL_URL=http://www.lua.org/ftp
 DL_ALT=
-DL_PATCH_SHAREDLIB=http://www.linuxfromscratch.org/patches/blfs/svn
 DL_PATCH_ADVRDLN=http://luajit.org/patches
 DL_OPTTST=http://www.lua.org/tests
 MD5=33278c2ab5ee3c1a875be8d55c1ca2a1
@@ -88,12 +89,11 @@ REPO=
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
-#PATCH=${PROG}-${VERSION}.patch
+PATCH=${PROG}-${VERSION}.patch
 if [ ${PATCH} ]; then
     [ -f ${PATCHDIR}/${PATCH} ] ||
-        echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1
+        (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
 fi
-PATCH_SHAREDLIB=${PROG}-${VERSION}-shared_library-1.patch
 PATCH_ADVRDLN=${PROG}-5.3.1-advanced_readline.patch
 # Configure; prepare build
 PREFICKS=/usr
@@ -101,7 +101,8 @@ SYSCONFDER=/etc
 LOCALST8DER=/var
 MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
-LIBLUA_SO=liblua.so.${VERSION}
+#LIBLUA_SO=liblua.so.${VERSION}
+#LIBLUA_A=liblua${VERSION%\.[0-9]*}.a
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
 CONFIGURE=""
 #
@@ -126,8 +127,7 @@ MAKE_FLAGS="linux"
 TEST=test
 TEST_FLAGS=""
 INSTALL="install"
-INSTALL_FLAGS="INSTALL_TOP=${PREFICKS} TO_LIB=${LIBLUA_SO}"
-INSTALL_FLAGS="${INSTALL_FLAGS} INSTALL_MAN=${MANDER}/man1"
+INSTALL_FLAGS="INSTALL_TOP=${PREFICKS} INSTALL_MAN=${MANDER}/man1"
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
@@ -333,11 +333,6 @@ if ((OPT_TEST)); then
     echo "${MD5_OPTTST} ${WORKING_DIR}/${PROG}-${VERSION}-tests.${ARCHIVE}" |
             md5sum -c ; ( exit ${PIPESTATUS[0]} )
 fi
-    # Shared library patch
-    if ! [ -f ${WORKING_DIR}/${PATCH_SHAREDLIB} ]; then
-        wget ${DL_PATCH_SHAREDLIB}/${PATCH_SHAREDLIB} \
-            -O ${WORKING_DIR}/${PATCH_SHAREDLIB}
-    fi
     # Advanced readline features patch
     if ! [ -f ${WORKING_DIR}/${PATCH_ADVRDLN} ]; then
         wget ${DL_PATCH_ADVRDLN}/${PATCH_ADVRDLN} \
@@ -358,7 +353,6 @@ pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
-patch -Np1 -i ${WORKING_DIR}/${PATCH_SHAREDLIB}
 patch -Np1 -i ${WORKING_DIR}/${PATCH_ADVRDLN}
 #
 # Create build directory
@@ -420,7 +414,7 @@ fi # ! ((INSTALL_ONLY))
 # Install
 #^^^^^^^^^
 if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} INSTALL_DATA="cp -d" ${INSTALL}
+        as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
@@ -429,18 +423,13 @@ fi
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
-LIBLUA_SO2=${LIBLUA_SO%.[0-9]*}
-LIBLUA_SO3=${LIBLUA_SO2%.[0-9]*}
-LIBLUA_SO4=${LIBLUA_SO3%.[0-9]*}
-as_root ln -sfv ${LIBLUA_SO} ${PREFICKS}/lib/${LIBLUA_SO2}
-as_root ln -sfv ${LIBLUA_SO2} ${PREFICKS}/lib/${LIBLUA_SO4}
-as_root mkdir -pv ${DOCDER}/lua-${VERSION}
-as_root cp -v ${SRCDIR}/doc/*.{html,css,gif,png} ${DOCDER}/lua-${VERSION}
+as_root mkdir -pv ${DOCDER}
+as_root cp -v ${SRCDIR}/doc/*.{html,css,gif,png} ${DOCDER}
+as_root mkdir -pv ${PREFICKS}/lib/pkgconfig
 as_root install -Dm644 -g root -o root \
         ${BLFSDIR}/files/usr/lib/pkgconfig/lua.pc ${PREFICKS}/lib/pkgconfig/
 as_root sed -i "s/^R=[.0-9]*$/R=${VERSION}/" ${PREFICKS}/lib/pkgconfig/lua.pc
-as_root cp -v ${PREFICKS}/lib/pkgconfig/lua.pc \
-        ${PREFICKS}/lib/pkgconfig/lua-${VERSION%.[0-9]*}.pc
+as_root ln -sfv lua.pc ${PREFICKS}/lib/pkgconfig/lua-${VERSION%.[0-9]*}.pc
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -461,7 +450,7 @@ fi
 #
 # Stop here unless this is first install
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-((REINSTALL)) && exit 0 || (exit 0)
+#((REINSTALL)) && exit 0 || (exit 0)
 ###################################################
 #
 # Init Script

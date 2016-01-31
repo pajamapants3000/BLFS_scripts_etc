@@ -87,7 +87,7 @@ BRANCH=master
 #PATCH=${PROG}-${VERSION}.patch
 if [ ${PATCH} ]; then
     [ -f ${PATCHDIR}/${PATCH} ] ||
-        echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1
+        (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
 fi
 # Configure; prepare build
 PREFICKS=/usr

@@ -1,0 +1,78 @@
+diff -rup lua-5.3.2.orig/Makefile lua-5.3.2/Makefile
+--- lua-5.3.2.orig/Makefile	2016-01-31 04:26:20.618534175 -0800
++++ lua-5.3.2/Makefile	2016-01-31 04:49:18.252279465 -0800
+@@ -22,7 +22,7 @@ INSTALL_CMOD= $(INSTALL_TOP)/lib/lua/$V
+ # you may have to run ranlib on the installed liblua.a.
+ INSTALL= install -p
+ INSTALL_EXEC= $(INSTALL) -m 0755
+-INSTALL_DATA= $(INSTALL) -m 0644
++INSTALL_DATA= cp -d
+ #
+ # If you don't have "install" you can use "cp" instead.
+ # INSTALL= cp -p
+@@ -41,7 +41,7 @@ PLATS= aix bsd c89 freebsd generic linux
+ # What to install.
+ TO_BIN= lua luac
+ TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
+-TO_LIB= liblua.a
++TO_LIB= liblua$(V).a liblua.a liblua.so.$(R) liblua.so.$(V) liblua.so
+ TO_MAN= lua.1 luac.1
+ 
+ # Lua version and release.
+@@ -52,7 +52,7 @@ R= $V.2
+ all:	$(PLAT)
+ 
+ $(PLATS) clean:
+-	cd src && $(MAKE) $@
++	cd src && $(MAKE) $@ V=$(V) R=$(R)
+ 
+ test:	dummy
+ 	src/lua -v
+diff -rup lua-5.3.2.orig/src/Makefile lua-5.3.2/src/Makefile
+--- lua-5.3.2.orig/src/Makefile	2016-01-31 04:26:20.622534203 -0800
++++ lua-5.3.2/src/Makefile	2016-01-31 04:48:42.602072521 -0800
+@@ -7,7 +7,9 @@
+ PLAT= none
+ 
+ CC= gcc -std=gnu99
+-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
++CFLAGS= -fPIC -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
++CXX= gcc -std=gnu99
++CXXFLAGS= -fPIC -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
+ LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+ 
+@@ -29,6 +31,7 @@ MYOBJS=
+ PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
+ 
+ LUA_A=	liblua.a
++LUA_SO=	liblua.so
+ CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
+ 	lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o \
+ 	ltm.o lundump.o lvm.o lzio.o
+@@ -43,7 +46,7 @@ LUAC_T=	luac
+ LUAC_O=	luac.o
+ 
+ ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
+-ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
++ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T) $(LUA_SO)
+ ALL_A= $(LUA_A)
+ 
+ # Targets start here.
+@@ -56,8 +59,14 @@ o:	$(ALL_O)
+ a:	$(ALL_A)
+ 
+ $(LUA_A): $(BASE_O)
+-	$(AR) $@ $(BASE_O)
+-	$(RANLIB) $@
++	$(AR) liblua$(V).a $(BASE_O)
++	$(RANLIB) liblua$(V).a
++	ln -sf liblua$(V).a $(LUA_A)
++
++$(LUA_SO): $(CORE_O) $(LIB_O)
++	$(CC) -shared -ldl -Wl,-soname,$(LUA_SO).$(V) -o $@.$(R) $? -lm $(MYLDFLAGS)
++	ln -sf $(LUA_SO).$(R) $(LUA_SO).$(V)
++	ln -sf $(LUA_SO).$(V) $(LUA_SO)
+ 
+ $(LUA_T): $(LUA_O) $(LUA_A)
+ 	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)

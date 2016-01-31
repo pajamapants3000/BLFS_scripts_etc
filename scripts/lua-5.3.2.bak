@@ -29,15 +29,17 @@ fi
 #*************
 source ${HOME}/.blfs_profile
 # Other common preparations:
-source loadqt4
+#source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Options
 #********
+# Run optional test suite
+OPT_TEST=1
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
-BUILD_ONLY=1
+#BUILD_ONLY=1
 # Uncomment to install only; skips to the end for already built sources
 #INSTALL_ONLY=1
 # Uncomment one to force including or skipping end configuration, resp.
@@ -45,13 +47,13 @@ BUILD_ONLY=1
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=kdiff3
+PROG=lua
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=git
-ARCHIVE=
+VERSION=5.3.2
+ARCHIVE=tar.gz
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -60,25 +62,29 @@ WORKING_DIR=$PWD
 # This is where the root of the package directory will be found
 PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
-SRCDIR=${PKGDIR}/kdiff3
+SRCDIR=${PKGDIR}
 # Source dir build
-#BUILDDIR=${SRCDIR}
+BUILDDIR=${SRCDIR}
 # Subdirectory build
-BUILDDIR=${SRCDIR}/build
+#BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../${PROG}-build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://www.lua.org/ftp
 DL_ALT=
-MD5=
+DL_PATCH_SHAREDLIB=http://www.linuxfromscratch.org/patches/blfs/svn
+DL_PATCH_ADVRDLN=http://luajit.org/patches
+DL_OPTTST=http://www.lua.org/tests
+MD5=33278c2ab5ee3c1a875be8d55c1ca2a1
+MD5_OPTTST=a2b7ab1b8ff82a0145376e233ef30a4a
 SHASUM=
 SHAALG=1
-REPO=git://git.code.sf.net/p/kdiff3/code
+REPO=
 # VCS=[git,hg,svn,...]; usually used as VERSION
-VCS=${VERSION}
+#VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
@@ -87,14 +93,17 @@ if [ ${PATCH} ]; then
     [ -f ${PATCHDIR}/${PATCH} ] ||
         (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
 fi
+PATCH_SHAREDLIB=${PROG}-${VERSION}-shared_library-1.patch
+PATCH_ADVRDLN=${PROG}-5.3.1-advanced_readline.patch
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
 LOCALST8DER=/var
 MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
+LIBLUA_SO=liblua.so.${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="cmake"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -113,11 +122,12 @@ CONFIGURE="cmake"
 #
 # Pass them in... (these are in addition to the defaults; see below)
 CONFIG_FLAGS=""
-MAKE_FLAGS=""
-TEST=
-TEST_FLAGS="-k"
+MAKE_FLAGS="linux"
+TEST=test
+TEST_FLAGS=""
 INSTALL="install"
-INSTALL_FLAGS=""
+INSTALL_FLAGS="INSTALL_TOP=${PREFICKS} TO_LIB=${LIBLUA_SO}"
+INSTALL_FLAGS="${INSTALL_FLAGS} INSTALL_MAN=${MANDER}/man1"
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
@@ -176,14 +186,17 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
 #^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xqmake" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Autogen
 #^^^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x/autogen.sh" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Default
 #^^^^^^^^^
 else
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 fi
 #
 # Default make flags
@@ -226,11 +239,13 @@ fi
 #
 # Check for previous installation
 #*********************************
-PROCEED="yes"
-REINSTALL=0
-grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
-    REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
-[ "${PROCEED}" = "yes" ] || [ "${PROCEED}" = "y" ] || exit 0
+if ((TREATASOLD)) || ! ((TREATASNEW)); then
+    PROCEED="yes"
+    REINSTALL=0
+    grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
+        REINSTALL=1 && echo "Previous installation detected, proceed?" && read PROCEED
+    [ "${PROCEED}" = "yes" ] || [ "${PROCEED}" = "y" ] || exit 0
+fi
 #
 ((TREATASNEW)) && REINSTALL=0
 ((TREATASOLD)) && REINSTALL=1
@@ -267,12 +282,12 @@ if [ "${VCS}" ]; then
 else
     # Download Package
     #******************
-    if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+    if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
+        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -307,6 +322,27 @@ else
         as_root mv ${PKGDIR} ${PKGDIR}${INC}
     fi
 #
+    # Additional downloads
+    #**********************
+    # Optional test suite
+if ((OPT_TEST)); then
+    if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}-tests.${ARCHIVE} ]; then
+        wget ${DL_OPTTST}/${PROG_ALT}-${VERSION}-tests.${ARCHIVE} \
+            -O ${WORKING_DIR}/${PROG}-${VERSION}-tests.${ARCHIVE}
+    fi
+    echo "${MD5_OPTTST} ${WORKING_DIR}/${PROG}-${VERSION}-tests.${ARCHIVE}" |
+            md5sum -c ; ( exit ${PIPESTATUS[0]} )
+fi
+    # Shared library patch
+    if ! [ -f ${WORKING_DIR}/${PATCH_SHAREDLIB} ]; then
+        wget ${DL_PATCH_SHAREDLIB}/${PATCH_SHAREDLIB} \
+            -O ${WORKING_DIR}/${PATCH_SHAREDLIB}
+    fi
+    # Advanced readline features patch
+    if ! [ -f ${WORKING_DIR}/${PATCH_ADVRDLN} ]; then
+        wget ${DL_PATCH_ADVRDLN}/${PATCH_ADVRDLN} \
+            -O ${WORKING_DIR}/${PATCH_ADVRDLN}
+    fi
     # Extract package
     #*****************
     mkdir -v ${PKGDIR}
@@ -322,6 +358,8 @@ pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
+patch -Np1 -i ${WORKING_DIR}/${PATCH_SHAREDLIB}
+patch -Np1 -i ${WORKING_DIR}/${PATCH_ADVRDLN}
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -352,6 +390,7 @@ fi
 # Post-config modifications before building
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+sed -i '/#define LUA_ROOT/s:/usr/local/:/usr/:' ${SRCDIR}/src/luaconf.h
 #
 # Build
 #^^^^^^^
@@ -381,7 +420,7 @@ fi # ! ((INSTALL_ONLY))
 # Install
 #^^^^^^^^^
 if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+    as_root ${MAKE} ${INSTALL_FLAGS} INSTALL_DATA="cp -d" ${INSTALL}
 fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
@@ -390,6 +429,18 @@ fi
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
+LIBLUA_SO2=${LIBLUA_SO%.[0-9]*}
+LIBLUA_SO3=${LIBLUA_SO2%.[0-9]*}
+LIBLUA_SO4=${LIBLUA_SO3%.[0-9]*}
+as_root ln -sfv ${LIBLUA_SO} ${PREFICKS}/lib/${LIBLUA_SO2}
+as_root ln -sfv ${LIBLUA_SO2} ${PREFICKS}/lib/${LIBLUA_SO4}
+as_root mkdir -pv ${DOCDER}/lua-${VERSION}
+as_root cp -v ${SRCDIR}/doc/*.{html,css,gif,png} ${DOCDER}/lua-${VERSION}
+as_root install -Dm644 -g root -o root \
+        ${BLFSDIR}/files/usr/lib/pkgconfig/lua.pc ${PREFICKS}/lib/pkgconfig/
+as_root sed -i "s/^R=[.0-9]*$/R=${VERSION}/" ${PREFICKS}/lib/pkgconfig/lua.pc
+as_root cp -v ${PREFICKS}/lib/pkgconfig/lua.pc \
+        ${PREFICKS}/lib/pkgconfig/lua-${VERSION%.[0-9]*}.pc
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -428,7 +479,14 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
+# Running the optional testsuite
+# This is just for the basic tests - BLFS doesn't discuss any further.
+if ((OPT_TEST)); then
+    pushd ${WORKING_DIR}
+    tar xf ${PROG}-${VERSION}-tests.tar.gz
+    pushd ${PROG}-${VERSION}-tests
+    lua -e"_U=true" all.lua
+fi
 ###################################################
-
 
 
