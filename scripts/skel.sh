@@ -11,6 +11,7 @@
 # TODO: Create library to source (functions file) for common tasks
 #+     +like checking for the installation of a package, downloading
 #+     +and testing checksum, avoiding duplicates and saving old builds, etc.
+# TODO: Create a list of downloads, each with location info and checksum
 #
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
@@ -40,6 +41,8 @@ source ${HOME}/.blfs_profile
 #BUILD_ONLY=1
 # Uncomment to install only; skips to the end for already built sources
 #INSTALL_ONLY=1
+# Retain source downloads
+#RETAIN_DL=1
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
@@ -90,7 +93,9 @@ fi
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
+#SYSCONFDER=${PREFICKS}/etc
 LOCALST8DER=/var
+#LOCALST8DER=${PREFICKS}/var
 MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
@@ -246,7 +251,21 @@ if [ "${VCS}" ]; then
         BRANCH_FLAG="-b"
     elif [ "${VCS}" == "svn" ]; then
         VCS_CMD="co"
+        # With subversion, branch is part of the repo path
         BRANCH_FLAG=
+        if [[ "x${BRANCH}" == "xmaster" || "x${BRANCH}" == "xtrunk" ||
+              "x${BRANCH}" == "x" ]]; then
+            if [[ $(basename ${REPO}) != "trunk" ]]; then
+                REPO=${REPO}/trunk
+            fi
+        else
+            if [[ $(basename ${REPO}) == "trunk" ]]; then
+                REPO=$(dirname ${REPO})/branches/${BRANCH}
+            else
+                REPO=${REPO}/branches/${BRANCH}
+            fi
+        fi
+        BRANCH=
     else
         echo "error: unkown value for VCS; aborting."
         exit 1
@@ -255,13 +274,12 @@ if [ "${VCS}" ]; then
     # Preserve any previous builds; Ensure empty target directory
     #*************************************************************
     num=1
+    INC=
     while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
-    if [ ${num} -gt 1 ]; then
-        as_root mv ${PKGDIR} ${PKGDIR}${INC}
-    fi
+    as_root mv ${PKGDIR} ${PKGDIR}${INC}
 #
     # Clone Repository
     #******************
@@ -302,13 +320,12 @@ else
     # Preserve any previous builds
     #******************************
     num=1
+    INC=
     while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
-    if [ ${num} -gt 1 ]; then
-        as_root mv ${PKGDIR} ${PKGDIR}${INC}
-    fi
+    as_root mv ${PKGDIR} ${PKGDIR}${INC}
 #
     # Extract package
     #*****************
@@ -381,11 +398,14 @@ if [ "${TEST}" ]; then
 fi
 #
 fi # ! ((INSTALL_ONLY))
+if ((BUILD_ONLY)); then
+    echo "${PROG}-${VERSION} built successfully! No changes were made."
+    echo "Build can be found in ${BUILDDIR}"
+    exit 0
+fi
 # Install
 #^^^^^^^^^
-if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
-fi
+as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -397,19 +417,25 @@ fi
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
 popd    # Back to $WORKING_DIR
-if ! ((PRESERVE_BUILD)) && ! ((BUILD_ONLY)); then
-    as_root rm -rf ${BUILDDIR}
-else
-    as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
+if ((PRESERVE_BUILD)); then
+    num=1
+    INC=
+    BUILD_STORAGE_DIR=${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
+    while [ -d ${BUILD_STORAGE_DIR}${INC} ]; do
+        INC="-${num}"
+        ((num++))
+    done
+    as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}${INC}
 fi
+as_root rm -rf ${BUILDDIR}
 as_root rm -rf ${PKGDIR}
-[ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
-    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
+if ! ((RETAIN_DL)); then
+    [ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
+            as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
+fi
 #
 # Add to installed list for this computer:
-if ! ((BUILD_ONLY)); then
-    echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
-fi
+echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 # Stop here unless this is first install
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -418,7 +444,7 @@ fi
 #
 # Init Script
 #*************
-if ! ((BUILD_ONLY)) && [ "${BOOTSCRIPT}" ]; then
+if [ "${BOOTSCRIPT}" ]; then
     pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     popd

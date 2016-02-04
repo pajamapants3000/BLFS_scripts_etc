@@ -25,8 +25,7 @@ fi
 # Dependencies
 #*************
 #
-# Recommended (for tests)
-#dejagnu-1.5.3
+#qt-5.5.1 or qt-4.8.7
 #
 # Preparation
 #*************
@@ -37,21 +36,32 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Comment out themes and/or skins to lighten the installation
+# Download additional themes
+THEME=1
+# Download additional skins
+SKIN=1
 # Uncomment to keep build files and sources
-PRESERVE_BUILD=1
+#PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
-BUILD_ONLY=1
+#BUILD_ONLY=1
+# Uncomment to install only; skips to the end for already built sources
+#INSTALL_ONLY=1
+# Retain source downloads
+#RETAIN_SRC=1
 # Uncomment one to force including or skipping end configuration, resp.
-TREATASNEW=1
+#TREATASNEW=1
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=gcc
+PROG=smplayer
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=5.3.0
+VERSION=16.1.0
+VER_THM=15.12.0
+VER_SKN=15.2.0
 ARCHIVE=tar.bz2
 #
 # Useful paths
@@ -63,41 +73,42 @@ PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
-#BUILDDIR=${SRCDIR}
+BUILDDIR=${SRCDIR}
 # Subdirectory build
 #BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
-BUILDDIR=${SRCDIR}/../${PROG}-build
+#BUILDDIR=${SRCDIR}/../${PROG}-build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://ftpmirror.gnu.org
-DL_ALT=ftp://ftp.gnu.org/gnu
-MD5=c9616fd448f980259c31de613e575719
-SHASUM=
+DL_URL=http://downloads.sourceforge.net
+DL_ALT=
+MD5=3a85e04132a97c739f3cbd919252c65f
+MD5_THM=70aedf0e3228b338cc04846fda73b746
+MD5_SKN=57e165cf9a95808fafd179e5322b7f15
+SHASUM=25067f7400c7df5b7c0f493657d78ff13cf39c25
 SHAALG=1
-REPO=
+REPO=https://subversion.assembla.com/svn/smplayer/smplayer/trunk
 # VCS=[git,hg,svn,...]; usually used as VERSION
 #VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
-#PATCH=${PROG}-${VERSION}.patch
+# This patch adds option for next/prev in playlist action to mouse buttons
+PATCH=${PROG}-${VERSION}.patch
 if [ ${PATCH} ]; then
     [ -f ${PATCHDIR}/${PATCH} ] ||
         (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
 fi
 # Configure; prepare build
-PREFICKS=/opt/gcc
-#SYSCONFDER=/etc
-SYSCONFDER=${PREFICKS}/etc
-#LOCALST8DER=/var
-LOCALST8DER=${PREFICKS}/var
+PREFICKS=/usr
+SYSCONFDER=/etc
+LOCALST8DER=/var
 MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="${SRCDIR}/configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -108,23 +119,19 @@ CONFIGURE="${SRCDIR}/configure"
 #^^^^^^^
 # Use this if CMake source root is different from SRCDIR
 #CMAKE_SRC_ROOT=
-#
 # Another common cmake parameter is the build type; defaults to Release or
 #+uncomment below
 #CBUILDTYPE=RelWithDebInfo
-#
-#Specify CMake generator
+#Specify CMake generator (only if non-standard; will set automatically below)
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS="--disable-multilib --with-system-zlib"
-CONFIG_FLAGS="${CONFIG_FLAGS} --enable-languages=c,c++,fortran,go"
-MAKE="make"
-MAKE_FLAGS=""
-TEST=check
+CONFIG_FLAGS=""
+MAKE_FLAGS="PREFIX=${PREFICKS}"
+TEST=
 TEST_FLAGS="-k"
 INSTALL="install"
-INSTALL_FLAGS=""
+INSTALL_FLAGS="PREFIX=${PREFICKS}"
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
@@ -152,6 +159,13 @@ INSTALL_DIRROOT="as_root ${INSTALL_DIRUSER} -o root -g root"
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     [ "${CMAKE_SRC_ROOT}" ] || CMAKE_SRC_ROOT=${SRCDIR}
     [ "${CBUILDTYPE}" ]     || CBUILDTYPE="Release"
+    [ "${CMAKE_GEN}" ]      ||  if (which ninja); then
+                                    CMAKE_GEN="Ninja"
+                                    MAKE="ninja"
+                                else
+                                    CMAKE_GEN="Unix Makefiles"
+                                    MAKE="make"
+                                fi
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -169,27 +183,41 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
                   ${CFG_DOCDIR_FLAG}=${DOCDER}             \
                   ${CFG_MANDIR_FLAG}=${MANDER}             \
                   ${CONFIG_FLAGS}"
+    MAKE="make"
 # Leave place for other possible configuration utilities to set up
-# For now, just do-nothing placeholder command
+# For now, just do-nothing placeholder commands
 # QMake
 #^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xqmake" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Autogen
 #^^^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x/autogen.sh" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Default
 #^^^^^^^^^
 else
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 fi
 #
 # Default make flags
 #********************
-MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
-TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
-INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
+if [ "x${MAKE}" == "xmake" ]; then
+    MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
+    TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
+    INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
+elif [ "x${MAKE}" == "xninja" ]; then
+    MAKE_FLAGS="   ${MAKE_FLAGS}"
+    TEST_FLAGS="   ${TEST_FLAGS}"
+    INSTALL_FLAGS="${INSTALL_FLAGS}"
+else
+    MAKE_FLAGS="   ${MAKE_FLAGS}"
+    TEST_FLAGS="   ${TEST_FLAGS}"
+    INSTALL_FLAGS="${INSTALL_FLAGS}"
+fi
 #
 # Create Group and/or User
 #**************************
@@ -223,6 +251,7 @@ grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 #
 ((TREATASNEW)) && REINSTALL=0
 ((TREATASOLD)) && REINSTALL=1
+if ! ((INSTALL_ONLY)); then # Makes possible to install an already built src
 # Obtain package
 #****************
 if [ "${VCS}" ]; then
@@ -231,7 +260,18 @@ if [ "${VCS}" ]; then
         BRANCH_FLAG="-b"
     elif [ "${VCS}" == "svn" ]; then
         VCS_CMD="co"
+        # With subversion, branch is part of the repo path
         BRANCH_FLAG=
+        if [[ "x${BRANCH}" == "xmaster" || "x${BRANCH}" == "xtrunk" ||
+              "x${BRANCH}" == "x" ]]; then
+            if [[ ${REPO:((${#REPO}-5)):5} != "trunk" &&
+                  ${REPO:((${#REPO}-6)):6} != 'trunk/' ]]; then
+                REPO=${REPO}/trunk
+            fi
+        else
+            REPO=${REPO}/branches/${BRANCH}
+        fi
+        BRANCH=
     else
         echo "error: unkown value for VCS; aborting."
         exit 1
@@ -255,12 +295,12 @@ if [ "${VCS}" ]; then
 else
     # Download Package
     #******************
-    if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+    if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
+        wget ${DL_URL}/${PROG_ALT}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -284,6 +324,24 @@ else
             ( exit ${PIPESTATUS[0]} )
     fi
 #
+    # Alternate downloads - themes and skins
+    if ((THEME)); then
+        if ! [ -f ${WORKING_DIR}/${PROG}-themes-${VER_THM}.${ARCHIVE} ]; then
+            wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-themes-${VER_THM}.${ARCHIVE} \
+                    -O ${WORKING_DIR}/${PROG}-themes-${VER_THM}.${ARCHIVE}
+        fi
+        echo "${MD5_THM} ${WORKING_DIR}/${PROG}-themes-${VER_THM}.${ARCHIVE}" |
+                md5sum -c ; ( exit ${PIPESTATUS[0]} )
+    fi
+    if ((SKIN)); then
+        if ! [ -f ${WORKING_DIR}/${PROG}-skins-${VER_SKN}.${ARCHIVE} ]; then
+            wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-skins-${VER_SKN}.${ARCHIVE} \
+                    -O ${WORKING_DIR}/${PROG}-skins-${VER_SKN}.${ARCHIVE}
+        fi
+        echo "${MD5_SKN} ${WORKING_DIR}/${PROG}-skins-${VER_SKN}.${ARCHIVE}" |
+                md5sum -c ; ( exit ${PIPESTATUS[0]} )
+    fi
+
     # Preserve any previous builds
     #******************************
     num=1
@@ -349,7 +407,6 @@ ${MAKE} ${MAKE_FLAGS}
 # Post-build modifications before testing
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-ulimit -s 32768
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
@@ -366,9 +423,7 @@ if [ "${TEST}" ]; then
     fi
 fi
 #
-# Get a summary of the test results with:
-${SRCDIR}/contrib/test_summary |
-        tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}-summary.check
+fi # ! ((INSTALL_ONLY))
 # Install
 #^^^^^^^^^
 if ! ((BUILD_ONLY)); then
@@ -381,9 +436,29 @@ fi
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
-as_root mkdir -pv ${PREFICKS}/share/gdb/auto-load/usr/lib
-as_root mv -v ${PREFICKS}/lib/*gdb.py ${PREFICKS}/share/gdb/auto-load/usr/lib
-as_root chown -v -R root:root ${PREFICKS}/lib/gcc/*linux-gnu/${VERSION}/include{,-fixed}
+if ((THEME)); then
+    mkdir ${BUILDDIR}/${PROG}-themes-${VER_THM}
+    tar xf ${WORKING_DIR}/${PROG}-themes-${VER_THM}.${ARCHIVE} \
+            -C ${BUILDDIR}/${PROG}-themes-${VER_THM} --strip-components=1
+    pushd ${BUILDDIR}/${PROG}-themes-${VER_THM}
+    ${MAKE} ${MAKE_FLAGS}
+    if ! ((BUILD_ONLY)); then
+        as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+    fi
+    popd
+fi
+if ((SKIN)); then
+    mkdir ${BUILDDIR}/${PROG}-skins-${VER_SKN}
+    tar xf ${WORKING_DIR}/${PROG}-skins-${VER_SKN}.${ARCHIVE} \
+            -C ${BUILDDIR}/${PROG}-skins-${VER_SKN} --strip-components=1
+    pushd ${BUILDDIR}/${PROG}-skins-${VER_SKN}
+    ${MAKE} ${MAKE_FLAGS}
+    if ! ((BUILD_ONLY)); then
+        as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+    fi
+    popd
+fi
+
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -394,8 +469,10 @@ else
     as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
 fi
 as_root rm -rf ${PKGDIR}
-[ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
-    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
+if ! ((RETAIN_SRC)); then
+    [ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
+            as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
+fi
 #
 # Add to installed list for this computer:
 if ! ((BUILD_ONLY)); then
@@ -421,14 +498,6 @@ fi
 #***************
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
-# Note: These presume PREFICKS=/usr, which it should always be for the main
-#+system gcc. For alternate installations, we don't want to override the main
-#+system gcc anyway, so these may remain as-is.
-as_root ln -v -sf ../usr/bin/cpp /lib
-as_root ln -v -sf gcc /usr/bin/cc
-as_root install -v -dm755 /usr/lib/bfd-plugins
-as_root ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/${VERSION}/liblto_plugin.so \
-        /usr/lib/bfd-plugins/
 #
 ###################################################
 

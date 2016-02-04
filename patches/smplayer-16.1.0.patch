@@ -1,0 +1,12 @@
+diff -rup smplayer-16.1.0.orig/src/prefinput.cpp smplayer-16.1.0/src/prefinput.cpp
+--- smplayer-16.1.0.orig/src/prefinput.cpp	2016-02-02 02:12:51.369941939 -0800
++++ smplayer-16.1.0/src/prefinput.cpp	2016-02-02 02:13:53.209271084 -0800
+@@ -56,6 +56,8 @@ void PrefInput::createMouseCombos() {
+ 	left_click_combo->addItem( tr("Pause"), "pause" );
+ 	left_click_combo->addItem( tr("Pause / Frame step"), "pause_and_frame_step" );
+ 	left_click_combo->addItem( tr("Stop"), "stop" );
++	left_click_combo->addItem( tr("Play previous"), "play_prev" );
++	left_click_combo->addItem( tr("Play next"), "play_next" );
+ 	left_click_combo->addItem( tr("Go backward (short)"), "rewind1" );
+ 	left_click_combo->addItem( tr("Go backward (medium)"), "rewind2" );
+ 	left_click_combo->addItem( tr("Go backward (long)"), "rewind3" );
