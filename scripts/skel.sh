@@ -1,8 +1,9 @@
 #!/bin/bash -ev
 #
-# Installation script
+#    ***    Installation script     ***
 # Written by: Tommy Lincoln <pajamapants3000@gmail.com>
-# License: See LICENSE in parent folder
+# License   : See LICENSE in parent folder
+# Updated   : 02/12/2016
 #
 # TODO: Override or pass options via command line
 # TODO: Clean it up! Make configuration more obvious
@@ -279,7 +280,9 @@ if [ "${VCS}" ]; then
         INC="-${num}"
         ((num++))
     done
-    as_root mv ${PKGDIR} ${PKGDIR}${INC}
+    if ((INC)); then
+        as_root mv ${PKGDIR} ${PKGDIR}${INC}
+    fi
 #
     # Clone Repository
     #******************
@@ -325,7 +328,9 @@ else
         INC="-${num}"
         ((num++))
     done
-    as_root mv ${PKGDIR} ${PKGDIR}${INC}
+    if ((INC)); then
+        as_root mv ${PKGDIR} ${PKGDIR}${INC}
+    fi
 #
     # Extract package
     #*****************

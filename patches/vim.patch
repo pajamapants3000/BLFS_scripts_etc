@@ -1,0 +1,129 @@
+diff -rup vim-old/src/Makefile vim/src/Makefile
+--- vim-old/src/Makefile	2015-12-06 05:13:47.474357679 -0800
++++ vim/src/Makefile	2015-12-06 06:30:19.252128372 -0800
+@@ -311,7 +311,7 @@ CClink = $(CC)
+ # Change this to your desire and do 'make config' afterwards
+ 
+ # examples (can only use one!):
+-#CONF_ARGS = --exec-prefix=/usr
++CONF_ARGS = --prefix=/usr
+ #CONF_ARGS = --with-vim-name=vim7 --with-ex-name=ex7 --with-view-name=view7
+ #CONF_ARGS = --with-global-runtime=/etc/vim
+ #CONF_ARGS = --with-local-dir=/usr/share
+@@ -353,7 +353,7 @@ CClink = $(CC)
+ #CONF_OPT_GUI = --enable-gui=gtk2 --disable-gtktest
+ #CONF_OPT_GUI = --enable-gui=gnome2
+ #CONF_OPT_GUI = --enable-gui=gnome2 --disable-gtktest
+-#CONF_OPT_GUI = --enable-gui=motif
++CONF_OPT_GUI = --enable-gui=motif
+ #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
+ #CONF_OPT_GUI = --enable-gui=athena
+ #CONF_OPT_GUI = --enable-gui=nextaw
+@@ -376,7 +376,7 @@ CClink = $(CC)
+ # Uncomment the next line to fail if one of the requested language interfaces
+ # cannot be configured.  Without this Vim will be build anyway, without
+ # the failing interfaces.
+-#CONF_OPT_FAIL = --enable-fail-if-missing
++CONF_OPT_FAIL = --enable-fail-if-missing
+ 
+ # LUA
+ # Uncomment one of these when you want to include the Lua interface.
+@@ -386,17 +386,18 @@ CClink = $(CC)
+ #CONF_OPT_LUA = --enable-luainterp
+ #CONF_OPT_LUA = --enable-luainterp=dynamic
+ #CONF_OPT_LUA = --enable-luainterp --with-luajit
+-#CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
++CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
+ # Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
+ #CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
+ 
+ # MZSCHEME
+ # Uncomment this when you want to include the MzScheme interface.
+-#CONF_OPT_MZSCHEME = --enable-mzschemeinterp
++CONF_OPT_MZSCHEME = --enable-mzschemeinterp
+ # PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
+-#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
++CONF_OPT_PLTHOME  = --with-plthome=/usr
+ #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
+ #CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
++MZSCHEME_MZC = raco
+ 
+ # PERL
+ # Uncomment one of these when you want to include the Perl interface.
+@@ -410,7 +411,7 @@ CClink = $(CC)
+ # one: "touch perl.exp".
+ # This requires at least "small" features, "tiny" doesn't work.
+ #CONF_OPT_PERL = --enable-perlinterp
+-#CONF_OPT_PERL = --enable-perlinterp=dynamic
++CONF_OPT_PERL = --enable-perlinterp=dynamic
+ 
+ # PYTHON
+ # Uncomment this when you want to include the Python interface.
+@@ -425,29 +426,29 @@ CClink = $(CC)
+ # However, this may still cause problems, such as "import termios" failing.
+ # Build two separate versions of Vim in that case.
+ #CONF_OPT_PYTHON = --enable-pythoninterp
+-#CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
++CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
+ #CONF_OPT_PYTHON3 = --enable-python3interp
+-#CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
++CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
+ 
+ # RUBY
+ # Uncomment this when you want to include the Ruby interface.
+ # First one for static linking, second one for loading when used.
+ # Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
+ #CONF_OPT_RUBY = --enable-rubyinterp
+-#CONF_OPT_RUBY = --enable-rubyinterp=dynamic
+-#CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
++CONF_OPT_RUBY = --enable-rubyinterp=dynamic
++#CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby
+ 
+ # TCL
+ # Uncomment this when you want to include the Tcl interface.
+-#CONF_OPT_TCL = --enable-tclinterp
++CONF_OPT_TCL = --enable-tclinterp
+ #CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
+ 
+ # CSCOPE
+ # Uncomment this when you want to include the Cscope interface.
+-#CONF_OPT_CSCOPE = --enable-cscope
++CONF_OPT_CSCOPE = --enable-cscope
+ 
+ # WORKSHOP - Sun Visual Workshop interface.  Only works with Motif!
+-#CONF_OPT_WORKSHOP = --enable-workshop
++CONF_OPT_WORKSHOP = --enable-workshop
+ 
+ # NETBEANS - NetBeans interface. Only works with Motif, GTK, and gnome.
+ # Motif version must have XPM libraries (see |workshop-xpm|).
+@@ -455,7 +456,7 @@ CClink = $(CC)
+ #CONF_OPT_NETBEANS = --disable-netbeans
+ 
+ # SNIFF - Include support for SNiFF+.
+-#CONF_OPT_SNIFF = --enable-sniff
++CONF_OPT_SNIFF = --enable-sniff
+ 
+ # MULTIBYTE - To edit multi-byte characters.
+ # Uncomment this when you want to edit a multibyte language.
+@@ -503,10 +504,10 @@ CClink = $(CC)
+ #CONF_OPT_FEAT = --with-features=small
+ #CONF_OPT_FEAT = --with-features=normal
+ #CONF_OPT_FEAT = --with-features=big
+-#CONF_OPT_FEAT = --with-features=huge
++CONF_OPT_FEAT = --with-features=huge
+ 
+ # COMPILED BY - For including a specific e-mail address for ":version".
+-#CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
++CONF_OPT_COMPBY = "--with-compiledby=Tommy Lincoln <pajamapants3000@gmail.com>"
+ 
+ # X WINDOWS DISABLE - For creating a plain Vim without any X11 related fancies
+ # (otherwise Vim configure will try to include xterm titlebar access)
+@@ -2676,7 +2677,7 @@ objects/if_mzsch.o: if_mzsch.c $(MZSCHEM
+ 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
+  
+ mzscheme_base.c:
+-	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
++	$(MZSCHEME_MZC) ctool --c-mods mzscheme_base.c ++lib scheme/base
+ 
+ objects/if_perl.o: auto/if_perl.c
+ 	$(CCC) $(PERL_CFLAGS) -o $@ auto/if_perl.c

@@ -1,0 +1,165 @@
+diff -rup vim-qt-orig/src/if_ruby.c vim-qt/src/if_ruby.c
+--- vim-qt-orig/src/if_ruby.c	2015-02-13 08:26:07.862977027 -0800
++++ vim-qt/src/if_ruby.c	2015-02-13 08:26:27.829687005 -0800
+@@ -96,11 +96,15 @@
+ # define rb_num2int rb_num2int_stub
+ #endif
+ 
+-#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 21
++#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
+ /* Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
+  * rb_gc_writebarrier_unprotect_promoted if USE_RGENGC  */
+ # define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
+ #endif
++#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
++# define rb_gc_writebarrier_unprotect rb_gc_writebarrier_unprotect_stub
++# define rb_check_type rb_check_type_stub
++#endif
+ 
+ #include <ruby.h>
+ #ifdef RUBY19_OR_LATER
+@@ -180,7 +184,9 @@ static void ruby_vim_init(void);
+  */
+ # define rb_assoc_new			dll_rb_assoc_new
+ # define rb_cObject			(*dll_rb_cObject)
+-# define rb_check_type			dll_rb_check_type
++# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 22
++#  define rb_check_type			dll_rb_check_type
++# endif
+ # define rb_class_path			dll_rb_class_path
+ # define rb_data_object_alloc		dll_rb_data_object_alloc
+ # define rb_define_class_under		dll_rb_define_class_under
+@@ -382,7 +388,11 @@ static void* (*ruby_process_options)(int
+ # endif
+ 
+ # if defined(USE_RGENGC) && USE_RGENGC
++#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
+ static void (*dll_rb_gc_writebarrier_unprotect_promoted)(VALUE);
++#  else
++static void (*dll_rb_gc_writebarrier_unprotect)(VALUE obj);
++#  endif
+ # endif
+ 
+ # if defined(RUBY19_OR_LATER) && !defined(PROTO)
+@@ -420,10 +430,24 @@ VALUE rb_num2ulong(VALUE x)
+ 
+    /* Do not generate a prototype here, VALUE isn't always defined. */
+ # if defined(USE_RGENGC) && USE_RGENGC && !defined(PROTO)
++#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
+ void rb_gc_writebarrier_unprotect_promoted_stub(VALUE obj)
+ {
+     dll_rb_gc_writebarrier_unprotect_promoted(obj);
+ }
++#  else
++void rb_gc_writebarrier_unprotect_stub(VALUE obj)
++{
++    dll_rb_gc_writebarrier_unprotect(obj);
++}
++#  endif
++# endif
++
++# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
++void rb_check_type_stub(VALUE v, int i)
++{
++    dll_rb_check_type(v, i);
++}
+ # endif
+ 
+ static HINSTANCE hinstRuby = NULL; /* Instance of ruby.dll */
+@@ -542,7 +566,11 @@ static struct
+     {"ruby_init_stack", (RUBY_PROC*)&dll_ruby_init_stack},
+ # endif
+ # if defined(USE_RGENGC) && USE_RGENGC
++#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
+     {"rb_gc_writebarrier_unprotect_promoted", (RUBY_PROC*)&dll_rb_gc_writebarrier_unprotect_promoted},
++#  else
++    {"rb_gc_writebarrier_unprotect", (RUBY_PROC*)&dll_rb_gc_writebarrier_unprotect},
++#  endif
+ # endif
+     {"", NULL},
+ };
+diff -rup vim-qt-orig/src/Makefile vim-qt/src/Makefile
+--- vim-qt-orig/src/Makefile	2015-02-13 08:26:07.852977005 -0800
++++ vim-qt/src/Makefile	2015-02-13 08:26:59.963089957 -0800
+@@ -316,6 +316,7 @@ CClink = $(CC)
+ #CONF_ARGS = --with-global-runtime=/etc/vim
+ #CONF_ARGS = --with-local-dir=/usr/share
+ #CONF_ARGS = --without-local-dir
++CONF_ARGS = --prefix=/usr --with-qt-qmake=/usr/bin/qmake-qt5
+ 
+ # Use this one if you distribute a modified version of Vim.
+ #CONF_ARGS = --with-modified-by="John Doe"
+@@ -357,6 +358,7 @@ CClink = $(CC)
+ #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
+ #CONF_OPT_GUI = --enable-gui=athena
+ #CONF_OPT_GUI = --enable-gui=nextaw
++CONF_OPT_GUI = --enable-gui=qt
+ 
+ # Carbon GUI for Mac OS X
+ #CONF_OPT_GUI = --enable-gui=carbon
+@@ -376,7 +378,7 @@ CClink = $(CC)
+ # Uncomment the next line to fail if one of the requested language interfaces
+ # cannot be configured.  Without this Vim will be build anyway, without
+ # the failing interfaces.
+-#CONF_OPT_FAIL = --enable-fail-if-missing
++CONF_OPT_FAIL = --enable-fail-if-missing
+ 
+ # LUA
+ # Uncomment one of these when you want to include the Lua interface.
+@@ -384,7 +386,7 @@ CClink = $(CC)
+ # Use --with-luajit if you want to use LuaJIT instead of Lua.
+ # Set PATH environment variable to find lua or luajit executable.
+ #CONF_OPT_LUA = --enable-luainterp
+-#CONF_OPT_LUA = --enable-luainterp=dynamic
++CONF_OPT_LUA = --enable-luainterp=dynamic
+ #CONF_OPT_LUA = --enable-luainterp --with-luajit
+ #CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
+ # Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
+@@ -410,7 +412,7 @@ CClink = $(CC)
+ # one: "touch perl.exp".
+ # This requires at least "small" features, "tiny" doesn't work.
+ #CONF_OPT_PERL = --enable-perlinterp
+-#CONF_OPT_PERL = --enable-perlinterp=dynamic
++CONF_OPT_PERL = --enable-perlinterp=dynamic
+ 
+ # PYTHON
+ # Uncomment this when you want to include the Python interface.
+@@ -425,21 +427,21 @@ CClink = $(CC)
+ # However, this may still cause problems, such as "import termios" failing.
+ # Build two separate versions of Vim in that case.
+ #CONF_OPT_PYTHON = --enable-pythoninterp
+-#CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
++CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
+ #CONF_OPT_PYTHON3 = --enable-python3interp
+-#CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
++CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
+ 
+ # RUBY
+ # Uncomment this when you want to include the Ruby interface.
+ # First one for static linking, second one for loading when used.
+ # Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
+ #CONF_OPT_RUBY = --enable-rubyinterp
+-#CONF_OPT_RUBY = --enable-rubyinterp=dynamic
++CONF_OPT_RUBY = --enable-rubyinterp=dynamic
+ #CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
+ 
+ # TCL
+ # Uncomment this when you want to include the Tcl interface.
+-#CONF_OPT_TCL = --enable-tclinterp
++CONF_OPT_TCL = --enable-tclinterp
+ #CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
+ 
+ # CSCOPE
+@@ -503,10 +505,10 @@ CClink = $(CC)
+ #CONF_OPT_FEAT = --with-features=small
+ #CONF_OPT_FEAT = --with-features=normal
+ #CONF_OPT_FEAT = --with-features=big
+-#CONF_OPT_FEAT = --with-features=huge
++CONF_OPT_FEAT = --with-features=huge
+ 
+ # COMPILED BY - For including a specific e-mail address for ":version".
+-#CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
++CONF_OPT_COMPBY = "--with-compiledby=Tommy Lincoln <pajamapants3000~at~gmdc>"
+ 
+ # X WINDOWS DISABLE - For creating a plain Vim without any X11 related fancies
+ # (otherwise Vim configure will try to include xterm titlebar access)

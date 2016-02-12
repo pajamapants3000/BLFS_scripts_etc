@@ -221,7 +221,9 @@ if [ "${VCS}" ]; then
         ((num++))
     done
     if [ ${num} -gt 1 ]; then
-        as_root mv ${PKGDIR} ${PKGDIR}${INC}
+        if ((INC)); then
+            as_root mv ${PKGDIR} ${PKGDIR}${INC}
+        fi
     fi
 #
     # Clone Repository
@@ -267,7 +269,9 @@ else
         ((num++))
     done
     if [ ${num} -gt 1 ]; then
-        as_root mv ${PKGDIR} ${PKGDIR}${INC}
+        if ((INC)); then
+            as_root mv ${PKGDIR} ${PKGDIR}${INC}
+        fi
     fi
 #
     # Extract package
