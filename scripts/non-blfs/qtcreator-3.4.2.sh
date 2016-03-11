@@ -19,7 +19,7 @@
 #
 # Preparation (is this the best place to install?)
 #**************
-source blfs_profile
+source ${HOME}/.blfs_profile
 source setqt5
 INSTALL_DIRECTORY=$QT5DIR
 #

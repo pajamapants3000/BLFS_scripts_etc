@@ -116,7 +116,7 @@ cd ..
 #
 # Configuration
 #***************
-source blfs_profile
+source ${HOME}/.blfs_profile
 as_root tee /etc/krb5.conf << "EOF"
 # Begin /etc/krb5.conf
 

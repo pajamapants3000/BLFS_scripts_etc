@@ -1,0 +1,25 @@
+diff -rup fltk-1.1.10.old/fluid/Makefile fltk-1.1.10/fluid/Makefile
+--- fltk-1.1.10.old/fluid/Makefile	2008-12-29 12:21:29.000000000 -0800
++++ fltk-1.1.10/fluid/Makefile	2016-03-09 07:34:03.555105289 -0800
+@@ -52,6 +52,8 @@ OBJECTS = $(CPPFILES:.cxx=.o)
+ 
+ include ../makeinclude
+ 
++LDLIBS += -lfontconfig
++
+ all:	$(FLUID) fluid$(EXEEXT)
+ 
+ fluid$(EXEEXT):		$(OBJECTS) $(LIBNAME) $(FLLIBNAME) \
+diff -rup fltk-1.1.10.old/test/Makefile fltk-1.1.10/test/Makefile
+--- fltk-1.1.10.old/test/Makefile	2008-12-29 12:21:29.000000000 -0800
++++ fltk-1.1.10/test/Makefile	2016-03-09 07:34:22.200221000 -0800
+@@ -27,6 +27,9 @@
+ 
+ include ../makeinclude
+ 
++LDLIBS += -lfontconfig
++GLDLIBS += -lfontconfig
++
+ CPPFILES =\
+ 	unittests.cxx \
+ 	adjuster.cxx \

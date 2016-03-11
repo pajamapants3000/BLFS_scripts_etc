@@ -92,7 +92,7 @@ cd ..
 # Disable root remote login
 #as_root echo "PermitRootLogin no" >> /etc/ssh/sshd_config
 # Enable passwordless login from REMOTE_USERNAME@REMOTE_HOSTNAME
-#source blfs_profile
+#source ${HOME}/.blfs_profile
 #as_root ssh-keygen
 #as_root ssh-copy-id -i ~/.ssh/id_rsa.pub $REMOTE_USERNAME@$REMOTE_HOSTNAME
 # To disable password logins (if you've enabled passwordless logins)

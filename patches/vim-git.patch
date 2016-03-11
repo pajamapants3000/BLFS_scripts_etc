@@ -5,7 +5,7 @@ diff -rup vim.orig/src/Makefile vim/src/Makefile
  #CONF_ARGS = --with-global-runtime=/etc/vim
  #CONF_ARGS = --with-local-dir=/usr/share
  #CONF_ARGS = --without-local-dir
-+CONF_ARGS = --prefix=/usr
++CONF_ARGS = --prefix=/usr/local
  
  # Use this one if you distribute a modified version of Vim.
  #CONF_ARGS = --with-modified-by="John Doe"

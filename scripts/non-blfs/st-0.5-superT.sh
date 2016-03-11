@@ -6,7 +6,7 @@
 # Version: transparency support, solarized dark colorscheme
 # Requirements: Xlib header files
 # Download:
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 #wget http://dl.suckless.org/st/st-0.5.tar.gz
 #

@@ -18,7 +18,7 @@ kernel=
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 source setqt4
 #
 PROG=calligra

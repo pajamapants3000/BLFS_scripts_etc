@@ -61,7 +61,7 @@ cd ..
 # Configuration
 #***************
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 for DEV in ${IFACE[@]}; do
 as_root mv -v /etc/sysconfig/ifconfig.$DEV /etc/sysconfig/ifconfig.$DEV".bak"

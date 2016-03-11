@@ -38,7 +38,7 @@ wget ftp://ftp.freedesktop.org/pub/mesa/10.6.5/mesa-10.6.5.tar.xz
 echo "805092cc9b9784680c1db7aa6415517e mesa-10.6.5.tar.xz" | md5sum -c ;\
     ( exit ${PIPESTATUS[0]} )
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 # Recommended patch
 wget http://www.linuxfromscratch.org/patches/blfs/svn/mesa-10.6.5-add_xdemos-1.patch
 tar -xvf mesa-10.6.5.tar.xz

@@ -26,7 +26,7 @@ fi
 DOXYDOCS=1
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 # Other common preparations:
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS

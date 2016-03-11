@@ -1,6 +1,6 @@
 #!/bin/bash -ev
 # Install script for vim-qt
-source blfs_profile
+source ${HOME}/.blfs_profile
 git clone https://github.com/equalsraf/vim-qt.git
 cd vim-qt
 #source loadqt4

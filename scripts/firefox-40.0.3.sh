@@ -6,7 +6,7 @@
 # Legal: See LICENSE in parent directory
 #
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 # Notes
 #*******
@@ -52,7 +52,7 @@ source blfs_profile
 # Begin Kernel
 # End Kernel
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 # Installation
 #**************

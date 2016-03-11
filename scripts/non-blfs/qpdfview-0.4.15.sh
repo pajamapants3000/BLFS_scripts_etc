@@ -41,7 +41,7 @@ wget https://launchpad.net/qpdfview/trunk/0.4.15/+download/qpdfview-0.4.15.tar.g
 echo "d7e4066f9062a00380e9aa78c12a882e qpdfview-0.4.15.tar.gz" | md5sum -c ;\
     ( exit ${PIPESTATUS[0]} )
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 tar -xvf qpdfview-0.4.15.tar.gz
 cd qpdfview-0.4.15

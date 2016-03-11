@@ -17,7 +17,7 @@ fi
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 # For packages that don't support or do well with parallel build
 #PARALLEL=1

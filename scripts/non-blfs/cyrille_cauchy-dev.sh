@@ -15,7 +15,7 @@ kernel=
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 PROG=cyrille-cauchy
 VERSION=814aa99d9341

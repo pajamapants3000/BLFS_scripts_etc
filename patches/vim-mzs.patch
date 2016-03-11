@@ -1,0 +1,27 @@
+diff -rup vim.orig/src/Makefile vim/src/Makefile
+--- vim.orig/src/Makefile	2016-03-05 06:29:11.270529334 -0800
++++ vim/src/Makefile	2016-03-05 06:28:25.708277546 -0800
+@@ -398,11 +398,12 @@ CONF_OPT_LUA = --enable-luainterp=dynami
+ 
+ # MZSCHEME
+ # Uncomment this when you want to include the MzScheme interface.
+-#CONF_OPT_MZSCHEME = --enable-mzschemeinterp
++CONF_OPT_MZSCHEME = --enable-mzschemeinterp
+ # PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
+-#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
++CONF_OPT_PLTHOME  = --with-plthome=/usr
+ #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
+ #CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
++MZSCHEME_MZC = raco
+ 
+ # PERL
+ # Uncomment one of these when you want to include the Perl interface.
+@@ -2788,7 +2789,7 @@ objects/if_mzsch.o: if_mzsch.c $(MZSCHEM
+ 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
+ 
+ mzscheme_base.c:
+-	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
++	$(MZSCHEME_MZC) ctool --c-mods mzscheme_base.c ++lib scheme/base
+ 
+ objects/if_perl.o: auto/if_perl.c
+ 	$(CCC) $(PERL_CFLAGS) -o $@ auto/if_perl.c

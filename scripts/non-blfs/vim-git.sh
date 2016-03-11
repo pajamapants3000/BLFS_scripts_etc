@@ -21,7 +21,7 @@ fi
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 # Other common preparations:
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
@@ -43,7 +43,7 @@ REPO=https://github.com/vim/vim.git
 VCS=git
 BRANCH=master
 # Prepare sources
-PATCHDIR=${WORKING_DIR}/patches
+#PATCHDIR=${WORKING_DIR}/patches
 PATCH=${PROG}-${VERSION}.patch
 # Configure; prepare build
 PREFICKS=/usr

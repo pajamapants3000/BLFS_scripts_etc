@@ -26,7 +26,7 @@
 # Begin Kernel
 # End Kernel
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 # Installation
 #**************
 # Check for previous installation:

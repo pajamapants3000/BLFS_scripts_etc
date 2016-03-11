@@ -44,7 +44,7 @@ fi
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 # Other common preparations:
 # Qt5 preferred, but Qt version must match version used to build KDE if
 #+building with KDE support.

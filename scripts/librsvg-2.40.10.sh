@@ -26,7 +26,7 @@
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 CONFOPTS="--prefix=/usr --disable-static"
 if ! (cat /list-${CHRISTENED}-${SURNAME} | \

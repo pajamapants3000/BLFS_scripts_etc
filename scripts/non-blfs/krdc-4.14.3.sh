@@ -6,7 +6,7 @@
 # Legal: See LICENSE in parent directory
 #
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 if (cat /list-${CHRISTENED}-${SURNAME} | grep "qt-4" > /dev/null); then
     if (cat /list-${CHRISTENED}-${SURNAME} | grep "qt-5" > /dev/null); then
         if (echo $PATH | grep qt5); then

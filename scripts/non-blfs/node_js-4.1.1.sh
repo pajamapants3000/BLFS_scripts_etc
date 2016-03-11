@@ -24,7 +24,7 @@ fi
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 export PYTHON=/usr/bin/python2
 # Other common preparations:
 #source loadqt4

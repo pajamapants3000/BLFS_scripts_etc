@@ -56,7 +56,7 @@
 # Begin Kernel
 # End Kernel
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 # For lower RAM systems, uncomment this:
 #PARALLEL=1
 #

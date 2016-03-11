@@ -72,7 +72,7 @@ cd blfs-bootscripts-20150823
 as_root make install-saslauthd
 cd ..
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 as_root sed -i s@"^\(START=\).*$"@"\1\"yes\""@ /etc/sysconfig/saslauthd
 as_root sed -i s@"^\(AUTHMECH=\)\""@"\1\""$AUTHMECH@ /etc/sysconfig/saslauthd
 ###################################################

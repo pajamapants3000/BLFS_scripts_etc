@@ -13,7 +13,7 @@ grep gpm-1.20.7 /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
     echo "Previous installation detected, proceed?" && read PROCEED
 [ $PROCEED = "yes" ] || [ $PROCEED = "y" ] || exit 0
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 # Download:
 wget http://www.nico.schottelius.org/software/gpm/archives/gpm-1.20.7.tar.bz2
 # md5sum:

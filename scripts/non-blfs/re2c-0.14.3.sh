@@ -6,7 +6,7 @@
 # Legal: See LICENSE in parent directory
 #
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 # Dependencies
 #**************

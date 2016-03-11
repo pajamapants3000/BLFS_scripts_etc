@@ -8,7 +8,7 @@
 #
 source enlightenment.sh
 #
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 # Dependencies
 #**************

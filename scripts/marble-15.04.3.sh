@@ -15,7 +15,7 @@ kernel=
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 #
 PROG=marble
 VERSION=15.04.3

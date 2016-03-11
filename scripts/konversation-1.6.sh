@@ -17,7 +17,7 @@ fi
 #
 # Preparation
 #*************
-source blfs_profile
+source ${HOME}/.blfs_profile
 source loadqt5
 pathappend /opt/kf5/share XDG_DATA_DIRS
 #

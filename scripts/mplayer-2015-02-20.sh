@@ -4,7 +4,7 @@
 # Github: https://github.com/pajamapants3000
 # Legal: See LICENSE in parent directory
 #
-[ ${BLFS_DIR} ] && source ${BLFS_DIR}/blfs_profile || source blfs_profile
+[ ${BLFS_DIR} ] && source ${BLFS_DIR}/blfs_profile || source ${HOME}/.blfs_profile
 #
 # Dependencies
 #**************

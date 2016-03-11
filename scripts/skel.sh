@@ -38,9 +38,8 @@ source ${HOME}/.blfs_profile
 #********
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
-# Uncomment to build only, do NOT install or modify system
+# Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
 #BUILD_ONLY=1
-# Uncomment to install only; skips to the end for already built sources
 #INSTALL_ONLY=1
 # Retain source downloads
 #RETAIN_DL=1
@@ -169,12 +168,16 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
     [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
     [ "${CFG_DOCDIR_FLAG}" ]        || CFG_DOCDIR_FLAG="--docdir"
     [ "${CFG_MANDIR_FLAG}" ]        || CFG_MANDIR_FLAG="--mandir"
-    CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
-                  ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
-                  ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER} \
-                  ${CFG_DOCDIR_FLAG}=${DOCDER}             \
-                  ${CFG_MANDIR_FLAG}=${MANDER}             \
-                  ${CONFIG_FLAGS}"
+    [[ ${PREFICKS} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_PREFIX_FLAG}=${PREFICKS}" || (exit 0)
+    [[ ${SYSCONFDER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}" || (exit 0)
+    [[ ${LOCALST8DER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER}" || (exit 0)
+    [[ ${DOCDER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_DOCDIR_FLAG}=${DOCDER}" || (exit 0)
+    [[ ${MANDER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_MANDIR_FLAG}=${MANDER}" || (exit 0)
     MAKE="make"
 # Leave place for other possible configuration utilities to set up
 # For now, just do-nothing placeholder commands
@@ -346,7 +349,7 @@ fi # End "if [ ${VCS} ]..."
 pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
-[ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
+[ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH} || (exit 0)
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -407,6 +410,10 @@ if ((BUILD_ONLY)); then
     echo "${PROG}-${VERSION} built successfully! No changes were made."
     echo "Build can be found in ${BUILDDIR}"
     exit 0
+elif ((INSTALL_ONLY)); then
+    WORKING_DIR=$PWD
+    pushd ${SRCDIR}
+    pushd ${BUILDDIR}
 fi
 # Install
 #^^^^^^^^^
@@ -450,7 +457,7 @@ echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 # Init Script
 #*************
 if [ "${BOOTSCRIPT}" ]; then
-    pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
+    pushd ${WORKING_DIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     popd
 fi

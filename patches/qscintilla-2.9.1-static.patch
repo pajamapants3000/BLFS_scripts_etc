@@ -1,0 +1,47 @@
+diff -rup Qt4Qt5.orig/InputMethod.cpp Qt4Qt5/InputMethod.cpp
+--- Qt4Qt5.orig/InputMethod.cpp	2016-03-11 04:37:09.997971300 -0800
++++ Qt4Qt5/InputMethod.cpp	2016-03-11 04:39:34.346853403 -0800
+@@ -126,7 +126,7 @@ QVariant QsciScintillaBase::inputMethodQ
+         case Qt::ImMicroFocus:
+         {
+             int startPos = (preeditPos >= 0) ? preeditPos : pos;
+-            Point pt = sci->LocationFromPosition(startPos);
++            Scintilla::Point pt = sci->LocationFromPosition(startPos);
+             int width = SendScintilla(SCI_GETCARETWIDTH);
+             int height = SendScintilla(SCI_TEXTHEIGHT, line);
+             return QRect(pt.x, pt.y, width, height);
+@@ -155,11 +155,11 @@ QVariant QsciScintillaBase::inputMethodQ
+             int paraEnd = sci->pdoc->ParaDown(pos);
+             QVarLengthArray<char,1024> buffer(paraEnd - paraStart + 1);
+ 
+-            Sci_CharacterRange charRange;
++            Scintilla::Sci_CharacterRange charRange;
+             charRange.cpMin = paraStart;
+             charRange.cpMax = paraEnd;
+ 
+-            Sci_TextRange textRange;
++            Scintilla::Sci_TextRange textRange;
+             textRange.chrg = charRange;
+             textRange.lpstrText = buffer.data();
+ 
+diff -rup Qt4Qt5.orig/qscintilla.pro Qt4Qt5/qscintilla.pro
+--- Qt4Qt5.orig/qscintilla.pro	2016-03-11 04:37:09.998971306 -0800
++++ Qt4Qt5/qscintilla.pro	2016-03-11 04:41:04.959407149 -0800
+@@ -24,7 +24,7 @@
+ 
+ TEMPLATE = lib
+ TARGET = qscintilla2
+-CONFIG += qt warn_off release thread exceptions
++CONFIG += qt warn_off release thread exceptions staticlib
+ INCLUDEPATH += . ../include ../lexlib ../src
+ 
+ !CONFIG(staticlib) {
+@@ -45,7 +45,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
+ 
+ # Comment this in if you want the internal Scintilla classes to be placed in a
+ # Scintilla namespace rather than pollute the global namespace.
+-#DEFINES += SCI_NAMESPACE
++DEFINES += SCI_NAMESPACE
+ 
+ target.path = $$[QT_INSTALL_LIBS]
+ INSTALLS += target

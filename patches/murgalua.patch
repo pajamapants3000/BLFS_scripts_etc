@@ -1,0 +1,634 @@
+diff -rup murgaLua.orig/3rd-party/copas-1.1.1/Makefile murgaLua/3rd-party/copas-1.1.1/Makefile
+--- murgaLua.orig/3rd-party/copas-1.1.1/Makefile	2016-03-09 08:28:50.703178206 -0800
++++ murgaLua/3rd-party/copas-1.1.1/Makefile	2016-03-09 15:26:00.787949354 -0800
+@@ -1,6 +1,6 @@
+ # $Id: Makefile,v 1.1 2006/12/04 16:28:29 mascarenhas Exp $
+ 
+-LUA_DIR= /usr/local/share/lua/5.1
++LUA_DIR= /usr/share/lua/5.1
+ 
+ install:
+ 	mkdir -p $(LUA_DIR)/copas
+diff -rup murgaLua.orig/3rd-party/lsqlite3-6-MOD/lsqlite3.c murgaLua/3rd-party/lsqlite3-6-MOD/lsqlite3.c
+--- murgaLua.orig/3rd-party/lsqlite3-6-MOD/lsqlite3.c	2016-03-09 08:28:50.701178194 -0800
++++ murgaLua/3rd-party/lsqlite3-6-MOD/lsqlite3.c	2016-03-09 15:26:00.787949354 -0800
+@@ -30,8 +30,8 @@
+ #include <string.h>
+ #include <assert.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "sqlite3.h"
+ 
+diff -rup murgaLua.orig/3rd-party/lsqlite3-6-MOD/Makefile murgaLua/3rd-party/lsqlite3-6-MOD/Makefile
+--- murgaLua.orig/3rd-party/lsqlite3-6-MOD/Makefile	2016-03-09 08:28:50.701178194 -0800
++++ murgaLua/3rd-party/lsqlite3-6-MOD/Makefile	2016-03-09 15:26:00.836949710 -0800
+@@ -3,26 +3,26 @@
+ ifneq "$(shell pkg-config --version)" ""
+   # automagic setup (OS X fink, Linux apt-get, ..)
+   #
+-  LUAINC= $(shell pkg-config --cflags lua)
+-  LUALIB= $(shell pkg-config --libs lua)
++  LUAINC= $(shell pkg-config --cflags lua-5.1)
++  LUALIB= $(shell pkg-config --libs lua-5.1)
+   LUAEXE= lua
+   # Now, we actually want to _not_ push in stuff to the distro Lua CMOD directory,
+   # way better to play within /usr/local/lib/lua/5.1/
+   #LUACMOD= $(shell pkg-config --variable=INSTALL_CMOD lua)
+-  LUACMOD= /usr/local/lib/lua/5.1/
++  LUACMOD= /usr/lib/lua/5.1/
+   #
+   SQLITE3INC= $(shell pkg-config --cflags sqlite3)
+   SQLITE3LIB= $(shell pkg-config --libs sqlite3)
+ else
+   # manual setup (change these to reflect your Lua installation)
+   #
+-  BASE= /usr/local
+-  LUAINC= -I$(BASE)/include
+-  LUAEXE= $(BASE)/bin/lua.exe
++  BASE= /usr
++  LUAINC= -I$(BASE)/include/lua5.1
++  LUAEXE= $(BASE)/bin/lua5.1
+ #  LUALIB= -L$(BASE)/lib -llua51
+ #  LUACMOD= $(BASE)/lib/lua/5.1/
+ #  Windows' LUA_CDIR and LUALIB are both the same as the Lua executable's directory...
+-  LUALIB= -L$(BASE)/bin -llua51
++  LUALIB= -L$(BASE)/lib -llua5.1
+   LUACMOD= $(BASE)/bin
+   #
+   SQLITE3INC= -I$(BASE)/include
+diff -rup murgaLua.orig/3rd-party/luafilesystem-1.3.0/config murgaLua/3rd-party/luafilesystem-1.3.0/config
+--- murgaLua.orig/3rd-party/luafilesystem-1.3.0/config	2016-03-09 08:28:50.702178200 -0800
++++ murgaLua/3rd-party/luafilesystem-1.3.0/config	2016-03-09 15:26:00.836949710 -0800
+@@ -1,8 +1,8 @@
+ # Installation directories
+ # System's libraries directory (where binary libraries are installed)
+-LUA_LIBDIR= /usr/local/lib/lua/5.1
++LUA_LIBDIR= /usr/lib/lua/5.1
+ # Lua includes directory
+-LUA_INC= /usr/local/include
++LUA_INC= /usr/include/lua5.1
+ 
+ # OS dependent
+ LIB_OPTION= -shared #for Linux
+diff -rup murgaLua.orig/3rd-party/luafilesystem-1.3.0/src/lfs.c murgaLua/3rd-party/luafilesystem-1.3.0/src/lfs.c
+--- murgaLua.orig/3rd-party/luafilesystem-1.3.0/src/lfs.c	2016-03-09 08:28:50.702178200 -0800
++++ murgaLua/3rd-party/luafilesystem-1.3.0/src/lfs.c	2016-03-09 15:26:00.837949717 -0800
+@@ -37,9 +37,9 @@
+ #include <utime.h>
+ #endif
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
+-#include "lualib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
++#include <lua5.1/lualib.h>
+ #include "lfs.h"
+ 
+ /* Define 'strerror' for systems that do not implement it */
+diff -rup murgaLua.orig/3rd-party/lua-iostring-MOD/iostring.c murgaLua/3rd-party/lua-iostring-MOD/iostring.c
+--- murgaLua.orig/3rd-party/lua-iostring-MOD/iostring.c	2016-03-09 08:28:50.698178175 -0800
++++ murgaLua/3rd-party/lua-iostring-MOD/iostring.c	2016-03-09 15:26:00.837949717 -0800
+@@ -1,5 +1,8 @@
+-#include "lua.h"
+-#include "lauxlib.h"
++extern "C" {
++#include <lua5.1/lua.h>
++#include <lua5.1/lualib.h>
++#include <lua5.1/lauxlib.h>
++}
+ 
+ #include <stdlib.h>
+ 
+diff -rup murgaLua.orig/3rd-party/luaLZO/luaLZO.c murgaLua/3rd-party/luaLZO/luaLZO.c
+--- murgaLua.orig/3rd-party/luaLZO/luaLZO.c	2016-03-09 08:28:50.703178206 -0800
++++ murgaLua/3rd-party/luaLZO/luaLZO.c	2016-03-09 15:26:00.837949717 -0800
+@@ -30,8 +30,9 @@
+ 
+ #include "minilzo.h"
+ #include "defs.h"
+-#include <lua.h>
+-#include <lauxlib.h>
++#include <lua5.1/lua.h>
++#include <lua5.1/lualib.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #define PADSIZE (4 + sizeof(lzo_uint) + sizeof(lzo_uint))
+ 
+diff -rup murgaLua.orig/3rd-party/luaLZO/Makefile murgaLua/3rd-party/luaLZO/Makefile
+--- murgaLua.orig/3rd-party/luaLZO/Makefile	2016-03-09 08:28:50.703178206 -0800
++++ murgaLua/3rd-party/luaLZO/Makefile	2016-03-09 15:26:00.837949717 -0800
+@@ -8,7 +8,7 @@ C_DEPS		= $(C_SRCS:.c=.d)
+ LIBNAME		= luaLZO
+ SLIB			= $(LIB_PREFIX)$(LIBNAME)$(STATICLIB_SUFFIX)
+ DLIB			= $(LIBNAME)$(SHLIB_SUFFIX)
+-PLIBS		  = -llua -llualib
++PLIBS		  = -llua5.1 -lm
+ 
+ 
+ all: staticlib shlib
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/config murgaLua/3rd-party/luasocket-2.0.2-MOD/config
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/config	2016-03-09 08:28:50.698178175 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/config	2016-03-09 15:26:00.837949717 -0800
+@@ -16,7 +16,7 @@ UNIX_SO=unix.$(EXT)
+ # Lua includes and libraries
+ #
+ #LUAINC=-I/usr/local/include/lua50
+-#LUAINC=-I/usr/local/include/lua5.1
++LUAINC=-I/usr/include/lua5.1
+ #LUAINC=-Ilua-5.1.1/src
+ 
+ #------
+@@ -30,8 +30,8 @@ UNIX_SO=unix.$(EXT)
+ #
+ #INSTALL_TOP_SHARE=/usr/local/share/lua/5.0
+ #INSTALL_TOP_LIB=/usr/local/lib/lua/5.0
+-INSTALL_TOP_SHARE=/usr/local/share/lua/5.1
+-INSTALL_TOP_LIB=/usr/local/lib/lua/5.1
++INSTALL_TOP_SHARE=/usr/share/lua/5.1
++INSTALL_TOP_LIB=/usr/lib
+ 
+ INSTALL_DATA=cp
+ INSTALL_EXEC=cp
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/auxiliar.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/auxiliar.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/auxiliar.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/auxiliar.h	2016-03-09 15:26:00.837949717 -0800
+@@ -31,8 +31,8 @@
+ * RCS ID: $Id: auxiliar.h,v 1.9 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ int auxiliar_open(lua_State *L);
+ void auxiliar_newclass(lua_State *L, const char *classname, luaL_reg *func);
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/buffer.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/buffer.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/buffer.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/buffer.c	2016-03-09 15:26:00.837949717 -0800
+@@ -4,8 +4,8 @@
+ *
+ * RCS ID: $Id: buffer.c,v 1.28 2007/06/11 23:44:54 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "buffer.h"
+ 
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/buffer.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/buffer.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/buffer.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/buffer.h	2016-03-09 15:26:00.838949724 -0800
+@@ -17,7 +17,7 @@
+ *
+ * RCS ID: $Id: buffer.h,v 1.12 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ #include "io.h"
+ #include "timeout.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/except.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/except.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/except.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/except.c	2016-03-09 15:26:00.838949724 -0800
+@@ -6,8 +6,8 @@
+ \*=========================================================================*/
+ #include <stdio.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "except.h"
+ 
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/except.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/except.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/except.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/except.h	2016-03-09 15:26:00.838949724 -0800
+@@ -28,7 +28,7 @@
+ * RCS ID: $Id: except.h,v 1.2 2005/09/29 06:11:41 diego Exp $
+ \*=========================================================================*/
+ 
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ int except_open(lua_State *L);
+ 
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/inet.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/inet.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/inet.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/inet.c	2016-03-09 15:26:00.838949724 -0800
+@@ -7,8 +7,8 @@
+ #include <stdio.h>
+ #include <string.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "inet.h"
+ 
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/inet.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/inet.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/inet.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/inet.h	2016-03-09 15:26:00.838949724 -0800
+@@ -16,7 +16,7 @@
+ *
+ * RCS ID: $Id: inet.h,v 1.16 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ #include "socket.h"
+ #include "timeout.h"
+ 
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/io.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/io.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/io.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/io.h	2016-03-09 15:26:00.838949724 -0800
+@@ -15,7 +15,7 @@
+ * RCS ID: $Id: io.h,v 1.11 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+ #include <stdio.h>
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ #include "timeout.h"
+ 
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/luasocket.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/luasocket.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/luasocket.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/luasocket.c	2016-03-09 15:26:00.838949724 -0800
+@@ -17,8 +17,8 @@
+ /*=========================================================================*\
+ * Standard include files
+ \*=========================================================================*/
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #if !defined(LUA_VERSION_NUM) || (LUA_VERSION_NUM < 501)
+ #include "compat-5.1.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/luasocket.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/luasocket.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/luasocket.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/luasocket.h	2016-03-09 15:26:00.838949724 -0800
+@@ -8,7 +8,7 @@
+ *
+ * RCS ID: $Id: luasocket.h,v 1.25 2007/06/11 23:44:54 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ /*-------------------------------------------------------------------------*\
+ * Current socket library version
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/mime.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/mime.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/mime.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/mime.c	2016-03-09 15:26:00.839949731 -0800
+@@ -6,8 +6,8 @@
+ \*=========================================================================*/
+ #include <string.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #if !defined(LUA_VERSION_NUM) || (LUA_VERSION_NUM < 501)
+ #include "compat-5.1.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/mime.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/mime.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/mime.h	2016-03-09 08:28:50.700178188 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/mime.h	2016-03-09 15:26:00.839949731 -0800
+@@ -10,7 +10,7 @@
+ *
+ * RCS ID: $Id: mime.h,v 1.15 2007/06/11 23:44:54 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ /*-------------------------------------------------------------------------*\
+ * Current MIME library version
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/options.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/options.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/options.c	2016-03-09 08:28:50.700178188 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/options.c	2016-03-09 15:26:00.839949731 -0800
+@@ -6,7 +6,7 @@
+ \*=========================================================================*/
+ #include <string.h> 
+ 
+-#include "lauxlib.h"
++#include <lua5.1/lauxlib.h>
+ 
+ #include "auxiliar.h"
+ #include "options.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/options.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/options.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/options.h	2016-03-09 08:28:50.700178188 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/options.h	2016-03-09 15:26:00.839949731 -0800
+@@ -10,7 +10,7 @@
+ * RCS ID: $Id: options.h,v 1.4 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+ 
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ #include "socket.h"
+ 
+ /* option registry */
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/select.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/select.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/select.c	2016-03-09 08:28:50.700178188 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/select.c	2016-03-09 15:26:00.839949731 -0800
+@@ -6,8 +6,8 @@
+ \*=========================================================================*/
+ #include <string.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "socket.h"
+ #include "timeout.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/tcp.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/tcp.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/tcp.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/tcp.c	2016-03-09 15:26:00.839949731 -0800
+@@ -6,8 +6,8 @@
+ \*=========================================================================*/
+ #include <string.h> 
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "auxiliar.h"
+ #include "socket.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/tcp.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/tcp.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/tcp.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/tcp.h	2016-03-09 15:26:00.839949731 -0800
+@@ -16,7 +16,7 @@
+ *
+ * RCS ID: $Id: tcp.h,v 1.7 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ #include "buffer.h"
+ #include "timeout.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/timeout.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/timeout.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/timeout.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/timeout.c	2016-03-09 15:26:00.839949731 -0800
+@@ -6,8 +6,8 @@
+ \*=========================================================================*/
+ #include <stdio.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "auxiliar.h"
+ #include "timeout.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/timeout.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/timeout.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/timeout.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/timeout.h	2016-03-09 15:26:00.840949739 -0800
+@@ -6,7 +6,7 @@
+ *
+ * RCS ID: $Id: timeout.h,v 1.14 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ /* timeout control structure */
+ typedef struct t_timeout_ {
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/udp.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/udp.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/udp.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/udp.c	2016-03-09 15:26:00.840949739 -0800
+@@ -6,8 +6,8 @@
+ \*=========================================================================*/
+ #include <string.h> 
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "auxiliar.h"
+ #include "socket.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/udp.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/udp.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/udp.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/udp.h	2016-03-09 15:26:00.840949739 -0800
+@@ -14,7 +14,7 @@
+ *
+ * RCS ID: $Id: udp.h,v 1.10 2005/10/07 04:40:59 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ #include "timeout.h"
+ #include "socket.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/unix.c murgaLua/3rd-party/luasocket-2.0.2-MOD/src/unix.c
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/unix.c	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/unix.c	2016-03-09 15:26:00.840949739 -0800
+@@ -6,8 +6,8 @@
+ \*=========================================================================*/
+ #include <string.h> 
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "auxiliar.h"
+ #include "socket.h"
+diff -rup murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/unix.h murgaLua/3rd-party/luasocket-2.0.2-MOD/src/unix.h
+--- murgaLua.orig/3rd-party/luasocket-2.0.2-MOD/src/unix.h	2016-03-09 08:28:50.699178182 -0800
++++ murgaLua/3rd-party/luasocket-2.0.2-MOD/src/unix.h	2016-03-09 15:26:00.840949739 -0800
+@@ -9,7 +9,7 @@
+ *
+ * RCS ID: $Id: unix.h,v 1.9 2006/03/13 07:16:39 diego Exp $
+ \*=========================================================================*/
+-#include "lua.h"
++#include <lua5.1/lua.h>
+ 
+ #include "buffer.h"
+ #include "timeout.h"
+diff -rup murgaLua.orig/3rd-party/lzlib-0.3-MOD/lgzip.c murgaLua/3rd-party/lzlib-0.3-MOD/lgzip.c
+--- murgaLua.orig/3rd-party/lzlib-0.3-MOD/lgzip.c	2016-03-09 08:28:50.702178200 -0800
++++ murgaLua/3rd-party/lzlib-0.3-MOD/lgzip.c	2016-03-09 15:26:00.840949739 -0800
+@@ -29,8 +29,8 @@
+ 
+ #include <zlib.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ 
+ 
+diff -rup murgaLua.orig/3rd-party/lzlib-0.3-MOD/lzlib.c murgaLua/3rd-party/lzlib-0.3-MOD/lzlib.c
+--- murgaLua.orig/3rd-party/lzlib-0.3-MOD/lzlib.c	2016-03-09 08:28:50.702178200 -0800
++++ murgaLua/3rd-party/lzlib-0.3-MOD/lzlib.c	2016-03-09 15:26:00.840949739 -0800
+@@ -25,8 +25,8 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "zlib.h"
+ 
+diff -rup murgaLua.orig/3rd-party/lzlib-0.3-MOD/Makefile murgaLua/3rd-party/lzlib-0.3-MOD/Makefile
+--- murgaLua.orig/3rd-party/lzlib-0.3-MOD/Makefile	2016-03-09 08:28:50.702178200 -0800
++++ murgaLua/3rd-party/lzlib-0.3-MOD/Makefile	2016-03-09 15:26:00.840949739 -0800
+@@ -17,7 +17,7 @@ ZLIB=../zlib-1.2.3
+ CFLAGS= $(INCS) $(DEFS) $(WARN) -O2 -fPIC
+ WARN= -g -Werror -Wall -pedantic #-ansi -pedantic -Wall
+ INCS= -I$(LUAINC) -I$(ZLIB)
+-LIBS= -L$(ZLIB) -lz -L$(LUALIB) -L$(LUABIN) # -llua51
++LIBS= -L$(ZLIB) -lz -L$(LUALIB) -L$(LUABIN) -llua5.1
+ 
+ MYLIB=lzlib
+ 
+diff -rup murgaLua.orig/3rd-party/md5-1.1.1/src/ldes56.c murgaLua/3rd-party/md5-1.1.1/src/ldes56.c
+--- murgaLua.orig/3rd-party/md5-1.1.1/src/ldes56.c	2016-03-09 08:28:50.704178213 -0800
++++ murgaLua/3rd-party/md5-1.1.1/src/ldes56.c	2016-03-09 15:26:00.841949746 -0800
+@@ -3,8 +3,8 @@
+ 
+ #include "des56.h"
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #include "ldes56.h"
+ 
+diff -rup murgaLua.orig/3rd-party/md5-1.1.1/src/md5.h murgaLua/3rd-party/md5-1.1.1/src/md5.h
+--- murgaLua.orig/3rd-party/md5-1.1.1/src/md5.h	2016-03-09 08:28:50.704178213 -0800
++++ murgaLua/3rd-party/md5-1.1.1/src/md5.h	2016-03-09 15:26:00.884950058 -0800
+@@ -8,7 +8,7 @@
+ #ifndef md5_h
+ #define md5_h
+ 
+-#include <lua.h>
++#include <lua5.1/lua.h>
+ 
+ 
+ #define HASHSIZE       16
+diff -rup murgaLua.orig/3rd-party/md5-1.1.1/src/md5lib.c murgaLua/3rd-party/md5-1.1.1/src/md5lib.c
+--- murgaLua.orig/3rd-party/md5-1.1.1/src/md5lib.c	2016-03-09 08:28:50.704178213 -0800
++++ murgaLua/3rd-party/md5-1.1.1/src/md5lib.c	2016-03-09 15:26:00.908950232 -0800
+@@ -9,8 +9,8 @@
+ #include <string.h>
+ #include <time.h>
+ 
+-#include <lua.h>
+-#include <lauxlib.h>
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #if ! defined (LUA_VERSION_NUM) || LUA_VERSION_NUM < 501
+ #include "compat-5.1.h"
+diff -rup murgaLua.orig/3rd-party/random-MOD/lrandom.c murgaLua/3rd-party/random-MOD/lrandom.c
+--- murgaLua.orig/3rd-party/random-MOD/lrandom.c	2016-03-09 08:28:50.702178200 -0800
++++ murgaLua/3rd-party/random-MOD/lrandom.c	2016-03-09 15:26:00.909950239 -0800
+@@ -9,8 +9,8 @@
+ #include <math.h>
+ #include <stdio.h>
+ 
+-#include "lua.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #define MYNAME		"random"
+ #define MYVERSION	MYNAME " library for " LUA_VERSION " / Jun 2007"
+diff -rup murgaLua.orig/src/bind-fltk.cxx murgaLua/src/bind-fltk.cxx
+--- murgaLua.orig/src/bind-fltk.cxx	2016-03-09 08:28:50.714178274 -0800
++++ murgaLua/src/bind-fltk.cxx	2016-03-09 15:26:00.913950268 -0800
+@@ -26,14 +26,14 @@
+ extern "C" {
+ #endif
+ 
+-#include <lua.h>
+-#include <lauxlib.h>
++#include <lua5.1/lua.h>
++#include <lua5.1/lauxlib.h>
+ 
+ #ifdef __cplusplus
+ }
+ #endif
+ 
+-#include "../../fltk-1.1.8/png/png.h"
++#include "../../fltk-1.1.10/png/png.h"
+ 
+ bool saveRgbAsPng( const uchar *pixels, int w, int h, int d, const char *filename )
+ {   
+diff -rup murgaLua.orig/src/Makefile murgaLua/src/Makefile
+--- murgaLua.orig/src/Makefile	2016-03-09 08:28:50.714178274 -0800
++++ murgaLua/src/Makefile	2016-03-09 15:26:34.830196282 -0800
+@@ -24,7 +24,7 @@ PLAT    = none
+ PLATS   = linux linuxStatic windows macos
+ 
+ linux_LINK_OPT       = -l sqlite3 -lreadline -lhistory -lncurses
+-linuxStatic_LINK_OPT = -static-libgcc -L.. /usr/local/lib/libsqlite3.a
++linuxStatic_LINK_OPT = -static-libgcc -L.. /usr/lib/libsqlite3.so
+ windows_LINK_OPT     = /usr/local/lib/libsqlite3.a -mconsole
+ macos_LINK_OPT       = /usr/local/lib/libsqlite3.a
+ 
+@@ -57,9 +57,9 @@ TARGET       = ../bin/murgaLua
+ LIB          = murgaLua.a
+ LUA_CXXFLAGS = -DLUA
+ 
+-CXXFLAGS	= -Os -fexpensive-optimizations -g `fltk-config --use-images --use-forms --cxxflags` $(LUA_CXXFLAGS) $($(PLAT)_CXX_OPT)
++CXXFLAGS	= -Os -fpermissive -fexpensive-optimizations -g `fltk-config --use-images --use-forms --cxxflags` $(LUA_CXXFLAGS) $($(PLAT)_CXX_OPT)
+ 
+-LDFLAGS		= -Os -fexpensive-optimizations -g `fltk-config --use-images --use-forms --ldstaticflags --libs` /usr/local/lib/liblua.a $($(PLAT)_LINK_OPT)
++LDFLAGS		= -Os -fexpensive-optimizations -g `fltk-config --use-images --use-forms --ldstaticflags --libs` /usr/lib/liblua5.1.a $($(PLAT)_LINK_OPT) -lfontconfig
+ 
+ CPP_FLAGS	= -Os -fexpensive-optimizations "-Dasm(...)=" "-D__asm__(...)=" \
+ 	-D__extension__="" -D__const=const "-D__attribute__(...)=" \
+@@ -98,7 +98,6 @@ $(PLATS) :
+ 	sh ../tools/embedMurgaLuaLib.sh $@
+ 	$(MAKE) $(TARGET) PLAT=$@
+ 	strip $(TARGET)$($@EXT)
+-	$($@PACK) $(TARGET)$($@EXT)
+ 	
+ 	
+ all : $(PLAT)
+diff -rup murgaLua.orig/src/murgaLua.cxx murgaLua/src/murgaLua.cxx
+--- murgaLua.orig/src/murgaLua.cxx	2016-03-09 08:28:50.714178274 -0800
++++ murgaLua/src/murgaLua.cxx	2016-03-09 15:26:00.913950268 -0800
+@@ -16,10 +16,10 @@ extern "C" {
+ 
+ #define lua_c
+ 
+-#include <lua.h>
++#include <lua5.1/lua.h>
+ 
+-#include <lauxlib.h>
+-#include <lualib.h>
++#include <lua5.1/lauxlib.h>
++#include <lua5.1/lualib.h>
+ #include "../3rd-party/luaLZO/luaLZO.c"
+ #include "../3rd-party/lua-iostring-MOD/iostring.c"
+ #include "../3rd-party/luafilesystem-1.3.0/src/lfs.c"
+diff -rup murgaLua.orig/src/murgaLuaLib.c murgaLua/src/murgaLuaLib.c
+--- murgaLua.orig/src/murgaLuaLib.c	2016-03-09 08:28:50.714178274 -0800
++++ murgaLua/src/murgaLuaLib.c	2016-03-09 15:26:00.914950275 -0800
+@@ -24,9 +24,9 @@
+ using namespace std;
+ extern "C"
+ {
+-#include "lua.h"
+-#include "lualib.h"
+-#include "lauxlib.h"
++#include <lua5.1/lua.h>
++#include <lua5.1/lualib.h>
++#include <lua5.1/lauxlib.h>
+ }
+ 
+ static int fileCopy(lua_State *L)
