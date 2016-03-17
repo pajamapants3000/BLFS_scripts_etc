@@ -1,0 +1,22 @@
+diff -rup wxLua-2.8.12.3-src.orig/modules/wxlua/wxlstate.cpp wxLua-2.8.12.3-src/modules/wxlua/wxlstate.cpp
+--- wxLua-2.8.12.3-src.orig/modules/wxlua/wxlstate.cpp	2016-03-13 04:29:06.998551568 -0700
++++ wxLua-2.8.12.3-src/modules/wxlua/wxlstate.cpp	2016-03-13 04:51:33.864608318 -0700
+@@ -3918,7 +3918,7 @@ int  wxLuaState::lua_Load(lua_Reader rea
+ int wxLuaState::lua_Dump(lua_Writer writer, void *data)
+ {
+     wxCHECK_MSG(Ok(), 0, wxT("Invalid wxLuaState"));
+-    return lua_dump(M_WXLSTATEDATA->m_lua_State, writer, data);
++    return lua_dump(M_WXLSTATEDATA->m_lua_State, writer, data, false);
+ }
+ 
+ // ----------------------------------------------------------------------------
+@@ -4079,7 +4079,8 @@ const char* wxLuaState::lua_SetUpvalue(i
+ int wxLuaState::lua_SetHook(lua_Hook func, int mask, int count)
+ {
+     wxCHECK_MSG(Ok(), 0, wxT("Invalid wxLuaState"));
+-    return lua_sethook(M_WXLSTATEDATA->m_lua_State, func, mask, count);
++    lua_sethook(M_WXLSTATEDATA->m_lua_State, func, mask, count);
++    return 1;
+ }
+ lua_Hook wxLuaState::lua_GetHook()
+ {

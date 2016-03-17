@@ -35,10 +35,10 @@ wget http://ftp.gnome.org/pub/gnome/sources/libglade/2.6/libglade-2.6.4.tar.bz2
 #wget ftp://ftp.gnome.org/pub/gnome/sources/libglade/2.6/libglade-2.6.4.tar.bz2
 #
 # md5sum:
-echo "d1776b40f4e166b5e9c107f1c8fe4139 libglade-2.6.4.tar.gz" | md5sum -c ;\
+echo "d1776b40f4e166b5e9c107f1c8fe4139 libglade-2.6.4.tar.bz2" | md5sum -c ;\
     ( exit ${PIPESTATUS[0]} )
 #
-tar -xvf libglade-2.6.4.tar.gz
+tar -xvf libglade-2.6.4.tar.bz2
 cd libglade-2.6.4
 sed -i '/DG_DISABLE_DEPRECATED/d' glade/Makefile.in
 ./configure --prefix=/usr --disable-static

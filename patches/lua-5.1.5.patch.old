@@ -1,0 +1,78 @@
+diff -rup lua-5.1.5.orig/Makefile lua-5.1.5/Makefile
+--- lua-5.1.5.orig/Makefile	2015-09-14 17:25:29.390979537 -0700
++++ lua-5.1.5/Makefile	2015-09-15 04:22:19.794310332 -0700
+@@ -9,9 +9,9 @@ PLAT= none
+ 
+ # Where to install. The installation starts in the src and doc directories,
+ # so take care if INSTALL_TOP is not an absolute path.
+-INSTALL_TOP= /usr/local
++INSTALL_TOP= /usr
+ INSTALL_BIN= $(INSTALL_TOP)/bin
+-INSTALL_INC= $(INSTALL_TOP)/include
++INSTALL_INC= $(INSTALL_TOP)/include/lua5.1
+ INSTALL_LIB= $(INSTALL_TOP)/lib
+ INSTALL_MAN= $(INSTALL_TOP)/man/man1
+ #
+@@ -38,12 +38,12 @@ RANLIB= ranlib
+ # == END OF USER SETTINGS. NO NEED TO CHANGE ANYTHING BELOW THIS LINE =========
+ 
+ # Convenience platforms targets.
+-PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
++PLATS= aix ansi bsd freebsd generic linux linux_dev macosx mingw posix solaris
+ 
+ # What to install.
+-TO_BIN= lua luac
++TO_BIN= lua5.1 luac5.1
+ TO_INC= lua.h luaconf.h lualib.h lauxlib.h ../etc/lua.hpp
+-TO_LIB= liblua.a
++TO_LIB= liblua5.1.a
+ TO_MAN= lua.1 luac.1
+ 
+ # Lua version and release.
+@@ -60,10 +60,10 @@ test:	dummy
+ 
+ install: dummy
+ 	cd src && $(MKDIR) $(INSTALL_BIN) $(INSTALL_INC) $(INSTALL_LIB) $(INSTALL_MAN) $(INSTALL_LMOD) $(INSTALL_CMOD)
+-	cd src && $(INSTALL_EXEC) $(TO_BIN) $(INSTALL_BIN)
++#cd src && $(INSTALL_EXEC) $(TO_BIN) $(INSTALL_BIN)
+ 	cd src && $(INSTALL_DATA) $(TO_INC) $(INSTALL_INC)
+ 	cd src && $(INSTALL_DATA) $(TO_LIB) $(INSTALL_LIB)
+-	cd doc && $(INSTALL_DATA) $(TO_MAN) $(INSTALL_MAN)
++#cd doc && $(INSTALL_DATA) $(TO_MAN) $(INSTALL_MAN)
+ 
+ ranlib:
+ 	cd src && cd $(INSTALL_LIB) && $(RANLIB) $(TO_LIB)
+diff -rup lua-5.1.5.orig/src/Makefile lua-5.1.5/src/Makefile
+--- lua-5.1.5.orig/src/Makefile	2015-09-14 17:25:29.391979557 -0700
++++ lua-5.1.5/src/Makefile	2015-09-15 04:21:32.673035168 -0700
+@@ -22,17 +22,17 @@ MYLIBS=
+ 
+ PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
+ 
+-LUA_A=	liblua.a
++LUA_A=	liblua5.1.a
+ CORE_O=	lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o \
+ 	lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o  \
+ 	lundump.o lvm.o lzio.o
+ LIB_O=	lauxlib.o lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o \
+ 	lstrlib.o loadlib.o linit.o
+ 
+-LUA_T=	lua
++LUA_T=	lua5.1
+ LUA_O=	lua.o
+ 
+-LUAC_T=	luac
++LUAC_T=	luac5.1
+ LUAC_O=	luac.o print.o
+ 
+ ALL_O= $(CORE_O) $(LIB_O) $(LUA_O) $(LUAC_O)
+@@ -98,6 +98,9 @@ generic:
+ linux:
+ 	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-Wl,-E -ldl -lreadline -lhistory -lncurses"
+ 
++linux_dev:
++	$(MAKE) a MYCFLAGS="-DLUA_USE_LINUX -fPIC" MYLIBS="-Wl,-E -ldl -lreadline -lhistory -lncurses"
++
+ macosx:
+ 	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-lreadline"
+ # use this on Mac OS X 10.3-

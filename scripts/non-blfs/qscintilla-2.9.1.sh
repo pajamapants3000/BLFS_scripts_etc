@@ -26,8 +26,12 @@ fi
 #
 # Dependencies
 #*************
+# Required
 #Qt4 or Qt5
-#
+# Optional
+#python2 or python3
+#pyqt4 or pyqt5
+
 # Preparation
 #*************
 source ${HOME}/.blfs_profile
@@ -39,12 +43,17 @@ source ${HOME}/.blfs_profile
 #********
 # Qt version to use - either 4 or 5
 QT_MAJ_VERSION=5
+# PyQt version to use - either 4, 5, or undefined (no PyQt support)
+#+typically use the same as for Qt
+PYQT_MAJ_VERSION=5
+# Python major version: either 2, 3, or undef: typicall 3 with 5 and 2 with 4
+PYTHON_MAJ_VERION=3
 # Build static lib instead of shared lib
 #STATIC=1
 # Uncomment to keep build files and sources
-#PRESERVE_BUILD=1
+PRESERVE_BUILD=1
 # Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
-#BUILD_ONLY=1
+BUILD_ONLY=1
 #INSTALL_ONLY=1
 # Retain source downloads
 #RETAIN_DL=1
@@ -68,7 +77,7 @@ WORKING_DIR=$PWD
 # This is where the root of the package directory will be found
 PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
-SRCDIR=${PKGDIR}/Qt4Qt5
+SRCDIR=${PKGDIR}
 # Source dir build
 BUILDDIR=${SRCDIR}
 # Subdirectory build
@@ -104,8 +113,10 @@ fi
 #LOCALST8DER=${PREFICKS}/var
 #MANDER=${PREFICKS}/share/man
 #DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
+((PYTHON_MAJ_VERION)) && PYTHON="python${PYTHON_MAJ_VERION}" || (exit 0)
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="qmake"
+CONFIGURE_Q="qmake"
+CONFIGURE_P="${PYTHON} ./configure.py"
 #
 # Flags
 #*******
@@ -123,7 +134,8 @@ CONFIGURE="qmake"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS="qscintilla.pro"
+CONFIG_Q_FLAGS="qscintilla.pro"
+CONFIG_P_FLAGS="--pyqt=PyQt${PYQT_MAJ_VERSION}"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -376,13 +388,9 @@ source loadqt${QT_MAJ_VERSION}
 #
 # Configure
 #^^^^^^^^^^^
-if [ "${CONFIGURE}" ]; then
-    if [ ${CMAKE_GEN} ]; then
-        ${CONFIGURE} -G "${CMAKE_GEN}" ${CONFIG_FLAGS}
-    else
-        ${CONFIGURE} ${CONFIG_FLAGS}
-    fi
-fi
+pushd Qt4Qt5 && ${CONFIGURE_Q} ${CONFIG_Q_FLAGS} && popd
+pushd designer-Qt4Qt5 && ${CONFIGURE_Q} && popd
+pushd Python && ${CONFIGURE_P} ${CONFIG_P_FLAGS} && popd
 #
 # Post-config modifications before building
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -390,7 +398,9 @@ fi
 #
 # Build
 #^^^^^^^
-${MAKE} ${MAKE_FLAGS}
+pushd Qt4Qt5 && ${MAKE} ${MAKE_FLAGS} && popd
+pushd designer-Qt4Qt5 && ${MAKE} ${MAKE_FLAGS} && popd
+pushd Python && ${MAKE} ${MAKE_FLAGS} && popd
 #
 #
 # Post-build modifications before testing
@@ -425,6 +435,9 @@ fi
 # Install
 #^^^^^^^^^
 as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+as_root pushd Qt4Qt5 && ${MAKE} ${INSTALL_FLAGS} ${INSTALL} && popd
+as_root pushd designer-Qt4Qt5 && ${MAKE} ${INSTALL_FLAGS} ${INSTALL} && popd
+as_root pushd Python && ${MAKE} ${INSTALL_FLAGS} ${INSTALL} && popd
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

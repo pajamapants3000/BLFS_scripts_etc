@@ -36,10 +36,12 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Uncomment to set this as the default lua version
+SET_DEFAULT=1
 # Run optional test suite
-OPT_TEST=1
+#OPT_TEST=1
 # Uncomment to keep build files and sources
-PRESERVE_BUILD=1
+#PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
 #BUILD_ONLY=1
 # Uncomment to install only; skips to the end for already built sources
@@ -55,6 +57,7 @@ PROG=lua
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
 VERSION=5.3.2
+VER=${VERSION%.[0-9]*}
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -94,7 +97,8 @@ if [ ${PATCH} ]; then
     [ -f ${PATCHDIR}/${PATCH} ] ||
         (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
 fi
-PATCH_ADVRDLN=${PROG}-5.3.1-advanced_readline.patch
+# This patch was absorbed into my own
+#PATCH_ADVRDLN=${PROG}-5.3.1-advanced_readline.patch
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
@@ -127,7 +131,7 @@ MAKE_FLAGS="linux"
 TEST=test
 TEST_FLAGS=""
 INSTALL="install"
-INSTALL_FLAGS="INSTALL_TOP=${PREFICKS} INSTALL_MAN=${MANDER}/man1"
+INSTALL_FLAGS="INSTALL_TOP=${PREFICKS}"
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
@@ -337,11 +341,6 @@ if ((OPT_TEST)); then
     echo "${MD5_OPTTST} ${WORKING_DIR}/${PROG}-${VERSION}-tests.${ARCHIVE}" |
             md5sum -c ; ( exit ${PIPESTATUS[0]} )
 fi
-    # Advanced readline features patch
-    if ! [ -f ${WORKING_DIR}/${PATCH_ADVRDLN} ]; then
-        wget ${DL_PATCH_ADVRDLN}/${PATCH_ADVRDLN} \
-            -O ${WORKING_DIR}/${PATCH_ADVRDLN}
-    fi
     # Extract package
     #*****************
     mkdir -v ${PKGDIR}
@@ -357,7 +356,6 @@ pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
 [ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
-patch -Np1 -i ${WORKING_DIR}/${PATCH_ADVRDLN}
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -388,7 +386,7 @@ fi
 # Post-config modifications before building
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-sed -i '/#define LUA_ROOT/s:/usr/local/:/usr/:' ${SRCDIR}/src/luaconf.h
+sed -i "/#define LUA_ROOT/s:/usr/local/:${PREFICKS}/:" ${SRCDIR}/src/luaconf.h
 #
 # Build
 #^^^^^^^
@@ -401,6 +399,8 @@ ${MAKE} ${MAKE_FLAGS}
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
+    ln -s lua${VER} src/lua
+    ln -s luac${VER} src/luac
     [ -d ${WORKING_DIR}/logs ] || mkdir -v ${WORKING_DIR}/logs
     ${MAKE} ${TEST_FLAGS} ${TEST} 2>&1 | \
         tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
@@ -431,9 +431,19 @@ as_root mkdir -pv ${DOCDER}
 as_root cp -v ${SRCDIR}/doc/*.{html,css,gif,png} ${DOCDER}
 as_root mkdir -pv ${PREFICKS}/lib/pkgconfig
 as_root install -Dm644 -g root -o root \
-        ${BLFSDIR}/files/usr/lib/pkgconfig/lua.pc ${PREFICKS}/lib/pkgconfig/
-as_root sed -i "s/^R=[.0-9]*$/R=${VERSION}/" ${PREFICKS}/lib/pkgconfig/lua.pc
-as_root ln -sfv lua.pc ${PREFICKS}/lib/pkgconfig/lua-${VERSION%.[0-9]*}.pc
+        ${BLFSDIR}/files/usr/lib/pkgconfig/lua${VER}.pc \
+        ${PREFICKS}/lib/pkgconfig/
+as_root sed -i "s/^R=[.0-9]*$/R=${VERSION}/" \
+        ${PREFICKS}/lib/pkgconfig/lua${VER}.pc
+if ((SET_DEFAULT)); then
+    as_root ln -sfv liblua.so.${VER} ${PREFICKS}/lib/liblua.so
+    as_root ln -sfv lua${VER}.pc ${PREFICKS}/lib/pkgconfig/lua.pc
+    for file in $(ls ${PREFICKS}/include/lua5.3); do
+        as_root ln -sfv lua5.3/${file} ${PREFICKS}/include/${file}
+    done
+    as_root ln -sfv lua${VER} ${PREFICKS}/bin/lua
+    as_root ln -sfv luac${VER} ${PREFICKS}/bin/luac
+fi
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
