@@ -117,7 +117,8 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS="--disable-multilib --with-system-zlib"
+# --enable-plugin is a new addition required by odb; do I want it?
+CONFIG_FLAGS="--disable-multilib --with-system-zlib --enable-plugin"
 CONFIG_FLAGS="${CONFIG_FLAGS} --enable-languages=c,c++,fortran,go"
 MAKE="make"
 MAKE_FLAGS=""

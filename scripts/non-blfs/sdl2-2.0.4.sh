@@ -26,8 +26,7 @@ fi
 #
 # Dependencies
 #*************
-# Required
-#x_window_system
+# MANY optional and recommended deps!
 #
 # Preparation
 #*************
@@ -38,6 +37,11 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Uncomment to build and install API documentation with Doxygen
+APIDOCS=1
+# Leave this either way
+((APIDOCS)) && (cat /list-${CHRISTENED}-${SURNAME} | \
+    grep "^doxygen" > /dev/null) || APIDOCS=0
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
@@ -50,12 +54,12 @@ source ${HOME}/.blfs_profile
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=nextaw
+PROG=sdl2
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=neXtaw
-VERSION=0.15.1
+PROG_ALT=SDL2
+VERSION=2.0.4
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -76,9 +80,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://siag.nu/pub
+DL_URL=https://www.libsdl.org/release
 DL_ALT=
-MD5=1c9cbcef735d8e26f3e48bd529aca6a7
+MD5=44fc4a023349933e7f5d7a582f7b886e
 SHASUM=
 SHAALG=1
 REPO=
@@ -297,11 +301,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -387,6 +391,7 @@ fi
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
+((APIDOC)) && doxygen docs/doxyfile || (exit 0)
 #
 # Post-build modifications before testing
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -427,6 +432,10 @@ as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
+if ((APIDOC)); then
+    as_root install -v -m755 -d ${DOCDER}
+    as_root mv output/html ${DOCDER}/
+fi
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR

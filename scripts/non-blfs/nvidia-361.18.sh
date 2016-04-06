@@ -352,7 +352,7 @@ pushd ${BUILDDIR}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
-# Configure
+# Configure (doesn't apply to this package)
 #^^^^^^^^^^^
 if [ "${CONFIGURE}" ]; then
     if [ ${CMAKE_GEN} ]; then
@@ -366,7 +366,7 @@ fi
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
-# Build (doesn't apply to this package)
+# Build
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
@@ -433,15 +433,16 @@ if ! ((CPONLY)); then
         _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
         _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
         as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
-                ${PREFICKS}/lib/_soname
-        as_root ln -sfv ${PREFICKS}/lib/_soname ${PREFICKS}/lib/_base
+                ${PREFICKS}/lib/${_soname}
+        as_root ln -sfv ${PREFICKS}/lib/${_soname} ${PREFICKS}/lib/${_base}
     done
     for _lib in $(find ${PREFICKS}/lib/nvidia/${VERSION}/vdpau -name '*.so*'); do
         _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
         _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
         as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
-                ${PREFICKS}/lib/vdpau/_soname
-        as_root ln -sfv ${PREFICKS}/lib/vdpau/_soname ${PREFICKS}/lib/vdpau/_base
+                ${PREFICKS}/lib/vdpau/${_soname}
+        as_root ln -sfv ${PREFICKS}/lib/vdpau/${_soname} \
+            ${PREFICKS}/lib/vdpau/${_base}
     done
     as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/* \
             ${PREFICKS}/lib/xorg/modules/extensions/

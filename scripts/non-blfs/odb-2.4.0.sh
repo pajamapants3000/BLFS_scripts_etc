@@ -14,6 +14,17 @@
 #+     +and testing checksum, avoiding duplicates and saving old builds, etc.
 # TODO: Create a list of downloads, each with location info and checksum
 #
+
+#
+#
+# ***  THIS IS A WORK IN PROGRESS!!! ***
+#
+#   see http://www.codesynthesis.com/products/odb/download.xhtml
+#
+
+echo "THIS IS A WORK IN PROGRESS!!!"
+exit 1
+
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
 #
@@ -26,9 +37,8 @@ fi
 #
 # Dependencies
 #*************
-# Required
-#x_window_system
-#
+#sqlite3 or mysql or mariadb
+
 # Preparation
 #*************
 source ${HOME}/.blfs_profile
@@ -38,6 +48,15 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Choose Database Runtime Libraries to include
+LIB_SQLITE3=1
+LIB_MYSQL=1
+LIB_PGSQL=1
+#LIB_ORACLE=1
+#LIB_MSSQL=1
+# Include tests and/or examples
+PKG_TESTS=1
+PKG_EXAMPLES=1
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
@@ -50,13 +69,13 @@ source ${HOME}/.blfs_profile
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=nextaw
+PROG=odb
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=neXtaw
-VERSION=0.15.1
-ARCHIVE=tar.gz
+PROG_ALT=${PROG}
+VERSION=2.4.0
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -76,12 +95,22 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://siag.nu/pub
+DL_URL=http://www.codesynthesis.com/download
 DL_ALT=
-MD5=1c9cbcef735d8e26f3e48bd529aca6a7
-SHASUM=
+MD5=
+SHASUM=810fc02e591429ed19f5a2699d144fb611fb121b
 SHAALG=1
 REPO=
+SHASUM_LIBODB=42bd2a8023e338e004711e755eb30bd122b844a6
+SHASUM_LIBSQLITE3=3be07e7702abf8adcbe7736f372ef9980cec1003
+SHASUM_LIBMYSQL=2021a67577354f1d6bed50c0b257c1920760eda7
+SHASUM_LIBPGSQL=4628d5e296da01dbaf8658fd402b4f709f30ea2d
+SHASUM_LIBORACLE=dd22ae9f3606e37a25ed8f9a3e9eec81c163fadd
+SHASUM_LIBMSSQL=e10174185222e102d63b48eed0d632aad1608512
+SHASUM_BOOST=f813702b2856732e199ae34e3393b8cecff878ef
+SHASUM_QT=e68b6614cf4f471792979f7f97a8279fdba77527
+SHASUM_EXAMPLES=3a9c7c3bee71c069e621c3b14b46dc48e5e1b3c9
+SHASUM_TESTS=6b8959e58001e165d972ef2057321d6f1ab215f4
 # VCS=[git,hg,svn,...]; usually used as VERSION
 #VCS=${VERSION}
 BRANCH=master
@@ -119,7 +148,8 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--enable-static"
+CONFIG_FLAGS_LIBS="--with-libodb=${WORKING_DIR}/libodb-${VERSION}"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -297,11 +327,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${VERSION%.[0-9]}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}/${VERSION%.[0-9]}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi

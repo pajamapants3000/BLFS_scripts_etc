@@ -26,8 +26,6 @@ fi
 #
 # Dependencies
 #*************
-# Required
-#x_window_system
 #
 # Preparation
 #*************
@@ -50,12 +48,12 @@ source ${HOME}/.blfs_profile
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=nextaw
+PROG=libssh2
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=neXtaw
-VERSION=0.15.1
+PROG_ALT=${PROG}
+VERSION=1.7.0
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -67,18 +65,18 @@ PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
-BUILDDIR=${SRCDIR}
+#BUILDDIR=${SRCDIR}
 # Subdirectory build
-#BUILDDIR=${SRCDIR}/build
+BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../${PROG}-build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://siag.nu/pub
+DL_URL=https://www.libssh2.org/download
 DL_ALT=
-MD5=1c9cbcef735d8e26f3e48bd529aca6a7
+MD5=b01662a210e94cccf2f76094db7dac5c
 SHASUM=
 SHAALG=1
 REPO=
@@ -101,7 +99,7 @@ LOCALST8DER=/var
 MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="${SRCDIR}/configure"
+CONFIGURE="cmake"
 #
 # Flags
 #*******
@@ -119,7 +117,7 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="-DBUILD_SHARED_LIBS=ON"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -297,11 +295,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi

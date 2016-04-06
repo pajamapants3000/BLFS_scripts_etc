@@ -38,8 +38,8 @@ cd rsync-3.1.1
 #
 if ! (cat /etc/group | grep rsyncd > /dev/null); then
     pathappend /usr/sbin
-    groupadd -g 48 rsyncd
-    useradd -c "rsyncd_Daemon" -d /home/rsync -g rsyncd \
+    as_root groupadd -g 48 rsyncd
+    as_root useradd -c "rsyncd_Daemon" -d /home/rsync -g rsyncd \
         -s /bin/false -u 48 rsyncd
     pathremove /usr/sbin
 fi

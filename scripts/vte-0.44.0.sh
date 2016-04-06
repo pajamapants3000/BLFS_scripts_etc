@@ -26,8 +26,6 @@ fi
 #
 # Dependencies
 #*************
-# Required
-#x_window_system
 #
 # Preparation
 #*************
@@ -50,13 +48,13 @@ source ${HOME}/.blfs_profile
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=nextaw
+PROG=vte
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=neXtaw
-VERSION=0.15.1
-ARCHIVE=tar.gz
+PROG_ALT=${PROG}
+VERSION=0.44.0
+ARCHIVE=tar.xz
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -76,9 +74,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://siag.nu/pub
-DL_ALT=
-MD5=1c9cbcef735d8e26f3e48bd529aca6a7
+DL_URL=http://ftp.gnome.org/pub/gnome/sources
+DL_ALT=ftp://ftp.gnome.org/pub/gnome/sources
+MD5=3247bb254c65472f657fda3bc8279b61
 SHASUM=
 SHAALG=1
 REPO=
@@ -119,9 +117,9 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--enable-introspection"
 MAKE_FLAGS=""
-TEST=
+TEST=check
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
@@ -297,11 +295,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG_ALT}/${VERSION%.*}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}/${VERSION%.*}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -368,6 +366,8 @@ pushd ${BUILDDIR}
 # Pre-config -- additional actions to take before running configuration
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+sed -i '/Werror/d' configure.ac
+autoreconf
 #
 # Configure
 #^^^^^^^^^^^

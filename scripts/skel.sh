@@ -65,9 +65,9 @@ PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
-#BUILDDIR=${SRCDIR}
+BUILDDIR=${SRCDIR}
 # Subdirectory build
-BUILDDIR=${SRCDIR}/build
+#BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../${PROG}-build
 # Directory containing this script

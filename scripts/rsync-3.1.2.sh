@@ -26,9 +26,9 @@ fi
 #
 # Dependencies
 #*************
-# Required
-#x_window_system
-#
+# Recommended
+#popt-1.16
+
 # Preparation
 #*************
 source ${HOME}/.blfs_profile
@@ -38,6 +38,10 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Uncomment to build API documentation with doxygen if present
+APIDOC=1
+# Uncomment to install bootscript to run daemon on boot; run server
+#SERVER=1
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
@@ -50,12 +54,12 @@ source ${HOME}/.blfs_profile
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=nextaw
+PROG=rsync
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=neXtaw
-VERSION=0.15.1
+PROG_ALT=${PROG}
+VERSION=3.1.2
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -76,9 +80,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://siag.nu/pub
+DL_URL=https://www.samba.org/ftp/rsync/src
 DL_ALT=
-MD5=1c9cbcef735d8e26f3e48bd529aca6a7
+MD5=0f758d7e000c0f7f7d3792610fad70cb
 SHASUM=
 SHAALG=1
 REPO=
@@ -94,11 +98,11 @@ if [ ${PATCH} ]; then
 fi
 # Configure; prepare build
 PREFICKS=/usr
-SYSCONFDER=/etc
+#SYSCONFDER=/etc
 #SYSCONFDER=${PREFICKS}/etc
-LOCALST8DER=/var
+#LOCALST8DER=/var
 #LOCALST8DER=${PREFICKS}/var
-MANDER=${PREFICKS}/share/man
+#MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
 CONFIGURE="${SRCDIR}/configure"
@@ -119,7 +123,7 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--without-included-zlib"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -127,12 +131,14 @@ INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
-BOOTSCRIPT=
-PROGGROUP=
-PROGGROUPNUM=
-PROGUSER=
+if ((SERVER)); then
+    BOOTSCRIPT=rsyncd
+fi
+PROGGROUP=rsyncd
+PROGGROUPNUM=48
+PROGUSER=rsyncd
 PROGUSERNUM=${PROGGROUPNUM}
-USRCMNT=
+USRCMNT="rsyncd_Daemon"
 #
 # Common commands
 INSTALL_USER='install -v -Dm644'
@@ -176,8 +182,8 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
             CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}" || (exit 0)
     [[ ${LOCALST8DER} ]] &&
             CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER}" || (exit 0)
-    [[ ${DOCDER} ]] &&
-            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_DOCDIR_FLAG}=${DOCDER}" || (exit 0)
+#    [[ ${DOCDER} ]] &&
+#            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_DOCDIR_FLAG}=${DOCDER}" || (exit 0)
     [[ ${MANDER} ]] &&
             CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_MANDIR_FLAG}=${MANDER}" || (exit 0)
     MAKE="make"
@@ -297,11 +303,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -387,6 +393,7 @@ fi
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
+((APIDOC)) && doxygen || (exit 0)
 #
 # Post-build modifications before testing
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -420,6 +427,10 @@ fi
 # Install
 #^^^^^^^^^
 as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+if ((APIDOC)); then
+    as_root install -v -m755 -d          ${DOCDER}/api
+    as_root install -v -m644 dox/html/*  ${DOCDER}/api
+fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -471,5 +482,8 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
+as_root cp -v ${BLFSDIR}/files/etc/rsyncd.conf /etc/
+as_root chown -v root:root /etc/rsyncd.conf
+as_root chmod -v 755 /etc/rsyncd.conf
 ###################################################
 

@@ -50,7 +50,19 @@ fi
 # Options
 #********
 # Set architecture
+# x86_64
 QEMU_ARCH=x86_64-softmmu
+# 32-bit 386
+QEMU_ARCH=i386-softmmu
+# Set target list: system achritectures that qemu is capable of running;
+#+set to empty if you want to build ALL available targets
+# Single target like host system
+#QEMU_TARGETS=${QEMU_ARCH}
+# Multiple common targets - recommended
+QEMU_TARGETS="arm-softmmu i386-softmmu x86_64-softmmu arm-linux-user"
+QEMU_TARGETS="${QEMU_TARGETS} i386-linux-user x86_64-linux-user"
+# Build ALL possible targets (50 or so)
+#QEMU_TARGETS=
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Uncomment to build only, do NOT install or modify system
@@ -132,7 +144,7 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS="--target-list=$QEMU_ARCH --audio-drv-list=alsa"
+CONFIG_FLAGS="--audio-drv-list=alsa"
 MAKE="make"
 MAKE_FLAGS=""
 # One test is known to fail
@@ -346,9 +358,10 @@ fi
 #^^^^^^^^^^^
 if [ "${CONFIGURE}" ]; then
     if [ ${CMAKE_GEN} ]; then
-        ${CONFIGURE} -G "${CMAKE_GEN}" ${CONFIG_FLAGS}
+        ${CONFIGURE} -G "${CMAKE_GEN}" --target-list="${QEMU_TARGETS}" \
+            ${CONFIG_FLAGS}
     else
-        ${CONFIGURE} ${CONFIG_FLAGS}
+        ${CONFIGURE} --target-list="${QEMU_TARGETS}" ${CONFIG_FLAGS}
     fi
 fi
 #

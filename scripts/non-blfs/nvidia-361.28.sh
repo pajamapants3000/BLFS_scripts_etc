@@ -1,9 +1,8 @@
 #!/bin/bash -ev
 #
-#    ***    Installation script     ***
+# Installation script
 # Written by: Tommy Lincoln <pajamapants3000@gmail.com>
-# License   : See LICENSE in parent folder
-# Updated   : 02/12/2016
+# License: See LICENSE in parent folder
 #
 # TODO: Override or pass options via command line
 # TODO: Clean it up! Make configuration more obvious
@@ -12,7 +11,6 @@
 # TODO: Create library to source (functions file) for common tasks
 #+     +like checking for the installation of a package, downloading
 #+     +and testing checksum, avoiding duplicates and saving old builds, etc.
-# TODO: Create a list of downloads, each with location info and checksum
 #
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
@@ -23,11 +21,13 @@ if [ ${#} -gt 1 ]; then
     sed -i "s:^${1}=.*$:${1}=${2}:"g ${0}
     exit 0
 fi
+#*************************************************************************
+# NOTE: This package does not follow the typical configure-build-install *
+#+format, but uses an installer.                                         *
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Dependencies
 #*************
-# Required
-#x_window_system
 #
 # Preparation
 #*************
@@ -38,47 +38,70 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Set kernel version before running! Then unset to avoid future mistakes
+# Can also set in environment.
+#TGT_KVER=
+if ! [ ${TGT_KVER} ]; then
+    echo "Please set target kernel version (TGT_KVER) before running"
+    exit 1
+fi
+# May choose one of many different premade config files
+XORG_CONF="10-nvidia.conf"
+# Just copy the libraries, don't link them
+#CPONLY=1
+# For CPBIN and CPDAT; the follow options are available
+# 0 - Do not copy, no matter what.
+# 1 - Copy only if it doesn't involve overwriting existing copies
+# 2 - Copy no matter what
+# 1 is probably the best/safest choice, except for a full-system upgrade.
+CPBIN=1
+CPDAT=1
+# Uncomment
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
-# Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
+# Uncomment to build only, do NOT install or modify system
 #BUILD_ONLY=1
-#INSTALL_ONLY=1
-# Retain source downloads
-#RETAIN_DL=1
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
 #
 # Name of program, with version and package/archive type
-PROG=nextaw
+PROG=nvidia
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=neXtaw
-VERSION=0.15.1
-ARCHIVE=tar.gz
+PROG_ALT=NVIDIA-Linux-x86_64
+VERSION=361.28
+# In this case it's just the extension, not really an archive type.
+ARCHIVE=run
+# optional suffix of "-no-compat32" depending on which version is needed
+if [ $(uname -m) = "x86_64" ]; then
+    SUFFIX="-no-compat32"
+else
+    SUFFIX=
+fi
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
 #+is the directory from which this script was executed.
 WORKING_DIR=$PWD
 # This is where the root of the package directory will be found
-PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
+PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
-BUILDDIR=${SRCDIR}
+#BUILDDIR=${SRCDIR}
 # Subdirectory build
-#BUILDDIR=${SRCDIR}/build
+BUILDDIR=${SRCDIR}/kernel
 # Parallel-directory build
-#BUILDDIR=${SRCDIR}/../${PROG}-build
+#BUILDDIR=${SRCDIR}/../build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://siag.nu/pub
+DL_URL=ftp://download.nvidia.com/XFree86/Linux-x86_64
 DL_ALT=
-MD5=1c9cbcef735d8e26f3e48bd529aca6a7
+MD5=29a88f1538d622cebf751593396053e4
 SHASUM=
 SHAALG=1
 REPO=
@@ -95,13 +118,11 @@ fi
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
-#SYSCONFDER=${PREFICKS}/etc
 LOCALST8DER=/var
-#LOCALST8DER=${PREFICKS}/var
-MANDER=${PREFICKS}/share/man
-DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
+MANDER=/usr/share/man
+DOCDER=/usr/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="${SRCDIR}/configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -112,18 +133,21 @@ CONFIGURE="${SRCDIR}/configure"
 #^^^^^^^
 # Use this if CMake source root is different from SRCDIR
 #CMAKE_SRC_ROOT=
+#
 # Another common cmake parameter is the build type; defaults to Release or
 #+uncomment below
 #CBUILDTYPE=RelWithDebInfo
-#Specify CMake generator (only if non-standard; will set automatically below)
+#
+#Specify CMake generator
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
 CONFIG_FLAGS=""
-MAKE_FLAGS=""
+MAKE="make"
+MAKE_FLAGS="SYSSRC=/lib/modules/${TGT_KVER}/build module"
 TEST=
 TEST_FLAGS="-k"
-INSTALL="install"
+INSTALL=""
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
@@ -152,13 +176,6 @@ INSTALL_DIRROOT="as_root ${INSTALL_DIRUSER} -o root -g root"
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     [ "${CMAKE_SRC_ROOT}" ] || CMAKE_SRC_ROOT=${SRCDIR}
     [ "${CBUILDTYPE}" ]     || CBUILDTYPE="Release"
-    [ "${CMAKE_GEN}" ]      ||  if (which ninja); then
-                                    CMAKE_GEN="Ninja"
-                                    MAKE="ninja"
-                                else
-                                    CMAKE_GEN="Unix Makefiles"
-                                    MAKE="make"
-                                fi
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -170,51 +187,33 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
     [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
     [ "${CFG_DOCDIR_FLAG}" ]        || CFG_DOCDIR_FLAG="--docdir"
     [ "${CFG_MANDIR_FLAG}" ]        || CFG_MANDIR_FLAG="--mandir"
-    [[ ${PREFICKS} ]] &&
-            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_PREFIX_FLAG}=${PREFICKS}" || (exit 0)
-    [[ ${SYSCONFDER} ]] &&
-            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}" || (exit 0)
-    [[ ${LOCALST8DER} ]] &&
-            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER}" || (exit 0)
-    [[ ${DOCDER} ]] &&
-            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_DOCDIR_FLAG}=${DOCDER}" || (exit 0)
-    [[ ${MANDER} ]] &&
-            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_MANDIR_FLAG}=${MANDER}" || (exit 0)
-    MAKE="make"
+    CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
+                  ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
+                  ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER} \
+                  ${CFG_DOCDIR_FLAG}=${DOCDER}             \
+                  ${CFG_MANDIR_FLAG}=${MANDER}             \
+                  ${CONFIG_FLAGS}"
 # Leave place for other possible configuration utilities to set up
-# For now, just do-nothing placeholder commands
+# For now, just do-nothing placeholder command
 # QMake
 #^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xqmake" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
-    MAKE="make"
 # Autogen
 #^^^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x/autogen.sh" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
-    MAKE="make"
 # Default
 #^^^^^^^^^
 else
     CONFIG_FLAGS="${CONFIG_FLAGS}"
-    MAKE="make"
 fi
 #
 # Default make flags
 #********************
-if [ "x${MAKE}" == "xmake" ]; then
-    MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
-    TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
-    INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
-elif [ "x${MAKE}" == "xninja" ]; then
-    MAKE_FLAGS="   ${MAKE_FLAGS}"
-    TEST_FLAGS="   ${TEST_FLAGS}"
-    INSTALL_FLAGS="${INSTALL_FLAGS}"
-else
-    MAKE_FLAGS="   ${MAKE_FLAGS}"
-    TEST_FLAGS="   ${TEST_FLAGS}"
-    INSTALL_FLAGS="${INSTALL_FLAGS}"
-fi
+MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
+TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
+INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
 #
 # Create Group and/or User
 #**************************
@@ -248,7 +247,6 @@ grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 #
 ((TREATASNEW)) && REINSTALL=0
 ((TREATASOLD)) && REINSTALL=1
-if ! ((INSTALL_ONLY)); then # Makes possible to install an already built src
 # Obtain package
 #****************
 if [ "${VCS}" ]; then
@@ -257,21 +255,7 @@ if [ "${VCS}" ]; then
         BRANCH_FLAG="-b"
     elif [ "${VCS}" == "svn" ]; then
         VCS_CMD="co"
-        # With subversion, branch is part of the repo path
         BRANCH_FLAG=
-        if [[ "x${BRANCH}" == "xmaster" || "x${BRANCH}" == "xtrunk" ||
-              "x${BRANCH}" == "x" ]]; then
-            if [[ $(basename ${REPO}) != "trunk" ]]; then
-                REPO=${REPO}/trunk
-            fi
-        else
-            if [[ $(basename ${REPO}) == "trunk" ]]; then
-                REPO=$(dirname ${REPO})/branches/${BRANCH}
-            else
-                REPO=${REPO}/branches/${BRANCH}
-            fi
-        fi
-        BRANCH=
     else
         echo "error: unkown value for VCS; aborting."
         exit 1
@@ -280,12 +264,11 @@ if [ "${VCS}" ]; then
     # Preserve any previous builds; Ensure empty target directory
     #*************************************************************
     num=1
-    INC=
     while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
-    if ((INC)); then
+    if [ ${num} -gt 1 ]; then
         as_root mv ${PKGDIR} ${PKGDIR}${INC}
     fi
 #
@@ -296,13 +279,13 @@ if [ "${VCS}" ]; then
 else
     # Download Package
     #******************
-    if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
-            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
+    if ! [ -f ${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} ]; then
+        wget ${DL_URL}/${VERSION}/${PROG_ALT}-${VERSION}${SUFFIX}.${ARCHIVE} \
+            -O ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
-            -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
+            wget ${DL_ALT}/${VERSION}/${PROG_ALT}-${VERSION}${SUFFIX}.${ARCHIVE} \
+            -O ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
         if [ $((FAIL_DL)) == 1 ]; then
@@ -314,34 +297,34 @@ else
         fi
     fi
 #
-    # Verify package
+# Verify package
     #****************
     if [ "${SHASUM}" ]; then
-        echo "${SHASUM}  ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" |
+        echo "${SHASUM}  ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}" |
                 shasum -a ${SHAALG} -c ;\
             ( exit ${PIPESTATUS[0]} )
     elif [ "${MD5}" ]; then
-        echo "${MD5} ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}" | md5sum -c ;\
+        echo "${MD5} ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}" | md5sum -c ;\
             ( exit ${PIPESTATUS[0]} )
     fi
 #
     # Preserve any previous builds
     #******************************
     num=1
-    INC=
     while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
-    if ((INC)); then
+    if [ ${num} -gt 1 ]; then
         as_root mv ${PKGDIR} ${PKGDIR}${INC}
     fi
 #
     # Extract package
     #*****************
-    mkdir -v ${PKGDIR}
-    tar -xf ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} \
-            -C ${PKGDIR} --strip-components=1
+    chmod u+x ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}
+    ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} --extract-only
+    mv ${WORKING_DIR}/${PROG_ALT}-${VERSION}${SUFFIX} ${SRCDIR}
+
 fi # End "if [ ${VCS} ]..."
 #
 # Begin Installation
@@ -351,7 +334,7 @@ fi # End "if [ ${VCS} ]..."
 pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
-[ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH} || (exit 0)
+[ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -369,7 +352,7 @@ pushd ${BUILDDIR}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
-# Configure
+# Configure (doesn't apply to this package)
 #^^^^^^^^^^^
 if [ "${CONFIGURE}" ]; then
     if [ ${CMAKE_GEN} ]; then
@@ -387,10 +370,6 @@ fi
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
 #
-#
-# Post-build modifications before testing
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
@@ -407,19 +386,11 @@ if [ "${TEST}" ]; then
     fi
 fi
 #
-fi # ! ((INSTALL_ONLY))
-if ((BUILD_ONLY)); then
-    echo "${PROG}-${VERSION} built successfully! No changes were made."
-    echo "Build can be found in ${BUILDDIR}"
-    exit 0
-elif ((INSTALL_ONLY)); then
-    WORKING_DIR=$PWD
-    pushd ${SRCDIR}
-    pushd ${BUILDDIR}
-fi
 # Install
 #^^^^^^^^^
-as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+#if ! ((BUILD_ONLY)); then
+#    as_root ${INSTALL} ${INSTALL_FLAGS}
+#fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -427,29 +398,145 @@ as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
+# Install kernel module to versioned location
+${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules
+${INSTALL_ROOT} ${BUILDDIR}/*.ko \
+        ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/
+# Symlink kernel module to be used by target kernel
+${INSTALL_DIRROOT} /lib/modules/${TGT_KVER}/kernel/drivers/video
+ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/*.ko \
+        /lib/modules/$TGT_KVER/kernel/drivers/video/
+#
+# Copy libraries
+${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/drivers
+${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions
+${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
+for _lib in $(find ${SRCDIR} -name '*.so*'); do
+    if [ ${_lib} != "tls_test_dso.so" ]; then
+        ${INSTALL_ROOT} ${_lib} ${PREFICKS}/lib/nvidia/${VERSION}/
+    fi
+done
+as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libglx.so.${VERSION} \
+              ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/
+as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/nvidia_drv.so \
+              ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/drivers/
+as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libvdpau_nvidia.so.${VERSION} \
+              ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
+# Link libraries to put them in use
+if ! ((CPONLY)); then
+    for _lib in $(find ${PREFICKS}/lib/nvidia/${VERSION} -name '*.so*' |
+                  grep -v 'xorg/' | grep -v 'vdpau'); do
+        _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
+        _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
+        as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
+                ${PREFICKS}/lib/${_soname}
+        as_root ln -sfv ${PREFICKS}/lib/${_soname} ${PREFICKS}/lib/${_base}
+    done
+    for _lib in $(find ${PREFICKS}/lib/nvidia/${VERSION}/vdpau -name '*.so*'); do
+        _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
+        _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
+        as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
+                ${PREFICKS}/lib/vdpau/${_soname}
+        as_root ln -sfv ${PREFICKS}/lib/vdpau/${_soname} \
+            ${PREFICKS}/lib/vdpau/${_base}
+    done
+for dir in extensions drivers; do
+    for file in $(
+         ls ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/${dir}/
+                 ); do
+        if [ -f ${PREFICKS}/lib/xorg/modules/${dir}/${file} ]; then
+            mv -v ${PREFICKS}/lib/xorg/modules/${dir}/${file} \
+                ${PREFICKS}/lib/xorg/modules/${dir}/${file}.bak
+        fi
+        as_root ln -sfv $file \
+                ${PREFICKS}/lib/xorg/modules/extensions/${file}
+    done
+done
+    as_root ln -sfv libglx.so.${VERSION} \
+            ${PREFICKS}/lib/xorg/modules/extensions/libglx.so.1
+    as_root ln -sfv libglx.so.1 \
+            ${PREFICKS}/lib/xorg/modules/extensions/libglx.so
+fi # if ! ((CPONLY))
+# Install binaries
+if ((CPBIN)); then
+    for _bin in \
+                    nvidia-debugdump        \
+                    nvidia-xconfig          \
+                    nvidia-settings         \
+                    nvidia-bug-report.sh    \
+                    nvidia-smi              \
+                    nvidia-cuda-mps-server  \
+                    nvidia-cuda-mps-control \
+                    nvidia-modprobe         \
+                    nvidia-persistenced     ; do
+        if ! ( ((CPBIN==1)) && [ -f ${PREFICKS}/bin/${_bin} ] ); then
+            ${INSTALL_BINROOT} ${SRCDIR}/${_bin} ${PREFICKS}/bin/
+        fi
+    done
+fi # if ((CPBIN))
+# Install data files
+if ((CPDAT)); then
+    for _man in \
+                    nvidia-xconfig.1.gz          \
+                    nvidia-settings.1.gz         \
+                    nvidia-smi.1.gz              \
+                    nvidia-cuda-mps-control.1.gz \
+                    nvidia-modprobe.1.gz         \
+                    nvidia-persistenced.1.gz     ; do
+        if ! ( ((CPDAT==1)) && [ -f ${MANDER}/man1/${_man} ] ); then
+            ${INSTALL_ROOT} ${SRCDIR}/${_man} ${MANDER}/man1/
+        fi
+    done
+    ${INSTALL_ROOT} LICENSE ${PREFICKS}/usr/share/licenses/nvidia/
+    for _license in \
+                        nvidia-utils  \
+                        opencl-nvidia \
+                        nvidia-libgl  ; do
+        if ! ( ((CPDAT==1)) &&
+            [ -f ${PREFICKS}/usr/share/licenses/${_license} ] ); then
+            as_root ln -sfv nvidia ${PREFICKS}/usr/share/licenses/${_license}
+        fi
+    done
+    for _doc in \
+                        README.txt       \
+                        NVIDIA_Changelog ; do
+        if ! ( ((CPDAT==1)) && [ -f ${DOCDER}/${_doc} ] ); then
+            ${INSTALL_ROOT} ${SRCDIR}/${_doc} ${DOCDER}
+        fi
+    done
+    if ! ( ((CPDAT==1)) && [ -e ${DOCDER}/html ] ); then
+        as_root cp -r html ${DOCDER}/
+    fi
+    as_root ln -sfv ${DOCDER} ${DOCDER}/../nvidia-utils
+    ${INSTALL_ROOT} nvidia-settings.desktop ${PREFICKS}/usr/share/applications/
+    ${INSTALL_ROOT} nvidia-settings.png ${PREFICKS}/usr/share/pixmaps/
+    as_root sed -e 's:__UTILS_PATH__:/usr/bin:' \
+                -e 's:__PIXMAP_PATH__:/usr/share/pixmaps:' \
+                -i "${pkgdir}/usr/share/applications/nvidia-settings.desktop"
+    ${INSTALL_ROOT} nvidia-drm-outputclass.conf \
+            ${PREFICKS}/usr/share/X11/xorg.conf.d/
+    # OpenCL (?)
+    ${INSTALL_DIRROOT} /etc/OpenCL/vendors
+    ${INSTALL_ROOT} nvidia.icd /etc/OpenCL/vendors/
+fi # if ((CPDAT))
+# Copy manpages and other files
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
 popd    # Back to $WORKING_DIR
-if ((PRESERVE_BUILD)); then
-    num=1
-    INC=
-    BUILD_STORAGE_DIR=${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
-    while [ -d ${BUILD_STORAGE_DIR}${INC} ]; do
-        INC="-${num}"
-        ((num++))
-    done
-    as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}${INC}
+if ! ((PRESERVE_BUILD)) && ! ((BUILD_ONLY)); then
+    as_root rm -rf ${BUILDDIR}
+else
+    as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
 fi
-as_root rm -rf ${BUILDDIR}
 as_root rm -rf ${PKGDIR}
-if ! ((RETAIN_DL)); then
-    [ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
-            as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
-fi
+[ -e ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE} ] &&
+    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}${SUFFIX}.${ARCHIVE}
 #
 # Add to installed list for this computer:
-echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
+if ! ((BUILD_ONLY)); then
+    echo "${PROG//-/_}-${VERSION}${SUFFIX}" >> /list-${CHRISTENED}-${SURNAME}
+fi
 #
 # Stop here unless this is first install
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -458,8 +545,8 @@ echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 #
 # Init Script
 #*************
-if [ "${BOOTSCRIPT}" ]; then
-    pushd ${WORKING_DIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
+if ! ((BUILD_ONLY)) && [ "${BOOTSCRIPT}" ]; then
+    pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     popd
 fi
@@ -471,5 +558,15 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
+as_root tee -a /etc/modprobe.d/blacklist << "EOF"
+blacklist nouveau
+EOF
+#
+if [ -f ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF} ]; then
+    mv -v ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF} \
+          ${SYSCONFDER}/X11/xorg.conf.d/${XORG_CONF}.bak
+fi
+as_root install -v -Dm644 -o root -g root \
+    ${BLFSDIR}/files/etc/X11/xorg.conf.d/${XORG_CONF} /etc/X11/xorg.conf.d/
 ###################################################
 
