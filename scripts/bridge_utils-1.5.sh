@@ -259,8 +259,8 @@ else
     # Download Patch
     #******************
     if ! [ -f ${PROG}-${VERSION}.patch ]; then
-        wget ${DL_PATCH} -O ${WORKING_DIR}/${PROG}-${VERSION}.patch ||
-            echo "Patch download failed" && exit 1
+        ( wget ${DL_PATCH} -O ${WORKING_DIR}/${PROG}-${VERSION}.patch ||
+            echo "Patch download failed" ) && exit 1
     fi
 #
     # Verify package
@@ -393,9 +393,11 @@ fi
 # Init Script
 #*************
 if ! ((BUILD_ONLY)) && [ "${BOOTSCRIPT}" ]; then
-    pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
-    as_root make install-${BOOTSCRIPT}
-    popd
+    if [ -d ${WORKING_DIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER} ]; then
+        pushd ${WORKING_DIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
+        as_root make install-${BOOTSCRIPT}
+        popd
+    fi
 fi
 #
 ###################################################
