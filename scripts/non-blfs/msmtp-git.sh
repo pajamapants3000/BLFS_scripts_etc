@@ -1,10 +1,18 @@
 #!/bin/bash -ev
 #
-# Installation script
+#    ***    Installation script     ***
 # Written by: Tommy Lincoln <pajamapants3000@gmail.com>
-# License: See LICENSE in parent folder
+# License   : See LICENSE in parent folder
+# Updated   : 02/12/2016
 #
 # TODO: Override or pass options via command line
+# TODO: Clean it up! Make configuration more obvious
+# TODO: Separate executable script and package configuration
+# TODO: Run sed to fix logfile location as reported in error message
+# TODO: Create library to source (functions file) for common tasks
+#+     +like checking for the installation of a package, downloading
+#+     +and testing checksum, avoiding duplicates and saving old builds, etc.
+# TODO: Create a list of downloads, each with location info and checksum
 #
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
@@ -18,31 +26,6 @@ fi
 #
 # Dependencies
 #*************
-# Required
-#pcre-8.38
-# Optional
-#db-6.1.26 (Berkeley DB) OR tdb (alternatives to gdbm built in lfs)
-#cyrus_sasl-2.1.26
-#libidn-1.32
-#linux_pam-1.2.1
-#mariadb-10.1.10 OR mysql
-#openldap-2.4.43
-#openssl-1.0.2e
-#gnutls-3.4.7
-#postgresql-9.4.5
-#sqlite-3.9.2
-#x_window_system
-#opendmarc
-#
-# Options
-#********
-# Uncomment to keep build files and sources
-#PRESERVE_BUILD=1
-# Uncomment to build only, do NOT install or modify system
-#BUILD_ONLY=1
-# Uncomment one to force including or skipping end configuration, resp.
-#TREATASNEW=1
-#TREATASOLD=1
 #
 # Preparation
 #*************
@@ -51,12 +34,66 @@ source ${HOME}/.blfs_profile
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
+# Options
+#********
+# Uncomment to use libsecret (GNOME password management)
+SECRET=1
+# Uncomment to use SSL/TLS (GNUTLS takes priority, then OpenSSL)
+SSL=1
+# Uncomment to use SASL (only seems to support GNU SASL (libgsasl))
+SASL=1
+# Uncomment to keep build files and sources
+#PRESERVE_BUILD=1
+# Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
+#BUILD_ONLY=1
+#INSTALL_ONLY=1
+# Retain source downloads
+#RETAIN_DL=1
+# Uncomment one to force including or skipping end configuration, resp.
+#TREATASNEW=1
+#TREATASOLD=1
+#
+# Additional Option processing
+#******************************
+# This is where we check for any requirements and disable any options
+#+that the user has specified but cannot be installed
+# TODO: Add warnings for any options that are disabled here
+# E.g.
+if ((SECRET)); then
+    if ! (cat /list-${CHRISTENED}-${SURNAME} | \
+            grep '^libsecret' > /dev/null); then
+        SECRET=0
+    fi
+fi
+#
+if ((SSL)); then
+    if (cat /list-${CHRISTENED}-${SURNAME} | \
+            grep '^openssl' > /dev/null); then
+        SSL=2
+    elif (cat /list-${CHRISTENED}-${SURNAME} | \
+            grep '^gnutls' > /dev/null); then
+        SSL=3
+    else
+        SSL=0
+    fi
+fi
+#
+if ((SASL)); then
+    if ! (cat /list-${CHRISTENED}-${SURNAME} | \
+            grep 'gsasl' > /dev/null); then
+        SASL=0
+    fi
+fi
+#
+#
 # Name of program, with version and package/archive type
-PROG=exim
-# Alternate program name, possibly with caps, etc.;
-#PROG_ALT=
-VERSION=4.86
-ARCHIVE=tar.bz2
+PROG=msmtp
+# Alternate program name; in case it doesn't match my conventions;
+# My conventions are: no capitals; only '-' between name and version,
+#+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
+PROG_ALT=${PROG}
+VERSION=git
+ARCHIVE=
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -71,31 +108,37 @@ BUILDDIR=${SRCDIR}
 # Subdirectory build
 #BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
-#BUILDDIR=${SRCDIR}/../build
+#BUILDDIR=${SRCDIR}/../${PROG}-build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=http://mirrors-uk.go-parts.com/eximftp/exim/exim4
-DL_ALT=ftp://ftp.exim.org/pub/exim/exim4
-MD5=797f248ef3e0c0e2f178e915f88fc4e9
+DL_URL=
+DL_ALT=
+MD5=
 SHASUM=
 SHAALG=1
-REPO=
+REPO=git://git.code.sf.net/p/msmtp/code
 # VCS=[git,hg,svn,...]; usually used as VERSION
-#VCS=${VERSION}
-BRANCH=master
+VCS=${VERSION}
+#BRANCH=master  # NOTE: Delete this flag (-b) from command
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
 #PATCH=${PROG}-${VERSION}.patch
+if [ ${PATCH} ]; then
+    [ -f ${PATCHDIR}/${PATCH} ] ||
+        (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
+fi
 # Configure; prepare build
 PREFICKS=/usr
 SYSCONFDER=/etc
+#SYSCONFDER=${PREFICKS}/etc
 LOCALST8DER=/var
-MANDER=/usr/share/man
-DOCDER=/usr/share/doc/${PROG}-${VERSION}
+#LOCALST8DER=${PREFICKS}/var
+MANDER=${PREFICKS}/share/man
+DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE=""
+CONFIGURE="${SRCDIR}/configure"
 #
 # Flags
 #*******
@@ -106,17 +149,25 @@ CONFIGURE=""
 #^^^^^^^
 # Use this if CMake source root is different from SRCDIR
 #CMAKE_SRC_ROOT=
-#
 # Another common cmake parameter is the build type; defaults to Release or
 #+uncomment below
 #CBUILDTYPE=RelWithDebInfo
-#
-#Specify CMake generator
+#Specify CMake generator (only if non-standard; will set automatically below)
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
 CONFIG_FLAGS=""
-MAKE="make"
+if ((SECRET)); then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --with-libsecret"
+fi
+if   [ ${SSL} -eq 2 ]; then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --with-tls=openssl"
+elif [ ${SSL} -eq 3 ]; then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --with-tls=gnutls"
+fi
+if ((SASL)); then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --with-libgsasl"
+fi
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -124,13 +175,20 @@ INSTALL="install"
 INSTALL_FLAGS=""
 #
 # Additional/optional configurations: bootscript, group, user, ...
-BOOTSCRIPT=exim
-PROGGROUP=exim
-PROGGROUPNUM=31
-PROGUSER=exim
+BOOTSCRIPT=
+PROGGROUP=
+PROGGROUPNUM=
+PROGUSER=
 PROGUSERNUM=${PROGGROUPNUM}
-USRCMNT="Exim_Daemon"
+USRCMNT=
 #
+# Common commands
+INSTALL_USER='install -v -Dm644'
+INSTALL_BINUSER='install -v -Dm755'
+INSTALL_DIRUSER='install -vd'
+INSTALL_ROOT="as_root ${INSTALL_USER} -o root -g root"
+INSTALL_BINROOT="as_root ${INSTALL_BINUSER} -o root -g root"
+INSTALL_DIRROOT="as_root ${INSTALL_DIRUSER} -o root -g root"
 #****************************************************************************#
 ################ No variable settings below this line! #######################
 #****************************************************************************#
@@ -142,6 +200,13 @@ USRCMNT="Exim_Daemon"
 if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
     [ "${CMAKE_SRC_ROOT}" ] || CMAKE_SRC_ROOT=${SRCDIR}
     [ "${CBUILDTYPE}" ]     || CBUILDTYPE="Release"
+    [ "${CMAKE_GEN}" ]      ||  if (which ninja); then
+                                    CMAKE_GEN="Ninja"
+                                    MAKE="ninja"
+                                else
+                                    CMAKE_GEN="Unix Makefiles"
+                                    MAKE="make"
+                                fi
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
                   -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
@@ -151,31 +216,53 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
     [ "${CFG_PREFIX_FLAG}" ]        || CFG_PREFIX_FLAG="--prefix"
     [ "${CFG_SYSCONFDIR_FLAG}" ]    || CFG_SYSCONFDIR_FLAG="--sysconfdir"
     [ "${CFG_LOCALSTATEDIR_FLAG}" ] || CFG_LOCALSTATEDIR_FLAG="--localstatedir"
-    CONFIG_FLAGS="${CFG_PREFIX_FLAG}=${PREFICKS}           \
-                  ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}     \
-                  ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER} \
-                  ${CONFIG_FLAGS}"
+    [ "${CFG_DOCDIR_FLAG}" ]        || CFG_DOCDIR_FLAG="--docdir"
+    [ "${CFG_MANDIR_FLAG}" ]        || CFG_MANDIR_FLAG="--mandir"
+    [[ ${PREFICKS} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_PREFIX_FLAG}=${PREFICKS}" || (exit 0)
+    [[ ${SYSCONFDER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}" || (exit 0)
+    [[ ${LOCALST8DER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER}" || (exit 0)
+    [[ ${DOCDER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_DOCDIR_FLAG}=${DOCDER}" || (exit 0)
+    [[ ${MANDER} ]] &&
+            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_MANDIR_FLAG}=${MANDER}" || (exit 0)
+    MAKE="make"
 # Leave place for other possible configuration utilities to set up
-# For now, just do-nothing placeholder command
+# For now, just do-nothing placeholder commands
 # QMake
 #^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xqmake" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Autogen
 #^^^^^^^^^
 elif [ "x${CONFIGURE:$((${#CONFIGURE}-11)):11}" = "x/autogen.sh" ]; then
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 # Default
 #^^^^^^^^^
 else
     CONFIG_FLAGS="${CONFIG_FLAGS}"
+    MAKE="make"
 fi
 #
 # Default make flags
 #********************
-MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
-TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
-INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
+if [ "x${MAKE}" == "xmake" ]; then
+    MAKE_FLAGS="   -j${PARALLEL} ${MAKE_FLAGS}"
+    TEST_FLAGS="   -j${PARALLEL} ${TEST_FLAGS}"
+    INSTALL_FLAGS="-j${PARALLEL} ${INSTALL_FLAGS}"
+elif [ "x${MAKE}" == "xninja" ]; then
+    MAKE_FLAGS="   ${MAKE_FLAGS}"
+    TEST_FLAGS="   ${TEST_FLAGS}"
+    INSTALL_FLAGS="${INSTALL_FLAGS}"
+else
+    MAKE_FLAGS="   ${MAKE_FLAGS}"
+    TEST_FLAGS="   ${TEST_FLAGS}"
+    INSTALL_FLAGS="${INSTALL_FLAGS}"
+fi
 #
 # Create Group and/or User
 #**************************
@@ -186,14 +273,14 @@ if [ "${PROGGROUP}" ]; then
     fi
     if [ "${PROGUSER}" ]; then
         if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-        as_root useradd -c "${USRCMNT}" -d /dev/null \
+        as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
                 -u ${PROGUSERNUM} -g $PROGGROUP -s /bin/false $PROGUSER
         pathremove /usr/sbin
         fi
     fi
 elif [ "${PROGUSER}" ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /dev/null \
+    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
             -u ${PROGUSERNUM} -s /bin/false $PROGUSER
     pathremove /usr/sbin
     fi
@@ -209,6 +296,7 @@ grep "^${PROG//-/_}-" /list-$CHRISTENED"-"$SURNAME > /dev/null && ((\!$?)) &&\
 #
 ((TREATASNEW)) && REINSTALL=0
 ((TREATASOLD)) && REINSTALL=1
+if ! ((INSTALL_ONLY)); then # Makes possible to install an already built src
 # Obtain package
 #****************
 if [ "${VCS}" ]; then
@@ -217,7 +305,21 @@ if [ "${VCS}" ]; then
         BRANCH_FLAG="-b"
     elif [ "${VCS}" == "svn" ]; then
         VCS_CMD="co"
+        # With subversion, branch is part of the repo path
         BRANCH_FLAG=
+        if [[ "x${BRANCH}" == "xmaster" || "x${BRANCH}" == "xtrunk" ||
+              "x${BRANCH}" == "x" ]]; then
+            if [[ $(basename ${REPO}) != "trunk" ]]; then
+                REPO=${REPO}/trunk
+            fi
+        else
+            if [[ $(basename ${REPO}) == "trunk" ]]; then
+                REPO=$(dirname ${REPO})/branches/${BRANCH}
+            else
+                REPO=${REPO}/branches/${BRANCH}
+            fi
+        fi
+        BRANCH=
     else
         echo "error: unkown value for VCS; aborting."
         exit 1
@@ -226,29 +328,28 @@ if [ "${VCS}" ]; then
     # Preserve any previous builds; Ensure empty target directory
     #*************************************************************
     num=1
+    INC=
     while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
-    if [ ${num} -gt 1 ]; then
-        if ((INC)); then
-            as_root mv ${PKGDIR} ${PKGDIR}${INC}
-        fi
+    if ((INC)); then
+        as_root mv ${PKGDIR} ${PKGDIR}${INC}
     fi
 #
     # Clone Repository
     #******************
-    ${VCS} ${VCS_CMD} ${BRANCH_FLAG} ${BRANCH} ${REPO} ${PKGDIR}
+    ${VCS} ${VCS_CMD} ${REPO} ${PKGDIR}
 #
 else
     # Download Package
     #******************
-    if ! [ -f ${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG}-${VERSION}.${ARCHIVE} \
+    if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
+        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -275,14 +376,13 @@ else
     # Preserve any previous builds
     #******************************
     num=1
+    INC=
     while [ -d ${PKGDIR}${INC} ]; do
         INC="-${num}"
         ((num++))
     done
-    if [ ${num} -gt 1 ]; then
-        if ((INC)); then
-            as_root mv ${PKGDIR} ${PKGDIR}${INC}
-        fi
+    if ((INC)); then
+        as_root mv ${PKGDIR} ${PKGDIR}${INC}
     fi
 #
     # Extract package
@@ -299,7 +399,7 @@ fi # End "if [ ${VCS} ]..."
 pushd ${SRCDIR}
 # Apply patch if necessary
 #^^^^^^^^^^^^^^^^^^^^^^^^^^
-[ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH}
+[ "${PATCH}" ] && patch -Np1 < ${PATCHDIR}/${PATCH} || (exit 0)
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -330,15 +430,14 @@ fi
 # Post-config modifications before building
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-sed -e 's,^BIN_DIR.*$,BIN_DIRECTORY=/usr/sbin,' \
-        -e 's,^CONF.*$,CONFIGURE_FILE=/etc/exim.conf,' \
-        -e 's,^EXIM_USER.*$,EXIM_USER=exim,' \
-        -e 's,^EXIM_MONITOR,#EXIM_MONITOR,' src/EDITME > Local/Makefile
-printf "USE_GDBM = yes\nDBMLIB = -lgdbm\n" >> Local/Makefile
 #
 # Build
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
+#
+#
+# Post-build modifications before testing
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
@@ -348,7 +447,7 @@ if [ "${TEST}" ]; then
         tee ${WORKING_DIR}/logs/${PROG}-${VERSION}-${DATE}.check || (exit 0)
     STAT=${PIPESTATUS[0]}
     if (( STAT )); then
-        echo "Some tests failed; log in ../$(basename $0)-log"
+        echo "Some tests failed; log in ../logs/$(basename $0)-log"
         echo "Pull up another terminal and check the output"
         echo "Shall we proceed? (say "'"yes"'" or "'"y"'" to proceed)"
         read PROCEED
@@ -356,11 +455,19 @@ if [ "${TEST}" ]; then
     fi
 fi
 #
+fi # ! ((INSTALL_ONLY))
+if ((BUILD_ONLY)); then
+    echo "${PROG}-${VERSION} built successfully! No changes were made."
+    echo "Build can be found in ${BUILDDIR}"
+    exit 0
+elif ((INSTALL_ONLY)); then
+    WORKING_DIR=$PWD
+    pushd ${SRCDIR}
+    pushd ${BUILDDIR}
+fi
 # Install
 #^^^^^^^^^
-if ! ((BUILD_ONLY)); then
-    as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
-fi
+as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -368,22 +475,26 @@ fi
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
-as_root install -v -m644 doc/exim.8 /usr/share/man/man8
-as_root install -v -d -m755 /usr/share/doc/${PROG}-${VERSION}
-as_root install -v -m644 doc/* /usr/share/doc/${PROG}-${VERSION}
-as_root ln -sfv exim /usr/sbin/sendmail
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
 popd    # Back to $WORKING_DIR
-if ! ((PRESERVE_BUILD)) && ! ((BUILD_ONLY)); then
-    as_root rm -rf ${BUILDDIR}
-else
-    as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
+if ((PRESERVE_BUILD)); then
+    num=1
+    INC=
+    BUILD_STORAGE_DIR=${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}
+    while [ -d ${BUILD_STORAGE_DIR}${INC} ]; do
+        INC="-${num}"
+        ((num++))
+    done
+    as_root mv ${BUILDDIR} ${WORKING_DIR}/${PROG}-${VERSION}-build-${DATE}${INC}
 fi
+as_root rm -rf ${BUILDDIR}
 as_root rm -rf ${PKGDIR}
-[ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
-    as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
+if ! ((RETAIN_DL)); then
+    [ -e ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ] &&
+            as_root rm ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE}
+fi
 #
 # Add to installed list for this computer:
 echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
@@ -396,26 +507,17 @@ echo "${PROG//-/_}-${VERSION}" >> /list-${CHRISTENED}-${SURNAME}
 # Init Script
 #*************
 if [ "${BOOTSCRIPT}" ]; then
-    pushd ${BLFSDIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
+    pushd ${WORKING_DIR}/blfs-bootscripts-${BLFS_BOOTSCRIPTS_VER}
     as_root make install-${BOOTSCRIPT}
     popd
 fi
 #
-# Modify the -q<time-interval> parameter in /etc/rc.d/init.d/exim as needed
 ###################################################
 #
 # Configuration
 #***************
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
-as_root tee -a /etc/aliases << "EOF"
-postmaster: root
-MAILER-DAEMON: root
-EOF
-# Check /etc/aliases for duplicates after running this!
-# Start mail daemon with a 15 minute check interval:
-#exim -v -bi
-#/usr/sbin/exim -bd -q15m
 #
 ###################################################
 

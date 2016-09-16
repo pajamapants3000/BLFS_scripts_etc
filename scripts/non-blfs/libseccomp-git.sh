@@ -62,13 +62,13 @@ source ${HOME}/.blfs_profile
 #*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=libseccomp
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+VERSION=git
+ARCHIVE=
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -93,9 +93,9 @@ DL_ALT=
 MD5=
 SHASUM=
 SHAALG=1
-REPO=
+REPO=https://github.com/seccomp/libseccomp
 # VCS=[git,hg,svn,...]; usually used as VERSION
-#VCS=${VERSION}
+VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
@@ -372,7 +372,7 @@ pushd ${BUILDDIR}
 #
 # Autogen if necessary
 #^^^^^^^^^^^^^^^^^^^^^
-#${SRCDIR}/autogen.sh
+${SRCDIR}/autogen.sh
 #
 # ... or autoreconf if only configure.ac or configure.in are present
 #autoreconf ${SRCDIR}
@@ -484,3 +484,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

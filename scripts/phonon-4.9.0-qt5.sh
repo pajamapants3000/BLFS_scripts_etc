@@ -26,12 +26,18 @@ fi
 #
 # Dependencies
 #*************
+# Required
+#cmake-3.3.1
+#glib-2.48.0
+#qt-5.6.0
+# Optional
+#pulseaudio-8.0
 #
 # Preparation
 #*************
 source ${HOME}/.blfs_profile
 # Other common preparations:
-#source loadqt4
+source loadqt5
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
 #
 # Options
@@ -62,13 +68,13 @@ source ${HOME}/.blfs_profile
 #*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=phonon
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+VERSION=4.9.0
+ARCHIVE=tar.xz
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -79,18 +85,18 @@ PKGDIR=${WORKING_DIR}/${PROG}-${VERSION}
 # This is where the sources are
 SRCDIR=${PKGDIR}
 # Source dir build
-BUILDDIR=${SRCDIR}
+#BUILDDIR=${SRCDIR}
 # Subdirectory build
-#BUILDDIR=${SRCDIR}/build
+BUILDDIR=${SRCDIR}/build
 # Parallel-directory build
 #BUILDDIR=${SRCDIR}/../${PROG}-build
 # Directory containing this script
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://download.kde.org/stable/phonon
 DL_ALT=
-MD5=
+MD5=8abeb7b1eaf4935668c7fb441fc2491a
 SHASUM=
 SHAALG=1
 REPO=
@@ -106,14 +112,14 @@ if [ ${PATCH} ]; then
 fi
 # Configure; prepare build
 PREFICKS=/usr
-SYSCONFDER=/etc
+#SYSCONFDER=/etc
 #SYSCONFDER=${PREFICKS}/etc
-LOCALST8DER=/var
+#LOCALST8DER=/var
 #LOCALST8DER=${PREFICKS}/var
-MANDER=${PREFICKS}/share/man
-DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
+#MANDER=${PREFICKS}/share/man
+#DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="${SRCDIR}/configure"
+CONFIGURE="cmake"
 #
 # Flags
 #*******
@@ -126,12 +132,12 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_SRC_ROOT=
 # Another common cmake parameter is the build type; defaults to Release or
 #+uncomment below
-#CBUILDTYPE=RelWithDebInfo
+CBUILDTYPE=Release
 #Specify CMake generator (only if non-standard; will set automatically below)
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="-DCMAKE_INSTALL_LIBDIR=lib -DPHONON_BUILD_PHONON4QT5=ON"
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -309,11 +315,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -484,3 +490,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

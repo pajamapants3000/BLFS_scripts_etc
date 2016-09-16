@@ -1,0 +1,17 @@
+diff -rup pcc-20160606/cc/ccom/main.c pcc-20160606.new/cc/ccom/main.c
+--- pcc-20160606/cc/ccom/main.c	2016-02-21 03:04:01.000000000 -0800
++++ pcc-20160606.new/cc/ccom/main.c	2016-06-06 01:49:33.310634959 -0700
+@@ -222,11 +222,11 @@ main(int argc, char *argv[])
+ 		case 'k': /* PIC code */
+ 			++kflag;
+ 			break;
+-
++#ifndef PASS1
+ 		case 'm': /* Target-specific */
+ 			mflags(optarg);
+ 			break;
+-
++#endif
+ 		case 'p': /* Profiling */
+ 			++pflag;
+ 			break;

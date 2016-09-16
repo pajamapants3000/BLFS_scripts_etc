@@ -17,6 +17,9 @@
 #gtk+-3.16.6
 #libdaemon-0.14
 #libglade-2.6.4
+# For git version
+#   xmltoman
+#   http://sourceforge.net/projects/xmltoman/files/xmltoman/xmltoman-0.4.tar.gz/xmltoman-0.4.tar.gz/download
 # End Recommended
 # Begin Optional
 #d_bus_python-1.2.0
@@ -61,20 +64,29 @@ sed -i 's/\(CFLAGS=.*\)-Werror \(.*\)/\1\2/' configure
 sed -e 's/-DG_DISABLE_DEPRECATED=1//' \
     -e '/-DGDK_DISABLE_DEPRECATED/d'  \
     -i avahi-ui/Makefile.in
-# --disable-qt4 if not installed; remove --disable-gtk/gtk3 for gtk systems
+# Everything?
 ./configure --prefix=/usr        \
             --sysconfdir=/etc    \
             --localstatedir=/var \
-            --disable-static     \
-            --disable-mono       \
-            --disable-monodoc    \
-            --disable-python     \
             --disable-qt3        \
-            --disable-gtk        \
-            --disable-gtk3        \
             --enable-core-docs   \
             --with-distro=none   \
             --with-systemdsystemunitdir=no
+# OR - LFS with a few changes - no GTK
+# --disable-qt4 if not installed; remove --disable-gtk/gtk3 for gtk systems
+#./configure --prefix=/usr        \
+#            --sysconfdir=/etc    \
+#            --localstatedir=/var \
+#            --disable-static     \
+#            --disable-mono       \
+#            --disable-monodoc    \
+#            --disable-python     \
+#            --disable-qt3        \
+#            --disable-gtk        \
+#            --disable-gtk3       \
+#            --enable-core-docs   \
+#            --with-distro=none   \
+#            --with-systemdsystemunitdir=no
 make
 #
 as_root make install

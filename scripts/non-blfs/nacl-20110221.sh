@@ -33,7 +33,11 @@ source ${HOME}/.blfs_profile
 # Other common preparations:
 #source loadqt4
 #pathappend /opt/lxqt/share XDG_DATA_DIRS
-#
+
+# This is the command executed by the build script to determine the
+#+build directory
+shorthostname=`hostname | sed 's/\..*//' | tr -cd '[a-z][A-Z][0-9]'`
+
 # Options
 #********
 # Uncomment to keep build files and sources
@@ -62,13 +66,13 @@ source ${HOME}/.blfs_profile
 #*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=nacl
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+VERSION=20110221
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -88,10 +92,10 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=https://hyperelliptic.org
 DL_ALT=
-MD5=
-SHASUM=
+MD5=7efb5715561c3d10dafd3fa97b4f2d20
+SHASUM=6007a6aee249f5a534ec53fddfc364601fba9629
 SHAALG=1
 REPO=
 # VCS=[git,hg,svn,...]; usually used as VERSION
@@ -113,7 +117,7 @@ LOCALST8DER=/var
 MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
-CONFIGURE="${SRCDIR}/configure"
+CONFIGURE=""
 #
 # Flags
 #*******
@@ -309,11 +313,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${PROG}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${PROG}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -367,8 +371,8 @@ pushd ${SRCDIR}
 #
 # Create build directory
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[ -d ${BUILDDIR} ] || mkdir -v ${BUILDDIR}
-pushd ${BUILDDIR}
+#[ -d ${BUILDDIR} ] || mkdir -v ${BUILDDIR}
+#pushd ${BUILDDIR}
 #
 # Autogen if necessary
 #^^^^^^^^^^^^^^^^^^^^^
@@ -397,7 +401,8 @@ fi
 #
 # Build
 #^^^^^^^
-${MAKE} ${MAKE_FLAGS}
+#${MAKE} ${MAKE_FLAGS}
+${SRCDIR}/do
 #
 #
 # Post-build modifications before testing
@@ -431,7 +436,10 @@ elif ((INSTALL_ONLY)); then
 fi
 # Install
 #^^^^^^^^^
-as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+for dir in bin include lib; do
+    as_root cp -vR build/${shorthostname}/${dir}/* ${PREFICKS}/${dir}/
+    ! [ -d ${PREFICKS}/${dir}/amd64 ] && mv -v ${PREFICKS}/${dir}/{amd64,nacl}
+done
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -441,7 +449,6 @@ as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-popd    # Back to $SRCDIR
 popd    # Back to $WORKING_DIR
 if ((PRESERVE_BUILD)); then
     num=1
@@ -484,3 +491,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

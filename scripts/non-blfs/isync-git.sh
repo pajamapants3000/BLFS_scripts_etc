@@ -26,7 +26,11 @@ fi
 #
 # Dependencies
 #*************
-#
+# Optional
+#cyrus_sasl
+#openssl (or libressl)
+#zlib
+#berkeleydb
 # Preparation
 #*************
 source ${HOME}/.blfs_profile
@@ -46,29 +50,15 @@ source ${HOME}/.blfs_profile
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
-#*******************************************************************
-# Additional Option processing  (no settings here!)
-#******************************
-# This is where we check for any requirements and disable any options
-#+that the user has specified but cannot be installed
-# TODO: Add warnings for any options that are disabled here
-# E.g.
-#if ((SOMETHING)); then
-#    if (cat /list-${CHRISTENED}-${SURNAME} | \
-#           grep '^something' > /dev/null); then
-#       SOMETHING=0
-#    fi
-#fi
-#*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=isync
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+VERSION=git
+ARCHIVE=
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -93,9 +83,9 @@ DL_ALT=
 MD5=
 SHASUM=
 SHAALG=1
-REPO=
+REPO=git://git.code.sf.net/p/isync/isync
 # VCS=[git,hg,svn,...]; usually used as VERSION
-#VCS=${VERSION}
+VCS=${VERSION}
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
@@ -172,7 +162,7 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
                                     MAKE="make"
                                 fi
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
-                  -DCMAKE_BUILD_TYPE=${CBUILDTYPE}   \
+                  -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
 # configure
 #^^^^^^^^^^^
@@ -380,7 +370,7 @@ pushd ${BUILDDIR}
 # Pre-config -- additional actions to take before running configuration
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-#
+./autogen.sh
 # Configure
 #^^^^^^^^^^^
 if [ "${CONFIGURE}" ]; then
@@ -439,6 +429,10 @@ as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
+# Need to figure out how to change default user data dir
+mkdir ${HOME}/.mbsync
+cp ${SRCDIR}/src/mbsyncrc.sample ${HOME}/.mbsync/
+${INSTALL_USER} ${BLFS_DIR}/files/home/.mbsyncrc ${HOME}/
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -483,4 +477,7 @@ fi
 # This is where we put the main configuration; doesn't get repeated on
 #+successive installs or updates unless specified otherwise.
 #
+
+mkdir ${XDG_DATA_DIRS}/mbsync
 ###################################################
+

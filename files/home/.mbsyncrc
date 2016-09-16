@@ -1,0 +1,32 @@
+# Global configuration section
+#   Values here are used as defaults for any following Channel section that
+#   doesn't specify them.
+Expunge None
+Create Both
+CopyArrivalDate yes
+
+MaildirStore local
+Path ~/Mail/local
+Trash Trash
+
+IMAPAccount pajamapants3000@gmail.com
+Host imap.gmail.com
+User pajamapants3000@gmail.com
+PassCmd "gpg2 -q --for-your-eyes-only --no-tty -d ~/.keys/gmail-pajamapants3000.gpg"
+CertificateFile  ~/Mail/gmail/gmail.crt
+CertificateFile  ~/Mail/gmail/google.crt
+CertificateFile  /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore gmail-pajamapants3000-master
+Account pajamapants3000@gmail.com
+
+MaildirStore gmail-pajamapants3000-slave
+Path ~/Mail/pajamapants3000@gmail.com
+Trash Trash
+MaxSize 1000mb
+
+Channel pajamapants3000@gmail.com
+Master :gmail-pajamapants3000-master:
+Slave :gmail-pajamapants3000-slave:
+
+

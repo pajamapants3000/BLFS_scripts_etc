@@ -1,0 +1,48 @@
+diff -rup cvs-1.11.23.orig/lib/getline.c cvs-1.11.23/lib/getline.c
+--- cvs-1.11.23.orig/lib/getline.c	2016-05-19 10:10:38.852418085 -0700
++++ cvs-1.11.23/lib/getline.c	2016-05-19 10:11:23.437734781 -0700
+@@ -153,7 +153,7 @@ getstr (lineptr, n, stream, terminator,
+   ret = read_pos - (*lineptr + offset);
+   return ret;
+ }
+-
++/*
+ int
+ getline (lineptr, n, stream)
+      char **lineptr;
+@@ -162,13 +162,14 @@ getline (lineptr, n, stream)
+ {
+   return getstr (lineptr, n, stream, '\n', 0, GETLINE_NO_LIMIT);
+ }
+-
++*/
+ int
+-getline_safe (lineptr, n, stream, limit)
+-     char **lineptr;
+-     size_t *n;
+-     FILE *stream;
+-     int limit;
++getline_safe (
++     char **lineptr,
++     size_t *n,
++     FILE *stream,
++     int limit
++     )
+ {
+   return getstr (lineptr, n, stream, '\n', 0, limit);
+ }
+diff -rup cvs-1.11.23.orig/lib/getline.h cvs-1.11.23/lib/getline.h
+--- cvs-1.11.23.orig/lib/getline.h	2016-05-19 10:10:38.852418085 -0700
++++ cvs-1.11.23/lib/getline.h	2016-05-19 10:11:35.731822142 -0700
+@@ -10,9 +10,10 @@
+ #endif  /* GCC.  */
+ 
+ #define GETLINE_NO_LIMIT -1
+-
++/*
+ int
+   getline __PROTO ((char **_lineptr, size_t *_n, FILE *_stream));
++  */
+ int
+   getline_safe __PROTO ((char **_lineptr, size_t *_n, FILE *_stream,
+                          int limit));

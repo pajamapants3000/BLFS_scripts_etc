@@ -1,0 +1,6 @@
+libIDL
+ORBit
+    had to hack away -Werror s, and DISABLE_DEPRECATED
+libbonobo
+    This will not build and it doesn't make any FUCKING sense!
+

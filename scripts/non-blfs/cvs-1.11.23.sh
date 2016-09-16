@@ -62,13 +62,13 @@ source ${HOME}/.blfs_profile
 #*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=cvs
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+VERSION=1.11.23
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -88,9 +88,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://ftp.gnu.org/non-gnu/cvs/source/stable
 DL_ALT=
-MD5=
+MD5=0213ea514e231559d6ff8f80a34117f0
 SHASUM=
 SHAALG=1
 REPO=
@@ -99,7 +99,7 @@ REPO=
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
-#PATCH=${PROG}-${VERSION}.patch
+PATCH=${PROG}-${VERSION}.patch
 if [ ${PATCH} ]; then
     [ -f ${PATCHDIR}/${PATCH} ] ||
         (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
@@ -309,11 +309,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${VERSION}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -484,3 +484,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

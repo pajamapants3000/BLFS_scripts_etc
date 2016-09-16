@@ -25,7 +25,21 @@ if [ ${#} -gt 1 ]; then
 fi
 #
 # Dependencies
-#*************
+#**************
+# Required
+#libffi-3.2.1
+##python-2.7.11
+#python-3.5.1
+# Recommended
+#pcre-8.38
+# Optional
+#d_bus-1.10.8
+#elfutils-0.166
+#gtk_doc-1.25
+#fam_library
+# Runtime
+#shared_mime_info-1.6
+#desktop_file_utils-0.22
 #
 # Preparation
 #*************
@@ -36,6 +50,8 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Uncomment to build API docs; only works if you have gtk_doc installed.
+APIDOC=1
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
@@ -59,16 +75,22 @@ source ${HOME}/.blfs_profile
 #       SOMETHING=0
 #    fi
 #fi
+if ((APIDOC)); then
+    if (cat /list-${CHRISTENED}-${SURNAME} | \
+           grep '^gtk_doc' > /dev/null); then
+       APIDOC=0
+    fi
+fi
 #*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=glib
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+VERSION=2.48.0
+ARCHIVE=tar.xz
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -88,9 +110,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
-DL_ALT=
-MD5=
+DL_URL=http://ftp.gnome.org/pub/gnome/sources/glib
+DL_ALT=ftp://ftp.gnome.org/pub/gnome/sources/glib
+MD5=093a586f37d2853bdb129231e1b350e0
 SHASUM=
 SHAALG=1
 REPO=
@@ -106,12 +128,12 @@ if [ ${PATCH} ]; then
 fi
 # Configure; prepare build
 PREFICKS=/usr
-SYSCONFDER=/etc
+#SYSCONFDER=/etc
 #SYSCONFDER=${PREFICKS}/etc
-LOCALST8DER=/var
+#LOCALST8DER=/var
 #LOCALST8DER=${PREFICKS}/var
-MANDER=${PREFICKS}/share/man
-DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
+#MANDER=${PREFICKS}/share/man
+#DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
 CONFIGURE="${SRCDIR}/configure"
 #
@@ -131,9 +153,13 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--with-pcre=system"
+((APIDOC)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-gtk-doc" || (exit 0)
+((PY3))    && CONFIG_FLAGS="${CONFIG_FLAGS} --with-python=/usr/bin/python3" \
+        || (exit 0)
+
 MAKE_FLAGS=""
-TEST=
+TEST=check
 TEST_FLAGS="-k"
 INSTALL="install"
 INSTALL_FLAGS=""
@@ -172,7 +198,7 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
                                     MAKE="make"
                                 fi
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
-                  -DCMAKE_BUILD_TYPE=${CBUILDTYPE}   \
+                  -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
 # configure
 #^^^^^^^^^^^
@@ -309,11 +335,11 @@ else
     # Download Package
     #******************
     if ! [ -f ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} ]; then
-        wget ${DL_URL}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+        wget ${DL_URL}/${VERSION%.*}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} || FAIL_DL=1
         # FTP/alt Download:
         if (($FAIL_DL)) && [ "$DL_ALT" ]; then
-            wget ${DL_ALT}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
+            wget ${DL_ALT}/${VERSION%.*}/${PROG_ALT}-${VERSION}.${ARCHIVE} \
             -O ${WORKING_DIR}/${PROG}-${VERSION}.${ARCHIVE} &&
             FAIL_DL=0 || FAIL_DL=2
         fi
@@ -403,7 +429,21 @@ ${MAKE} ${MAKE_FLAGS}
 # Post-build modifications before testing
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# Test (optional)
+fi # ! ((INSTALL_ONLY))
+if ((BUILD_ONLY)); then
+    echo "${PROG}-${VERSION} built successfully! No changes were made."
+    echo "Build can be found in ${BUILDDIR}"
+    exit 0
+elif ((INSTALL_ONLY)); then
+    WORKING_DIR=$PWD
+    pushd ${SRCDIR}
+    pushd ${BUILDDIR}
+fi
+# Install
+#^^^^^^^^^
+as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
+#
+# Test (optional; BLFS says to run tests AFTER INSTALL!)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
     [ -d ${WORKING_DIR}/logs ] || mkdir -v ${WORKING_DIR}/logs
@@ -418,20 +458,6 @@ if [ "${TEST}" ]; then
         [ "$PROCEED" = "y" ] || [ "$PROCEED" = "yes" ]
     fi
 fi
-#
-fi # ! ((INSTALL_ONLY))
-if ((BUILD_ONLY)); then
-    echo "${PROG}-${VERSION} built successfully! No changes were made."
-    echo "Build can be found in ${BUILDDIR}"
-    exit 0
-elif ((INSTALL_ONLY)); then
-    WORKING_DIR=$PWD
-    pushd ${SRCDIR}
-    pushd ${BUILDDIR}
-fi
-# Install
-#^^^^^^^^^
-as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -484,3 +510,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

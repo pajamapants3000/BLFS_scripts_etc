@@ -62,12 +62,12 @@ source ${HOME}/.blfs_profile
 #*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=xsel
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
+VERSION=1.2.0
 ARCHIVE=tar.gz
 #
 # Useful paths
@@ -88,9 +88,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://www.vergenet.net/~conrad/software/xsel/download
 DL_ALT=
-MD5=
+MD5=75983f143ce83dc259796c6eaf85c8f5
 SHASUM=
 SHAALG=1
 REPO=
@@ -484,3 +484,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

@@ -26,6 +26,14 @@ fi
 #
 # Dependencies
 #*************
+# Recommended
+#OpenSSL-1.0.2g
+# Optional
+#openldap-2.4.44
+#krb5-1.14.1
+#aspell-0.60.6.1
+#tcl-8.6.5
+#linux_pam-1.2.1
 #
 # Preparation
 #*************
@@ -36,6 +44,10 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+# Uncomment to build with LDAP support
+LDAP=1
+# Uncomment to build with MIT Kerberos support
+KRB5=1
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
@@ -46,29 +58,18 @@ source ${HOME}/.blfs_profile
 # Uncomment one to force including or skipping end configuration, resp.
 #TREATASNEW=1
 #TREATASOLD=1
-#*******************************************************************
-# Additional Option processing  (no settings here!)
-#******************************
-# This is where we check for any requirements and disable any options
-#+that the user has specified but cannot be installed
-# TODO: Add warnings for any options that are disabled here
-# E.g.
-#if ((SOMETHING)); then
-#    if (cat /list-${CHRISTENED}-${SURNAME} | \
-#           grep '^something' > /dev/null); then
-#       SOMETHING=0
-#    fi
-#fi
-#*******************************************************************
 #
+# Process options - DO NOT CHANGE
+(cat /list-${CHRISTENED}-${SURNAME} | grep '^openldap' > /dev/null) || LDAP=
+(cat /list-${CHRISTENED}-${SURNAME} | grep '^krb5' > /dev/null) || KRB5=
 # Name of program, with version and package/archive type
-PROG=
+PROG=re_alpine
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
-PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+PROG_ALT=re-alpine
+VERSION=2.03
+ARCHIVE=tar.bz2
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -88,9 +89,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://sourceforge.net/projects/re-alpine/files
 DL_ALT=
-MD5=
+MD5=566d269d4bd43aba68f377110a6295d5
 SHASUM=
 SHAALG=1
 REPO=
@@ -108,9 +109,9 @@ fi
 PREFICKS=/usr
 SYSCONFDER=/etc
 #SYSCONFDER=${PREFICKS}/etc
-LOCALST8DER=/var
+#LOCALST8DER=/var
 #LOCALST8DER=${PREFICKS}/var
-MANDER=${PREFICKS}/share/man
+#MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
 # CONFIGURE: ${SRCDIR}/configure, cmake, qmake, ./autogen.sh, or other/undefined/blank
 CONFIGURE="${SRCDIR}/configure"
@@ -131,7 +132,13 @@ CONFIGURE="${SRCDIR}/configure"
 #CMAKE_GEN='Unix Makefiles'
 #
 # Pass them in... (these are in addition to the defaults; see below)
-CONFIG_FLAGS=""
+CONFIG_FLAGS="--with-ssl-dir=/usr --with-passfile=.pine-passfile"
+if ! ((LDAP)); then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --without-ldap"
+fi
+if ! ((KRB5)); then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --without-krb5"
+fi
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -172,7 +179,7 @@ if [ "x${CONFIGURE:$((${#CONFIGURE}-5)):5}" = "xcmake" ]; then
                                     MAKE="make"
                                 fi
     CONFIG_FLAGS="-DCMAKE_INSTALL_PREFIX=${PREFICKS} \
-                  -DCMAKE_BUILD_TYPE=${CBUILDTYPE}   \
+                  -DCMAKE_BUILD_TYPE=Release         \
                   -Wno-dev ${CONFIG_FLAGS} ${CMAKE_SRC_ROOT}"
 # configure
 #^^^^^^^^^^^
@@ -188,8 +195,8 @@ elif [ "x${CONFIGURE:$((${#CONFIGURE}-10)):10}" = "x/configure" ]; then
             CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_SYSCONFDIR_FLAG}=${SYSCONFDER}" || (exit 0)
     [[ ${LOCALST8DER} ]] &&
             CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_LOCALSTATEDIR_FLAG}=${LOCALST8DER}" || (exit 0)
-    [[ ${DOCDER} ]] &&
-            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_DOCDIR_FLAG}=${DOCDER}" || (exit 0)
+#    [[ ${DOCDER} ]] &&
+#            CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_DOCDIR_FLAG}=${DOCDER}" || (exit 0)
     [[ ${MANDER} ]] &&
             CONFIG_FLAGS="${CONFIG_FLAGS} ${CFG_MANDIR_FLAG}=${MANDER}" || (exit 0)
     MAKE="make"
@@ -484,3 +491,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+
