@@ -17,8 +17,8 @@ There is a file called "blfs_profile" that contains all relevant system informat
 is used by the scripts to build and install properly and according to your system's
 configuration. I create a configuration for each computer, and each computer has a name.
 blfs_profile is not only a configuration, it is a self-configuring script. When you run
-"blfs_profile <computer_name>" the script will comment out all lines pertaining to
-other computers and uncomment lines pertaining to the computer called <computer_name>.
+"blfs_profile \<computer_name\>" the script will comment out all lines pertaining to
+other computers and uncomment lines pertaining to the computer called \<computer_name\>.
 I also recommend defining environment variables CHRISTENED and SURNAME. You can use
 these however you want, but I use CHRISTENED to identify a specific computer or computer
 model, and SURNAME to specify the OS, including version or any other relevant info. So,
@@ -127,8 +127,8 @@ Each installation checks for previous installation by checking this list file.
 If one is found, you will be prompted to continue or abort.
 
 BTW, I keep a backup of this file that I periodically copy to, just in case I try to append a
-file name by hand and accidentally use "echo <name-version> > /list-${CHRISTENED}-${SURNAME}"
-instead of "echo <name-version> >> /list-${CHRISTENED}-${SURNAME}" or something.
+file name by hand and accidentally use "echo \<name-version\> > /list-${CHRISTENED}-${SURNAME}"
+instead of "echo \<name-version\> >> /list-${CHRISTENED}-${SURNAME}" or something.
 
 ***
 This was all created for me, but this README will help me remember what I was thinking, and MAY
