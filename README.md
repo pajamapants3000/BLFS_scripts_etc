@@ -116,9 +116,9 @@ At the end of each successful installation, a line is added to
 /list-${CHRISTENED}-${SURNAME}
 a file in the root directory. You will want to create such a file and make sure
 you have read and write permission for it. It is also highly recommended that
-you define these variables in /etc/profile. One suggestion is
-export CHRISTENED=$(uname -n)
-export SURNAME=$(uname -s)
+you define these variables in /etc/profile. One suggestion is<br />
+export CHRISTENED=$(uname -n)<br />
+export SURNAME=$(uname -s)<br />
 
 I will add a catch for this in the future so the scripts have a consistent and
 resonable backup in case these steps are forgotten or undesireable.
