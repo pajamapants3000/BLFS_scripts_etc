@@ -11,8 +11,8 @@ in my LFS repo:
 Just download and source this from your shell configuration.
 ***
 
-Configuration
-^^^^^^^^^^^^^^
+Configuration<br />
+^^^^^^^^^^^^^^<br />
 There is a file called "blfs_profile" that contains all relevant system information that
 is used by the scripts to build and install properly and according to your system's
 configuration. I create a configuration for each computer, and each computer has a name.
@@ -37,11 +37,10 @@ When installing a package, check the script for option settings. There are certa
 that you can comment in or out to change how the package is built and installed. There is
 also usually dependency information in the script, and you can change things like prefix
 path, etc. Some scripts (the newer ones) also have options to build only, install only
-(it will assume you have the package already built in an expected location), preserve
-files after build, and other settings of this nature. Read the comments.
+(it will assume you have the package already built in an expected location), preserve files after build, and other settings of this nature. Read the comments.
 
-BATCH INSTALLATION
-^^^^^^^^^^^^^^^^^^^
+BATCH INSTALLATION<br />
+^^^^^^^^^^^^^^<br />
 A process for managing large installations or installations with many
 dependencies is in place:
 
@@ -61,17 +60,17 @@ directory for the batch installer; "scriptdir" is where the batch installer look
 package installer scripts. "scriptdir" should also have a "non-blfs" subfolder (this is where
 I keep scripts that I created without the help of the folks at Linux From Scratch).
 
-Run:
+Run:<br />
 $./setlist.sh listdir <dir containing list-XXX file>
 
 If listdir is not the parent folder of the "./scripts" directory (with "./non-blfs" subdirectory),
-you will also want to run
+you will also want to run:<br />
 
-$./setlist.sh scriptdir <dir containing package installer scripts>
+$./setlist.sh scriptdir <dir containing package installer scripts><br />
 
-Then, to tell the batch installer the name of the list you want to generate
+Then, to tell the batch installer the name of the list you want to generate<br />
 $./setlist.sh list XXX
-$./generator.sh
+$./generator.sh<br />
 
 This will let you know if any of the queued installations don't have scripts
 prepared. This is one of the great things about this setup: a.it will tell you
@@ -82,24 +81,24 @@ If all necessary scripts are present and executable, links will be created,
 prefixed by XXX and the number order. Any programs that appear to already
 be installed (LISTFILE below) will be skipped in the generation. To
 include these programs anyway (they will each prompt you before installing
-instead), pass -a (for "all") to the generator:
+instead), pass -a (for "all") to the generator:<br />
 
-$./generator.sh -a
+$./generator.sh -a<br />
 
 Once you have gotten a successful list generation, begin installing the
-programs with:
+programs with:<br />
 
-$export LIST=XXX
-$./listrunner.sh
+$export LIST=XXX<br />
+$./listrunner.sh<br />
 
 The first command puts the list name in the environment, which the list runner
 uses to know what list it is running.
 
 If at any point or for any reason you want to start listrunner from any given
 script in the list, simply pass an argument of the number in the order. If,
-for example, you want to proceed from the fourth installation in the list, run
+for example, you want to proceed from the fourth installation in the list, run<br />
 
-$./listrunner.sh 4
+$./listrunner.sh 4<br />
 
 This is useful to pick things back up in case something causes a break out of
 the installation.
@@ -111,8 +110,8 @@ Using this approach, you can work out any dependencies and/or lists of programs
 you want to install, and let listrunner do the rest! (Of course you need
 the installation scripts for each program to install!)
 
-LISTFILE
-^^^^^^^^
+LISTFILE<br />
+^^^^^^^^^^^^^^<br />
 At the end of each successful installation, a line is added to
 /list-${CHRISTENED}-${SURNAME}
 a file in the root directory. You will want to create such a file and make sure
