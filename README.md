@@ -61,15 +61,15 @@ package installer scripts. "scriptdir" should also have a "non-blfs" subfolder (
 I keep scripts that I created without the help of the folks at Linux From Scratch).
 
 Run:<br />
-$./setlist.sh listdir <dir containing list-XXX file>
+$./setlist.sh listdir \<dir containing list-XXX file\>
 
 If listdir is not the parent folder of the "./scripts" directory (with "./non-blfs" subdirectory),
 you will also want to run:<br />
 
-$./setlist.sh scriptdir <dir containing package installer scripts><br />
+$./setlist.sh scriptdir \<dir containing package installer scripts\><br />
 
 Then, to tell the batch installer the name of the list you want to generate<br />
-$./setlist.sh list XXX
+$./setlist.sh list XXX<br />
 $./generator.sh<br />
 
 This will let you know if any of the queued installations don't have scripts
@@ -113,7 +113,7 @@ the installation scripts for each program to install!)
 LISTFILE<br />
 ^^^^^^^^^^^^^^<br />
 At the end of each successful installation, a line is added to
-/list-${CHRISTENED}-${SURNAME}
+/list-${CHRISTENED}-${SURNAME}<br />
 a file in the root directory. You will want to create such a file and make sure
 you have read and write permission for it. It is also highly recommended that
 you define these variables in /etc/profile. One suggestion is<br />
