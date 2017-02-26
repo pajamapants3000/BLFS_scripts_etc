@@ -185,8 +185,8 @@ if [ "${PROGGROUP}" ]; then
     fi
 elif [ "${PROGUSER}" ]; then
     if ! (cat /etc/passwd | grep $PROGUSER > /dev/null); then
-    as_root useradd -c "${USRCMNT}" -d /var/run/${PROGUSER} \
-            -u ${PROGUSERNUM} -s /bin/false $PROGUSER
+    as_root useradd -c "${USRCMNT}" -d /srv/pgsql/data \
+            -u ${PROGUSERNUM} -g $PROGGROUP $PROGUSER
     pathremove /usr/sbin
     fi
 fi
@@ -388,10 +388,17 @@ fi
 as_root ${SCRIPTDIR}/${PROG}-${VERSION}-config.sh
 #
 # Set up for current user (usually tommy)
-install -v -dm700 ${HOME}/.config/pgsql/data
-initdb ${HOME}/.config/pgsql/data
-echo "echo PGDATA=${HOME}/.config/pgsql/data" >> ${HOME}/.config/bash/bash_envar.sh
+# I don.t think I want this! Shouldn't it be system-wide?
+#install -v -dm700 ${HOME}/.config/pgsql/data
+#initdb ${HOME}/.config/pgsql/data
+#echo "echo PGDATA=${HOME}/.config/pgsql/data" >> ${HOME}/.config/bash/bash_envar.sh
+#echo "echo export PGDATA" >> ${HOME}/.config/bash/bash_envar.sh
 #
+# Create Roles and initial databases
+su - postgres -c 'createuser --superuser --encrypted root'
+as_root createuser --encrypted --createdb --createrole ${USER}
+as_root createdb root
+as_root createdb ${USER}
 # Launch the server by executing, as tommy
 #$pg_ctl -l logfile start
 ###################################################

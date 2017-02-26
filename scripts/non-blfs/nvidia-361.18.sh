@@ -404,7 +404,7 @@ ${INSTALL_ROOT} ${BUILDDIR}/*.ko \
         ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/
 # Symlink kernel module to be used by target kernel
 ${INSTALL_DIRROOT} /lib/modules/${TGT_KVER}/kernel/drivers/video
-ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/*.ko \
+as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/*.ko \
         /lib/modules/$TGT_KVER/kernel/drivers/video/
 #
 # Copy libraries
@@ -483,14 +483,14 @@ if ((CPDAT)); then
             ${INSTALL_ROOT} ${SRCDIR}/${_man} ${MANDER}/man1/
         fi
     done
-    ${INSTALL_ROOT} LICENSE ${PREFICKS}/usr/share/licenses/nvidia/
+    ${INSTALL_ROOT} LICENSE ${PREFICKS}/share/licenses/nvidia/
     for _license in \
                         nvidia-utils  \
                         opencl-nvidia \
                         nvidia-libgl  ; do
         if ! ( ((CPDAT==1)) &&
-            [ -f ${PREFICKS}/usr/share/licenses/${_license} ] ); then
-            as_root ln -sfv nvidia ${PREFICKS}/usr/share/licenses/${_license}
+            [ -f ${PREFICKS}/share/licenses/${_license} ] ); then
+            as_root ln -sfv nvidia ${PREFICKS}/share/licenses/${_license}
         fi
     done
     for _doc in \
@@ -504,13 +504,13 @@ if ((CPDAT)); then
         as_root cp -r html ${DOCDER}/
     fi
     as_root ln -sfv ${DOCDER} ${DOCDER}/../nvidia-utils
-    ${INSTALL_ROOT} nvidia-settings.desktop ${PREFICKS}/usr/share/applications/
-    ${INSTALL_ROOT} nvidia-settings.png ${PREFICKS}/usr/share/pixmaps/
+    ${INSTALL_ROOT} nvidia-settings.desktop ${PREFICKS}/share/applications/
+    ${INSTALL_ROOT} nvidia-settings.png ${PREFICKS}/share/pixmaps/
     as_root sed -e 's:__UTILS_PATH__:/usr/bin:' \
                 -e 's:__PIXMAP_PATH__:/usr/share/pixmaps:' \
                 -i "${pkgdir}/usr/share/applications/nvidia-settings.desktop"
     ${INSTALL_ROOT} nvidia-drm-outputclass.conf \
-            ${PREFICKS}/usr/share/X11/xorg.conf.d/
+            ${PREFICKS}/share/X11/xorg.conf.d/
     # OpenCL (?)
     ${INSTALL_DIRROOT} /etc/OpenCL/vendors
     ${INSTALL_ROOT} nvidia.icd /etc/OpenCL/vendors/

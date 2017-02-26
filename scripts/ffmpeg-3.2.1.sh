@@ -13,8 +13,6 @@
 #+     +like checking for the installation of a package, downloading
 #+     +and testing checksum, avoiding duplicates and saving old builds, etc.
 # TODO: Create a list of downloads, each with location info and checksum
-# TODO: Run dependency check at beginning of script
-# TODO: create recursive dependency installer
 #
 DATE=$(date +%Y%m%d)
 TIME=$(date +%H%M%S)
@@ -26,13 +24,62 @@ if [ ${#} -gt 1 ]; then
     exit 0
 fi
 #
-# Estimated disk space required
-#  MB
-# Estimated build time
-#  SBU
-#
 # Dependencies
 #*************
+# Recommended
+#libass-0.13.4
+#fdk_aac-0.1.4
+#freetype-2.7
+#lame-3.99.5
+#libtheora-1.1.1
+#libvorbis-1.3.5
+#libvpx-1.6.0
+#opus-1.1.3
+#x264-20160827-2245
+#x265-2.1
+#yasm-1.3.0
+# Recommended for desktop use
+#alsa-lib-1.1.2
+#libva-1.7.3
+#libvdpau-1.1.1 (with corresponding driver)
+#sdl2-2.0.5
+# Optional
+#fontconfig-2.12.1
+#frei0r_plugins-1.5.0
+#libcdio-0.94
+#libwebp-0.5.1
+#opencv-3.1.0
+#openjpeg-1.5.2
+#openssl-1.0.2j
+#gnutls-3.5.6
+#pulseaudio-9.0
+#speex-1.2rc2
+#texlive-20160523b
+#v4l_utils-1.10.1
+#xvid-1.3.3
+#x_window_system
+#flite
+#gsm
+#HEVC/H.265
+#libaacplus
+#libbluray
+#libcaca
+#libcelt
+#libdc1394
+#libdca
+#libiec61883
+#libilbc
+#libmodplug
+#libnut
+#librtmp
+#libssh
+#openal
+#opencore_amr
+#schroedinger
+#twolame
+#vo_aaenc
+#vo_amrwbenc
+#zvbi
 #
 # Preparation
 #*************
@@ -43,6 +90,33 @@ source ${HOME}/.blfs_profile
 #
 # Options
 #********
+GPL=1
+V3=1
+NONFREE=1
+# Default seems to be build static; COMMENT OUT to DISABLE static libraries
+STATIC=1
+# Default seems to be no shared; uncomment to create shared libraries
+SHARED=1
+# Default is to build debug version; COMMENT OUT to DISABLE debugging
+DEBUG=1
+X11GRAB=1
+ASS=1
+FDK_AAC=1
+FREETYPE=1
+MP3LAME=1
+OPUS=1
+THEORA=1
+VORBIS=1
+VPX=1
+X264=1
+X265=1
+SSLTLS=1
+# If texlive is installed, uncomment this to build PDF and PS docs
+TEXLIVEDOC=1
+# If doxygen is installed, uncomment this to build api docs
+APIDOC=1
+# Uncomment to run FATE test; rather large; ~1GB download, 3GB space, 5.0SBU
+#FATE=1
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
 # Build only or install only (DO NOT UNCOMMENT BOTH! - TODO)
@@ -69,13 +143,13 @@ source ${HOME}/.blfs_profile
 #*******************************************************************
 #
 # Name of program, with version and package/archive type
-PROG=
+PROG=ffmpeg
 # Alternate program name; in case it doesn't match my conventions;
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=${PROG}
-VERSION=
-ARCHIVE=tar.gz
+VERSION=3.2.1
+ARCHIVE=tar.xz
 #
 # Useful paths
 # This is the directory in which we store any downloaded files; by default it
@@ -95,9 +169,9 @@ BUILDDIR=${SRCDIR}
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 # Downloads; obtain and verify package(s); or specify repo to clone and type
-DL_URL=
+DL_URL=http://ffmpeg.org/releases
 DL_ALT=
-MD5=
+MD5=10eaee7cca7d1e745eec6e4217772361
 SHASUM=
 SHAALG=1
 REPO=
@@ -113,9 +187,7 @@ if [ ${PATCH} ]; then
 fi
 # Configure; prepare build
 PREFICKS=/usr
-SYSCONFDER=/etc
 #SYSCONFDER=${PREFICKS}/etc
-LOCALST8DER=/var
 #LOCALST8DER=${PREFICKS}/var
 MANDER=${PREFICKS}/share/man
 DOCDER=${PREFICKS}/share/doc/${PROG}-${VERSION}
@@ -139,6 +211,51 @@ CONFIGURE="${SRCDIR}/configure"
 #
 # Pass them in... (these are in addition to the defaults; see below)
 CONFIG_FLAGS=""
+((GPL)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-gpl" || (exit 0)
+((V3)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-version3" || (exit 0)
+((NONFREE)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-nonfree" || (exit 0)
+! ((STATIC)) && CONFIG_FLAGS="${CONFIG_FLAGS} --disable-static" || (exit 0)
+((SHARED)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-shared" || (exit 0)
+! ((DEBUG)) && CONFIG_FLAGS="${CONFIG_FLAGS} --disable-debug" || (exit 0)
+((X11GRAB)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-x11grab" || (exit 0)
+if (cat /list-Lilu-lfs-20150723 | grep "^libass-" > /dev/null); then
+    ((ASS)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libass" || (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^fdk_aac-" > /dev/null); then
+    ((FDK_AAC)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libfdk-aac" ||
+            (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^freetype-" > /dev/null); then
+    ((FREETYPE)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libfreetype" ||
+            (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^lame-" > /dev/null); then
+    ((MP3LAME)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libmp3lame" ||
+            (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^opus-" > /dev/null); then
+    ((OPUS)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libopus" || (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^libtheora-" > /dev/null); then
+    ((THEORA)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libtheora" || (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^libvorbis-" > /dev/null); then
+    ((VORBIS)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libvorbis" || (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^libvpx-" > /dev/null); then
+    ((VPX)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libvpx" || (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^x264" > /dev/null); then
+    ((X264)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libx264" || (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^x265-" > /dev/null); then
+    ((X265)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-libx265" || (exit 0)
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^gnutls-" > /dev/null); then
+    ((SSLTLS)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-gnutls" || (exit 0)
+elif (cat /list-Lilu-lfs-20150723 | grep "^openssl-" > /dev/null); then
+    ((SSLTLS)) && CONFIG_FLAGS="${CONFIG_FLAGS} --enable-openssl" || (exit 0)
+fi
 MAKE_FLAGS=""
 TEST=
 TEST_FLAGS="-k"
@@ -154,9 +271,9 @@ PROGUSERNUM=${PROGGROUPNUM}
 USRCMNT=
 #
 # Common commands
-INSTALL_USER='install -v -Dm644'
-INSTALL_BINUSER='install -v -Dm755'
-INSTALL_DIRUSER='install -vd'
+INSTALL_USER='install -v -m644'
+INSTALL_BINUSER='install -v -m755'
+INSTALL_DIRUSER='install -vdm755'
 INSTALL_ROOT="as_root ${INSTALL_USER} -o root -g root"
 INSTALL_BINROOT="as_root ${INSTALL_BINUSER} -o root -g root"
 INSTALL_DIRROOT="as_root ${INSTALL_DIRUSER} -o root -g root"
@@ -387,6 +504,7 @@ pushd ${BUILDDIR}
 # Pre-config -- additional actions to take before running configuration
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
+sed -i 's/-lflite"/-lflite -lasound"/' configure
 #
 # Configure
 #^^^^^^^^^^^
@@ -410,7 +528,26 @@ ${MAKE} ${MAKE_FLAGS}
 # Post-build modifications before testing
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# Test (optional)
+gcc tools/qt-faststart.c -o tools/qt-faststart
+
+if (cat /list-Lilu-lfs-20150723 | grep "^texlive-" > /dev/null) &&
+    ((TEXLIVEDOC)); then
+    pushd doc
+    for DOCNAME in `basename -s .html *.html`
+    do
+        texi2pdf -b $DOCNAME.texi
+        texi2dvi -b $DOCNAME.texi
+        dvips    -o $DOCNAME.ps   
+                    $DOCNAME.dvi
+    done
+    popd
+    unset DOCNAME
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^doxygen-" > /dev/null) &&
+    ((APIDOC)); then
+    doxygen doc/Doxyfile
+fi
+# Test (optional) (tests are actually done AFTER installation for this pkg)
 #^^^^^^^^^^^^^^^^^
 if [ "${TEST}" ]; then
     [ -d ${WORKING_DIR}/logs ] || mkdir -v ${WORKING_DIR}/logs
@@ -446,6 +583,32 @@ as_root ${MAKE} ${INSTALL_FLAGS} ${INSTALL}
 #+reinstalls. To set a command to be executed only once, put it in the
 #+Configuration section below.
 #
+as_root ${INSTALL_BINUSER} tools/qt-faststart ${PREFICKS}/bin
+as_root ${INSTALL_USER} doc/*.txt ${DOCDER}
+
+if (cat /list-Lilu-lfs-20150723 | grep "^texlive-" > /dev/null) &&
+    ((TEXLIVEDOC)); then
+    as_root ${INSTALL_USER} doc/*.pdf ${DOCDER}
+    as_root ${INSTALL_USER} doc/*.ps ${DOCDER}
+fi
+if (cat /list-Lilu-lfs-20150723 | grep "^doxygen-" > /dev/null) &&
+    ((APIDOC)); then
+as_root ${INSTALL_DIRUSER} ${DOCDER}/api
+as_root cp -vr doc/doxy/html/* ${DOCDER}/api
+find ${DOCDER}/api -type f -exec chmod -c 0644 \{} \;
+find ${DOCDER}/api -type d -exec chmod -c 0755 \{} \;
+fi
+#
+#
+# Test
+#^^^^^^
+if ((FATE)); then
+    make fate-rsync SAMPLES=fate-suite/
+    rsync -vrltLW  --delete --timeout=60 --contimeout=60 \
+            rsync://fate-suite.ffmpeg.org/fate-suite/ fate-suite/
+    make fate THREADS=$((PARALLEL-2)) SAMPLES=fate-suite/ | tee ../fate.log
+    grep ^TEST ../fate.log | wc -l
+fi
 # Leave and delete build directory, unless preservation specified in options
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 popd    # Back to $SRCDIR
@@ -491,3 +654,4 @@ fi
 #+successive installs or updates unless specified otherwise.
 #
 ###################################################
+

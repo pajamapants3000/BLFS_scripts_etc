@@ -40,7 +40,7 @@ source ${HOME}/.blfs_profile
 #********
 # Set kernel version before running! Then unset to avoid future mistakes
 # Can also set in environment.
-#TGT_KVER=
+TGT_KVER=4.4.39
 if ! [ ${TGT_KVER} ]; then
     echo "Please set target kernel version (TGT_KVER) before running"
     exit 1
@@ -54,8 +54,8 @@ XORG_CONF="10-nvidia.conf"
 # 1 - Copy only if it doesn't involve overwriting existing copies
 # 2 - Copy no matter what
 # 1 is probably the best/safest choice, except for a full-system upgrade.
-CPBIN=1
-CPDAT=1
+CPBIN=2
+CPDAT=2
 # Uncomment
 # Uncomment to keep build files and sources
 #PRESERVE_BUILD=1
@@ -71,7 +71,7 @@ PROG=nvidia
 # My conventions are: no capitals; only '-' between name and version,
 #+replace any other '-' with '_'. PROG_ALT fits e.g. download url.
 PROG_ALT=NVIDIA-Linux-x86_64
-VERSION=352.21
+VERSION=375.26
 # In this case it's just the extension, not really an archive type.
 ARCHIVE=run
 # optional suffix of "-no-compat32" depending on which version is needed
@@ -101,7 +101,7 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Downloads; obtain and verify package(s); or specify repo to clone and type
 DL_URL=ftp://download.nvidia.com/XFree86/Linux-x86_64
 DL_ALT=
-MD5=29a88f1538d622cebf751593396053e4
+MD5=
 SHASUM=
 SHAALG=1
 REPO=
@@ -110,7 +110,7 @@ REPO=
 BRANCH=master
 # Prepare sources - PATCHDIR default is in blfs_profile; only specify non-def.
 #PATCHDIR=${WORKING_DIR}/patches
-PATCH=${PROG}-${VERSION}.patch
+#PATCH=${PROG}-${VERSION}.patch
 if [ ${PATCH} ]; then
     [ -f ${PATCHDIR}/${PATCH} ] ||
         (echo "Patch ${PATCHDIR}/${PATCH} needed but not found" && exit 1)
@@ -147,8 +147,8 @@ MAKE="make"
 MAKE_FLAGS="SYSSRC=/lib/modules/${TGT_KVER}/build module"
 TEST=
 TEST_FLAGS="-k"
-INSTALL=""
-INSTALL_FLAGS=""
+INSTALL="make"
+INSTALL_FLAGS="SYSSRC=/lib/modules/${TGT_KVER}/build modules_install"
 #
 # Additional/optional configurations: bootscript, group, user, ...
 BOOTSCRIPT=
@@ -352,7 +352,7 @@ pushd ${BUILDDIR}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
-# Configure
+# Configure (doesn't apply to this package)
 #^^^^^^^^^^^
 if [ "${CONFIGURE}" ]; then
     if [ ${CMAKE_GEN} ]; then
@@ -366,13 +366,9 @@ fi
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 #
-# Build (doesn't apply to this package)
+# Build
 #^^^^^^^
 ${MAKE} ${MAKE_FLAGS}
-pushd uvm
-${MAKE} ${MAKE_FLAGS}
-mv -v nvidia-uvm.ko ../
-popd
 #
 # Test (optional)
 #^^^^^^^^^^^^^^^^^
@@ -392,9 +388,9 @@ fi
 #
 # Install
 #^^^^^^^^^
-#if ! ((BUILD_ONLY)); then
-#    as_root ${INSTALL} ${INSTALL_FLAGS}
-#fi
+if ! ((BUILD_ONLY)); then
+    as_root ${INSTALL} ${INSTALL_FLAGS}
+fi
 #
 # Post-install actions (e.g. install documentation; some configuration)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -408,26 +404,23 @@ ${INSTALL_ROOT} ${BUILDDIR}/*.ko \
         ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/
 # Symlink kernel module to be used by target kernel
 ${INSTALL_DIRROOT} /lib/modules/${TGT_KVER}/kernel/drivers/video
-ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/*.ko \
+as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/kernel/${TGT_KVER}/modules/*.ko \
         /lib/modules/$TGT_KVER/kernel/drivers/video/
+#
 # Copy libraries
 ${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/drivers
 ${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions
 ${INSTALL_DIRROOT} ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
 for _lib in $(find ${SRCDIR} -name '*.so*'); do
     if [ ${_lib} != "tls_test_dso.so" ]; then
-        ${INSTALL_ROOT} ${_lib} ${PREFICKS}/lib/nvidia/${VERSION}/
+        ${INSTALL_BINROOT} ${_lib} ${PREFICKS}/lib/nvidia/${VERSION}/
     fi
 done
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libglx.so.${VERSION} \
+${INSTALL_BINROOT} ${PREFICKS}/lib/nvidia/${VERSION}/libglx.so.${VERSION} \
               ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libglx.la \
-              ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/nvidia_drv.so \
+${INSTALL_BINROOT} ${PREFICKS}/lib/nvidia/${VERSION}/nvidia_drv.so \
               ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/drivers/
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libvdpau_nvidia.so.${VERSION} \
-              ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
-as_root mv -v ${PREFICKS}/lib/nvidia/${VERSION}/libvdpau_trace.so.${VERSION} \
+${INSTALL_BINROOT} ${PREFICKS}/lib/nvidia/${VERSION}/libvdpau_nvidia.so.${VERSION} \
               ${PREFICKS}/lib/nvidia/${VERSION}/vdpau
 # Link libraries to put them in use
 if ! ((CPONLY)); then
@@ -435,16 +428,15 @@ if ! ((CPONLY)); then
                   grep -v 'xorg/' | grep -v 'vdpau'); do
         _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
         _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
-        as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
-                ${PREFICKS}/lib/_soname
-        as_root ln -sfv ${PREFICKS}/lib/_soname ${PREFICKS}/lib/_base
+        as_root ln -sfv ${_lib} ${PREFICKS}/lib/${_soname}
+        as_root ln -sfv ${PREFICKS}/lib/${_soname} ${PREFICKS}/lib/${_base}
     done
     for _lib in $(find ${PREFICKS}/lib/nvidia/${VERSION}/vdpau -name '*.so*'); do
         _soname=$(readelf -d "${_lib}" | grep -Po 'SONAME.*: \[\K[^]]*' || true)
         _base=$(echo ${_soname} | sed -r 's/(.*).so.*/\1.so/')
-        as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/${_lib} \
-                ${PREFICKS}/lib/vdpau/_soname
-        as_root ln -sfv ${PREFICKS}/lib/vdpau/_soname ${PREFICKS}/lib/vdpau/_base
+        as_root ln -sfv ${_lib} ${PREFICKS}/lib/vdpau/${_soname}
+        as_root ln -sfv ${PREFICKS}/lib/vdpau/${_soname} \
+            ${PREFICKS}/lib/vdpau/${_base}
     done
     as_root ln -sfv ${PREFICKS}/lib/nvidia/${VERSION}/xorg/modules/extensions/* \
             ${PREFICKS}/lib/xorg/modules/extensions/
@@ -467,7 +459,7 @@ if ((CPBIN)); then
                     nvidia-cuda-mps-control \
                     nvidia-modprobe         \
                     nvidia-persistenced     ; do
-        if ! ( ((CPBIN==1)) && [ -f ${PREFICKS}/bin/${_bin} ] ); then
+        if ((CPBIN==1)) && ! [ -f ${PREFICKS}/bin/${_bin} ]; then
             ${INSTALL_BINROOT} ${SRCDIR}/${_bin} ${PREFICKS}/bin/
         fi
     done
@@ -485,32 +477,38 @@ if ((CPDAT)); then
             ${INSTALL_ROOT} ${SRCDIR}/${_man} ${MANDER}/man1/
         fi
     done
-    ${INSTALL_ROOT} LICENSE ${PREFICKS}/share/licenses/nvidia/
-    for _license in \
-                        nvidia-utils  \
-                        opencl-nvidia \
-                        nvidia-libgl  ; do
-        if ! ( ((CPDAT==1)) &&
-            [ -f ${PREFICKS}/share/licenses/${_license} ] ); then
-            as_root ln -sfv nvidia ${PREFICKS}/share/licenses/${_license}
-        fi
-    done
+    # I if'd this out cuz I have no idea what this was supposed to be!
+    if ((0)); then
+        ${INSTALL_DIRROOT} ${PREFICKS}/share/licenses/nvidia
+        ${INSTALL_ROOT} ${SRCDIR}/LICENSE ${PREFICKS}/share/licenses/nvidia/
+        for _license in \
+                            nvidia-utils  \
+                            opencl-nvidia \
+                            nvidia-libgl  ; do
+            if ((CPDAT==1)) &&
+                ! [ -f ${PREFICKS}/share/licenses/${_license} ]; then
+                as_root ln -sfv nvidia ${PREFICKS}/share/licenses/${_license}
+            fi
+        done
+    fi
     for _doc in \
                         README.txt       \
                         NVIDIA_Changelog ; do
-        if ! ( ((CPDAT==1)) && [ -f ${DOCDER}/${_doc} ] ); then
+        if ((CPDAT==1)) && ! [ -f ${DOCDER}/${_doc} ]; then
             ${INSTALL_ROOT} ${SRCDIR}/${_doc} ${DOCDER}
         fi
     done
-    if ! ( ((CPDAT==1)) && [ -e ${DOCDER}/html ] ); then
+    # Stopped working right around here for some reason!
+    if ((CPDAT==1)) && ! [ -e ${DOCDER}/html ]; then
         as_root cp -r html ${DOCDER}/
     fi
-    as_root ln -sfv ${DOCDER} ${DOCDER}/../nvidia-utils
+    # WHY!?
+    #as_root ln -sfv ${DOCDER} ${DOCDER}/../nvidia-utils
     ${INSTALL_ROOT} nvidia-settings.desktop ${PREFICKS}/share/applications/
     ${INSTALL_ROOT} nvidia-settings.png ${PREFICKS}/share/pixmaps/
     as_root sed -e 's:__UTILS_PATH__:/usr/bin:' \
                 -e 's:__PIXMAP_PATH__:/usr/share/pixmaps:' \
-                -i "${pkgdir}/usr/share/applications/nvidia-settings.desktop"
+                -i /usr/share/applications/nvidia-settings.desktop
     ${INSTALL_ROOT} nvidia-drm-outputclass.conf \
             ${PREFICKS}/share/X11/xorg.conf.d/
     # OpenCL (?)
@@ -567,4 +565,5 @@ fi
 as_root install -v -Dm644 -o root -g root \
     ${BLFSDIR}/files/etc/X11/xorg.conf.d/${XORG_CONF} /etc/X11/xorg.conf.d/
 ###################################################
+
 

@@ -79,7 +79,7 @@ do
   as_root mv -v /usr/lib/lib${file}.so.* /lib
   as_root ln -sfv ../../lib/$(readlink /usr/lib/lib${file}.so) /usr/lib/lib${file}.so
 done
-for file in other system-account system-passwd system-auth system-session login chage
+for file in other system-account system-password system-auth system-session login chage
 do
     as_root cp -v ../files/etc/pam.d/${file} /etc/pam.d/
 done

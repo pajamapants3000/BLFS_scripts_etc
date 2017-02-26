@@ -7,7 +7,7 @@ if [ ${UID} != 0 ]; then
     echo "This script must be run as root!"
     exit 1
 fi
-su - postgres -c '/usr/bin/initdb -D /srv/pgsql/data'
+#su - postgres -c '/usr/bin/initdb -D /srv/pgsql/data'
 su - postgres -c '/usr/bin/postgres -D /srv/pgsql/data > \
         /srv/pgsql/data/logfile 2>&1 &'
 su - postgres -c '/usr/bin/createdb test'
